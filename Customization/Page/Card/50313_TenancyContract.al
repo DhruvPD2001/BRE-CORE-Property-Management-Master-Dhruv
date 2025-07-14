@@ -383,13 +383,13 @@ page 50313 "Tenancy Contract Card"
                 field("Security Deposit Amount"; Rec."Security Deposit Amount")
                 {
                     ApplicationArea = All;
-                    Editable = false;
+                    Editable = true;
                 }
 
                 field("Balance Amount"; Rec."Balance Amount")
                 {
                     ApplicationArea = All;
-                    Editable = false;
+                    Editable = true;
                     Caption = 'Security Deposit Amount Received';
 
                     trigger OnValidate()
@@ -400,7 +400,7 @@ page 50313 "Tenancy Contract Card"
                 field("Security Amount Received"; Rec."Security Amount Received")
                 {
                     ApplicationArea = All;
-                    Editable = false;
+                    Editable = true;
                     Caption = 'Security Deposit Amount Pending';
 
                     trigger OnValidate()
@@ -412,7 +412,7 @@ page 50313 "Tenancy Contract Card"
                 field("Security Balanced Amount"; Rec."Security Balanced Amount")
                 {
                     ApplicationArea = All;
-                    Editable = false;
+                    Editable = true;
                     Caption = 'Security Deposit Amount Balance';
                 }
             }
@@ -2116,9 +2116,9 @@ page 50313 "Tenancy Contract Card"
         else
             Rec."Security Amount Received" := Rec."Security Deposit Amount" - Rec."Balance Amount";
 
-        // If Balance Amount has any value (non-zero), update Security Balanced Amount
-        if Rec."Balance Amount" <> 0 then
-            Rec."Security Balanced Amount" := Rec."Balance Amount";
+        // // If Balance Amount has any value (non-zero), update Security Balanced Amount
+        // if Rec."Balance Amount" <> 0 then
+        //     Rec."Security Balanced Amount" := Rec."Balance Amount";
     end;
 
 
