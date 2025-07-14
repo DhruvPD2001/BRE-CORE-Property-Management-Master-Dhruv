@@ -275,6 +275,7 @@ page 50922 "Payment Schedule Card2"
         PaymentSchedule: Record "Payment Schedule";
         workflowfrequency: Record "Workflow Frequency PR";
         TempDueDate: Date;
+        Requestcreditnotegrid: Record "Request Credit Note Grid";
     begin
         InvoicedField := NotAccessInvoicedFieldFinanceManager();
 
@@ -296,6 +297,18 @@ page 50922 "Payment Schedule Card2"
         end else
             Rec."Workflow frequency date" := 0D; // or skip, or raise a warning
 
+
+        Requestcreditnotegrid.SetRange("Contract ID", Rec."Contract ID");
+        Requestcreditnotegrid.SetRange("Payment Series", Rec."Payment Series");
+        Requestcreditnotegrid.SetRange("Credit Memo Generated", true);
+        if Requestcreditnotegrid.FindSet() then
+            repeat
+                Rec."Credit Note No." := Requestcreditnotegrid."Credit Note No.";
+                Rec."Credit Note Amount" := Requestcreditnotegrid."Total Reduction";
+
+            until Requestcreditnotegrid.Next() = 0;
+
+        Rec."Final Rent Amount" := Rec."Amount Including VAT" - Rec."Credit Note Amount";
         Rec.Modify();
     end;
 
