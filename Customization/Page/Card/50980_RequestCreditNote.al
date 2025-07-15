@@ -89,10 +89,10 @@ page 50980 "Request Credit Note Card"
                     Caption = 'Status';
                     Editable = IsFinanceManager;
                 }
-                field(Remark; Rec.Remark)
+                field(Remark; Rec."Reason for Rejection")
                 {
                     ApplicationArea = All;
-                    Caption = 'Remark';
+                    Caption = 'Reason for Rejection';
                     MultiLine = true;
                     Editable = false; // Allow editing for the remark
                     // Allow editing for the remark

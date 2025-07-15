@@ -49,32 +49,29 @@ page 50981 "Request CreditNote Grid"
                         end;
                     end;
                 }
-                field("View Charges Details"; Rec."View Charges Details")
+                field("Charges"; Rec."Charges")
                 {
                     ApplicationArea = All;
                     Caption = 'View Charges Details';
-                    Editable = false; // This field is not editable
+                    // This field is not editable
                     ToolTip = 'Click to view detailed charges for this request.';
+                    TableRelation = "Payment Schedule2"."Secondary Item Type" where("Contract ID" = field("Contract ID"), "Payment Series" = field("Payment Series"));
 
-                    trigger OnDrillDown()
+                    trigger OnValidate()
                     var
-                        PaymentModeRec: Record "Payment Mode2";
-                        PaymentScheduleRec: Record "Payment Schedule2";
-                        FilteredSchedulePage: Page "Payment Schedule Card2"; // Replace with your actual page name
+                        PaymentSchedule2: Record "Payment Schedule2";
                     begin
+                        PaymentSchedule2.SetRange("Contract ID", Rec."Contract ID");
+                        PaymentSchedule2.SetRange("Payment Series", Rec."Payment Series");
+                        PaymentSchedule2.SetRange("Secondary Item Type", Rec.Charges);
+                        if PaymentSchedule2.FindSet()
+                        then begin
+                            Rec."Current Rent Amount" := PaymentSchedule2.Amount;
+                            Rec."Total Reduction" := Rec."Current Rent Amount";
 
-                        PaymentScheduleRec.SetRange("Contract ID", Rec."Contract ID");
-
-                        PaymentScheduleRec.SetRange("Payment Series", Rec."Payment Series");
-
-
-                        if PaymentScheduleRec.FindFirst() then
-                            FilteredSchedulePage.SetTableView(PaymentScheduleRec);
-
-
-                        PAGE.Run(PAGE::"Payment Schedule Card2", PaymentScheduleRec);
-
+                        end;
                     end;
+
                 }
                 field("Current Rent Amount"; Rec."Current Rent Amount")
                 {
@@ -106,7 +103,7 @@ page 50981 "Request CreditNote Grid"
                 {
                     ApplicationArea = All;
                     Caption = 'Credit Memo Generated';
-                    Editable = false; // This field is calculated and not editable
+                    Editable = true; // This field is calculated and not editable
                     // This field is calculated and not editable
                 }
 
@@ -116,27 +113,6 @@ page 50981 "Request CreditNote Grid"
 
 
     }
-    // actions
-    // {
-    //     area(Processing)
-    //     {
-    //         action(Submit)
-    //         {
-    //             ApplicationArea = All;
-    //             Caption = 'Submit';
-    //             Image = Submit;
-
-    //             trigger OnAction()
-    //             var
-    //                 creditnotegrid: Record "Request Credit Note Grid";
-    //             begin
-    //                 creditnotegrid.DeleteAll();
-    //             end;
-    //         }
-    //     }
-    // }
-
-
 
     var
         requestno: Code[20];
