@@ -440,6 +440,8 @@ page 50122 "Revenue Allocation Card"
         AdjustedStartDate: Date; // 🔹 new
         AdjustedEndDate: Date;   // 🔹 new
         SuspensionStartDateInMonth: Date; // 🔹 ADDED   
+        SuspensionStartDate: Date;
+        SuspensionEndDate: Date;
     begin
         // Check if entry should be kept based on date range
         if not ShouldKeepEntry(MultiYearStartDate, MultiYearEndDate) then
@@ -480,11 +482,58 @@ page 50122 "Revenue Allocation Card"
         SuspensionRec.Reset();
         SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
         if SuspensionRec.FindFirst() then begin
-            if (SuspensionRec.DateEffective <> 0D) and
-               (SuspensionRec.DateEffective >= SelectedMonthStart) and
-               (SuspensionRec.DateEffective <= SelectedMonthEnd) then begin
-                SuspensionStartDateInMonth := SuspensionRec.DateEffective;
-                AdjustedEndDate := SuspensionRec.DateEffective - 1; // 🔹 ADDED
+            SuspensionStartDate := SuspensionRec.DateEffective;
+            SuspensionEndDate := SuspensionRec.SuspensionEndDate;
+            // If suspension start date is within selected month
+            if (SuspensionStartDate <> 0D) and
+               (SuspensionStartDate >= SelectedMonthStart) and
+               (SuspensionStartDate <= SelectedMonthEnd) then begin
+                // Adjust end date to day before suspension
+                AdjustedEndDate := SuspensionStartDate;
+            end;
+
+            // If suspension period overlaps with selected month
+            if (SuspensionStartDate <> 0D) and (SuspensionEndDate <> 0D) then begin
+                // Case 1: Suspension starts before selected month and ends during selected month
+                if (SuspensionStartDate < SelectedMonthStart) and
+                   (SuspensionEndDate >= SelectedMonthStart) and
+                   (SuspensionEndDate <= SelectedMonthEnd) then begin
+                    // Regular period starts after suspension ends
+                    if (SuspensionEndDate + 1) <= SelectedMonthEnd then
+                        AdjustedStartDate := SuspensionEndDate + 1
+                    else
+                        AdjustedStartDate := SelectedMonthEnd + 1; // No regular days
+                end
+                // Case 2: Suspension starts during selected month and ends after selected month
+                else if (SuspensionStartDate >= SelectedMonthStart) and
+                        (SuspensionStartDate <= SelectedMonthEnd) and
+                        ((SuspensionEndDate > SelectedMonthEnd) or (SuspensionEndDate = 0D)) then begin
+                    // Regular period ends before suspension starts
+                    if (SuspensionStartDate - 1) >= SelectedMonthStart then
+                        AdjustedEndDate := SuspensionStartDate - 1
+                    else
+                        AdjustedEndDate := SelectedMonthStart - 1; // No regular days
+                end
+                // Case 3: Suspension starts and ends during selected month
+                else if (SuspensionStartDate >= SelectedMonthStart) and
+                        (SuspensionStartDate <= SelectedMonthEnd) and
+                        (SuspensionEndDate >= SelectedMonthStart) and
+                        (SuspensionEndDate <= SelectedMonthEnd) then begin
+                    // For this case, we need to handle it differently
+                    // This would require splitting into two periods (before and after suspension)
+                    // For now, we'll take the period after suspension
+                    if (SuspensionEndDate + 1) <= SelectedMonthEnd then
+                        AdjustedStartDate := SuspensionEndDate + 1
+                    else
+                        AdjustedStartDate := SelectedMonthEnd + 1; // No regular days
+                end
+                // Case 4: Suspension covers entire selected month
+                else if (SuspensionStartDate <= SelectedMonthStart) and
+                        (SuspensionEndDate >= SelectedMonthEnd) then begin
+                    // No regular days in this month
+                    AdjustedStartDate := SelectedMonthEnd + 1;
+                    AdjustedEndDate := SelectedMonthStart - 1;
+                end;
             end;
         end;
 
@@ -1276,21 +1325,22 @@ page 50122 "Revenue Allocation Card"
         CurrentMonthStart := DMY2Date(1, MonthNo, FinancialYear);
         CurrentMonthEnd := CALCDATE('<CM>', CurrentMonthStart);
 
-        // Check if contract was suspended and is now active
+        // Check if contract has suspension that overlaps with current month
         SuspensionRec.Reset();
         SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
-        SuspensionRec.SetFilter(SuspensionEndDate, '<%1', CurrentMonthStart); // Suspension ended before current month
 
-        if SuspensionRec.FindLast() then begin
+        if SuspensionRec.FindFirst() then begin
             SuspensionStartDate := SuspensionRec.DateEffective;
             SuspensionEndDate := SuspensionRec.SuspensionEndDate;
 
-            // Recovery period starts from suspension start date to suspension end date
-            RecoveryStartDate := SuspensionStartDate;
-            RecoveryEndDate := SuspensionEndDate;
+            // Check if suspension period overlaps with current month
+            if (SuspensionStartDate <> 0D) and (SuspensionEndDate <> 0D) and
+               (SuspensionStartDate <= CurrentMonthEnd) and (SuspensionEndDate >= CurrentMonthStart) then begin
 
-            // Validate that suspension period is valid and ended
-            if (SuspensionEndDate <> 0D) and (SuspensionEndDate < CurrentMonthStart) then begin
+                // 🔹 FIXED: Use full suspension period for recovery calculation
+                // Recovery period should be the entire suspension period, not just current month overlap
+                RecoveryStartDate := SuspensionStartDate;   // Full suspension start date
+                RecoveryEndDate := SuspensionEndDate;       // Full suspension end date
 
                 // Retrieve Termination Date from Final Calculation
                 FinalCalculationRec.Reset();
@@ -1704,6 +1754,8 @@ page 50122 "Revenue Allocation Card"
         AdjustedStartDate: Date; // 🔹 new
         AdjustedEndDate: Date;   // 🔹 new
         SuspensionStartDateInMonth: Date; // 🔹 ADDED   
+        SuspensionStartDate: Date;
+        SuspensionEndDate: Date;
     begin
         // Check if entry should be kept based on date range
         if not ShouldKeepEntry(MultiYearStartDate, MultiYearEndDate) then
@@ -1744,11 +1796,58 @@ page 50122 "Revenue Allocation Card"
         SuspensionRec.Reset();
         SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
         if SuspensionRec.FindFirst() then begin
-            if (SuspensionRec.DateEffective <> 0D) and
-               (SuspensionRec.DateEffective >= SelectedMonthStart) and
-               (SuspensionRec.DateEffective <= SelectedMonthEnd) then begin
-                SuspensionStartDateInMonth := SuspensionRec.DateEffective;
-                AdjustedEndDate := SuspensionRec.DateEffective - 1; // 🔹 ADDED
+            SuspensionStartDate := SuspensionRec.DateEffective;
+            SuspensionEndDate := SuspensionRec.SuspensionEndDate;
+            // If suspension start date is within selected month
+            if (SuspensionStartDate <> 0D) and
+               (SuspensionStartDate >= SelectedMonthStart) and
+               (SuspensionStartDate <= SelectedMonthEnd) then begin
+                // Adjust end date to day before suspension
+                AdjustedEndDate := SuspensionStartDate;
+            end;
+
+            // If suspension period overlaps with selected month
+            if (SuspensionStartDate <> 0D) and (SuspensionEndDate <> 0D) then begin
+                // Case 1: Suspension starts before selected month and ends during selected month
+                if (SuspensionStartDate < SelectedMonthStart) and
+                   (SuspensionEndDate >= SelectedMonthStart) and
+                   (SuspensionEndDate <= SelectedMonthEnd) then begin
+                    // Regular period starts after suspension ends
+                    if (SuspensionEndDate + 1) <= SelectedMonthEnd then
+                        AdjustedStartDate := SuspensionEndDate + 1
+                    else
+                        AdjustedStartDate := SelectedMonthEnd + 1; // No regular days
+                end
+                // Case 2: Suspension starts during selected month and ends after selected month
+                else if (SuspensionStartDate >= SelectedMonthStart) and
+                        (SuspensionStartDate <= SelectedMonthEnd) and
+                        ((SuspensionEndDate > SelectedMonthEnd) or (SuspensionEndDate = 0D)) then begin
+                    // Regular period ends before suspension starts
+                    if (SuspensionStartDate - 1) >= SelectedMonthStart then
+                        AdjustedEndDate := SuspensionStartDate - 1
+                    else
+                        AdjustedEndDate := SelectedMonthStart - 1; // No regular days
+                end
+                // Case 3: Suspension starts and ends during selected month
+                else if (SuspensionStartDate >= SelectedMonthStart) and
+                        (SuspensionStartDate <= SelectedMonthEnd) and
+                        (SuspensionEndDate >= SelectedMonthStart) and
+                        (SuspensionEndDate <= SelectedMonthEnd) then begin
+                    // For this case, we need to handle it differently
+                    // This would require splitting into two periods (before and after suspension)
+                    // For now, we'll take the period after suspension
+                    if (SuspensionEndDate + 1) <= SelectedMonthEnd then
+                        AdjustedStartDate := SuspensionEndDate + 1
+                    else
+                        AdjustedStartDate := SelectedMonthEnd + 1; // No regular days
+                end
+                // Case 4: Suspension covers entire selected month
+                else if (SuspensionStartDate <= SelectedMonthStart) and
+                        (SuspensionEndDate >= SelectedMonthEnd) then begin
+                    // No regular days in this month
+                    AdjustedStartDate := SelectedMonthEnd + 1;
+                    AdjustedEndDate := SelectedMonthStart - 1;
+                end;
             end;
         end;
 
@@ -2559,21 +2658,22 @@ page 50122 "Revenue Allocation Card"
         CurrentMonthStart := DMY2Date(1, MonthNo, FinancialYear);
         CurrentMonthEnd := CALCDATE('<CM>', CurrentMonthStart);
 
-        // Check if contract was suspended and is now active
+        // Check if contract has suspension that overlaps with current month
         SuspensionRec.Reset();
         SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
-        SuspensionRec.SetFilter(SuspensionEndDate, '<%1', CurrentMonthStart); // Suspension ended before current month
 
-        if SuspensionRec.FindLast() then begin
+        if SuspensionRec.FindFirst() then begin
             SuspensionStartDate := SuspensionRec.DateEffective;
             SuspensionEndDate := SuspensionRec.SuspensionEndDate;
 
-            // Recovery period starts from suspension start date to suspension end date
-            RecoveryStartDate := SuspensionStartDate;
-            RecoveryEndDate := SuspensionEndDate;
+            // Check if suspension period overlaps with current month
+            if (SuspensionStartDate <> 0D) and (SuspensionEndDate <> 0D) and
+               (SuspensionStartDate <= CurrentMonthEnd) and (SuspensionEndDate >= CurrentMonthStart) then begin
 
-            // Validate that suspension period is valid and ended
-            if (SuspensionEndDate <> 0D) and (SuspensionEndDate < CurrentMonthStart) then begin
+                // 🔹 FIXED: Use full suspension period for recovery calculation
+                // Recovery period should be the entire suspension period, not just current month overlap
+                RecoveryStartDate := SuspensionStartDate;   // Full suspension start date
+                RecoveryEndDate := SuspensionEndDate;       // Full suspension end date
 
                 // Retrieve Termination Date from Final Calculation
                 FinalCalculationRec.Reset();
