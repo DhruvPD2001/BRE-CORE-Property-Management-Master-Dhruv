@@ -29,7 +29,7 @@ page 50981 "Request CreditNote Grid"
                         paymenschedule2: Record "Payment Schedule2";
                         paymentmode2Rec: Record "Payment Mode2";
                     begin
-                        Rec."Current Rent Amount" := 0; // Reset current rent amount on series change
+                        Rec."Current Charges Amount" := 0; // Reset Current Charges Amount on series change
                         paymentmode2Rec.SetRange("Contract ID", ContractID);
                         if Page.RunModal(Page::"Payment Mode2 List", paymentmode2Rec) = Action::LookupOK then begin
                             Rec."Payment Series" := paymentmode2Rec."Payment Series";
@@ -42,8 +42,8 @@ page 50981 "Request CreditNote Grid"
                             if paymentmode2Rec.FindSet() then
                                // repeat 
                                begin
-                                Rec."Current Rent Amount" := paymentmode2Rec.Amount;
-                                Rec."Total Reduction" := Rec."Current Rent Amount";
+                                Rec."Current Charges Amount" := paymentmode2Rec.Amount;
+                                Rec."Total Reduction" := Rec."Current Charges Amount";
                                 // Rec."Secondary Item Type" := paymenschedule2."Secondary Item Type";
                             end;
                         end;
@@ -66,36 +66,36 @@ page 50981 "Request CreditNote Grid"
                         PaymentSchedule2.SetRange("Secondary Item Type", Rec.Charges);
                         if PaymentSchedule2.FindSet()
                         then begin
-                            Rec."Current Rent Amount" := PaymentSchedule2.Amount;
-                            Rec."Total Reduction" := Rec."Current Rent Amount";
+                            Rec."Current Charges Amount" := PaymentSchedule2.Amount;
+                            Rec."Total Reduction" := Rec."Current Charges Amount";
 
                         end;
                     end;
 
                 }
-                field("Current Rent Amount"; Rec."Current Rent Amount")
+                field("Current Charges Amount"; Rec."Current Charges Amount")
                 {
                     ApplicationArea = All;
-                    Caption = 'Current Rent Amount';
+                    Caption = 'Current Charges Amount';
                     Editable = false;
                 }
                 field("Total Reduction"; Rec."Total Reduction")
                 {
                     ApplicationArea = All;
-                    Caption = 'Total Rent Reduction';
+                    Caption = 'Total Reduction';
                     trigger OnValidate()
                     var
                     begin
-                        if Rec."Total Reduction" > Rec."Current Rent Amount" then
-                            Error('Total Rent Reduction cannot exceed Current Rent Amount.');
-                        Rec."Total Pay Rent Amount" := Rec."Current Rent Amount" - Rec."Total Reduction";
+                        if Rec."Total Reduction" > Rec."Current Charges Amount" then
+                            Error('Total Rent Reduction cannot exceed Current Charges Amount.');
+                        Rec."Total Pay Rent Amount" := Rec."Current Charges Amount" - Rec."Total Reduction";
                     end;
 
                 }
-                field("Total Pay Rent Amount"; Rec."Total Pay Rent Amount")
+                field("Total Pay Amount"; Rec."Total Pay Rent Amount")
                 {
                     ApplicationArea = All;
-                    Caption = 'Total Pay Rent Amount';
+                    Caption = 'Total Pay Amount';
                     Editable = false; // This field is calculated and not editable
                 }
 
