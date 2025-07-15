@@ -229,16 +229,19 @@ page 50927 "Payment Mode Card"
                 field("Combine Amount"; Rec."Combine Amount")
                 {
                     ApplicationArea = All;
+                    Editable = false;
                 }
 
                 field("Combine VAT Amount"; Rec."Combine VAT Amount")
                 {
                     ApplicationArea = All;
+                    Editable = false;
                 }
 
                 field("Combine Amount Including VAT"; Rec."Combine Amount Including VAT")
                 {
                     ApplicationArea = All;
+                    Editable = false;
                 }
             }
 

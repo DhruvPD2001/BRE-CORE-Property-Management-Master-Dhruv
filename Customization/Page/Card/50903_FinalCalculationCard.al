@@ -189,7 +189,7 @@ page 50903 "Final Calculation Card"
                         uploadResult: Text;
                         folderName: Text;
                     begin
-                        folderName := 'PropertyDocuments';
+                        folderName := 'finalcalculationdocument';
                         fileName := azureBlobUploader.ValidateDocument(uploadResult, folderName);
                         if fileName <> '' then begin
                             Rec."Final Calculation Document" := fileName;
