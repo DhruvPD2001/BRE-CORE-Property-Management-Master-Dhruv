@@ -115,6 +115,7 @@ page 50980 "Request Credit Note Card"
             {
                 ApplicationArea = All;
                 Caption = 'Submit for Approval';
+                Visible = CanSubmitForApproval;
 
                 trigger OnAction()
                 var
@@ -122,7 +123,7 @@ page 50980 "Request Credit Note Card"
                 begin
                     RequestCreditnoteapproval.SubmitCreditNote(Rec);
                     Dialog.Message('Email sent for approval.');
-                    Dialog.Message('✅ Your request has been submitted successfully.');
+                    Dialog.Message('Your request has been submitted successfully.');
                 end;
             }
 
@@ -156,6 +157,7 @@ page 50980 "Request Credit Note Card"
 
         CurrPage."Request Credit Note Lines".Page.SetContractID(Rec."Contract ID");
         IsFinanceManager := CheckUserRole();
+        CanSubmitForApproval := (Rec.Status in [Rec.Status::" ", Rec.Status::Rejected]);
     end;
 
     trigger OnOpenPage()
@@ -180,6 +182,7 @@ page 50980 "Request Credit Note Card"
     end;
 
     var
+        CanSubmitForApproval: Boolean;
         IsFinanceManager: Boolean;
 
 }
