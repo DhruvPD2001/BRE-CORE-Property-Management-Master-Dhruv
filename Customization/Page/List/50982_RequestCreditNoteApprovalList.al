@@ -90,38 +90,37 @@ page 50982 "RequestCreditNoteApprovalList"
 
                 begin
                     if Rec.Status = 'Pending' then begin
-                        DialogResult := RemarkDialog.RunModal();
-
-                        if DialogResult = Action::OK then begin
-                            RemarkText := RemarkDialog.GetReason();
-
-                            if RemarkText <> '' then begin
-                                // Update approval table
-                                SelectedRec := Rec;
-                                SelectedRec.Status := 'Approved';
-                                SelectedRec.Remark := RemarkText;
-                                SelectedRec.Modify();
-
-                                // Update all matching Vendor Proposal records
-                                RequestCreditNote.SetRange("Request No.", SelectedRec."Request No.");
-                                RequestCreditNote.SetRange("Contract ID", SelectedRec."Contract ID");
-                                if RequestCreditNote.FindSet() then begin
-                                    repeat
-                                        RequestCreditNote.Remark := RemarkText;
-                                        RequestCreditNote.Status := RequestCreditNote.Status::Approved;
-                                        RequestCreditNote.Modify();
-                                    until RequestCreditNote.Next() = 0;
-                                end;
 
 
+                        // if DialogResult = Action::OK then begin
+                        //     RemarkText := RemarkDialog.GetReason();
 
-                                Commit();
-                                CurrPage.Update();
-                                Message('Request Approved Successfully with Remarks for Contract ID: %1', SelectedRec."Contract ID");
-                                GenerateCreditMemo.GenerateCreditMemo(SelectedRec);
+                        //     if RemarkText <> '' then begin
+                        // Update approval table
+                        SelectedRec := Rec;
+                        SelectedRec.Status := 'Approved';
+                        SelectedRec.Modify();
 
-                            end;
+                        // Update all matching Vendor Proposal records
+                        RequestCreditNote.SetRange("Request No.", SelectedRec."Request No.");
+                        RequestCreditNote.SetRange("Contract ID", SelectedRec."Contract ID");
+                        if RequestCreditNote.FindSet() then begin
+                            repeat
+
+                                RequestCreditNote.Status := RequestCreditNote.Status::Approved;
+                                RequestCreditNote.Modify();
+                            until RequestCreditNote.Next() = 0;
                         end;
+
+
+
+                        Commit();
+                        CurrPage.Update();
+                        Message('Request Approved Successfully with Remarks for Contract ID: %1', SelectedRec."Contract ID");
+                        GenerateCreditMemo.GenerateCreditMemo(SelectedRec);
+
+                        //     end;
+                        // end;
                     end else
                         Message('Selected record is not in "Pending" status.');
                 end;
@@ -159,7 +158,7 @@ page 50982 "RequestCreditNoteApprovalList"
                                 RequestCreditNote1.SetRange("Contract ID", SelectedRec."Contract ID");
                                 if RequestCreditNote1.FindSet() then begin
                                     repeat
-                                        RequestCreditNote1."Remark" := RemarkText;
+                                        RequestCreditNote1."Reason for Rejection" := RemarkText;
                                         RequestCreditNote1.Status := RequestCreditNote1.Status::Rejected;
                                         RequestCreditNote1.Modify();
                                         RequestCreditNote1.Modify();
