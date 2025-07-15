@@ -604,6 +604,8 @@ page 50928 "Payment Mode Card2"
                 Rec.Modify();
             until paymentschedul2grid.Next() = 0;
 
+            Rec."Final Rent Amount" := Rec."Amount Including VAT" - Rec."Credit Note Amount";
+            Rec.Modify();
     end;
 
     trigger OnAfterGetCurrRecord()
