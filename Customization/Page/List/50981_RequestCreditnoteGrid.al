@@ -34,16 +34,46 @@ page 50981 "Request CreditNote Grid"
                         if Page.RunModal(Page::"Payment Mode2 List", paymentmode2Rec) = Action::LookupOK then begin
                             Rec."Payment Series" := paymentmode2Rec."Payment Series";
                             Rec."Contract ID" := ContractID;
-                            Rec.Insert(true);
-                            paymenschedule2.SetRange("Payment Series", Rec."Payment Series");
-                            paymenschedule2.SetRange("Contract ID", Rec."Contract ID");
-                            paymenschedule2.SetFilter("Secondary Item Type", '=%1', 'Rent');
-                            if paymenschedule2.FindSet() then
-                                repeat
-                                    Rec."Current Rent Amount" += paymenschedule2.Amount;
-                                    Rec."Secondary Item Type" := paymenschedule2."Secondary Item Type";
-                                until paymenschedule2.Next() = 0;
+                            if Rec."Line No." = 0 then
+                                Rec.Insert(true);
+                            paymentmode2Rec.SetRange("Payment Series", Rec."Payment Series");
+                            paymentmode2Rec.SetRange("Contract ID", Rec."Contract ID");
+                            //paymenschedule2.SetFilter("Secondary Item Type", '=%1', 'Rent');
+                            if paymentmode2Rec.FindSet() then
+                               // repeat 
+                               begin
+                                Rec."Current Rent Amount" := paymentmode2Rec.Amount;
+                                Rec."Total Reduction" := Rec."Current Rent Amount";
+                                // Rec."Secondary Item Type" := paymenschedule2."Secondary Item Type";
+                            end;
                         end;
+                    end;
+                }
+                field("View Charges Details"; Rec."View Charges Details")
+                {
+                    ApplicationArea = All;
+                    Caption = 'View Charges Details';
+                    Editable = false; // This field is not editable
+                    ToolTip = 'Click to view detailed charges for this request.';
+
+                    trigger OnDrillDown()
+                    var
+                        PaymentModeRec: Record "Payment Mode2";
+                        PaymentScheduleRec: Record "Payment Schedule2";
+                        FilteredSchedulePage: Page "Payment Schedule Card2"; // Replace with your actual page name
+                    begin
+
+                        PaymentScheduleRec.SetRange("Contract ID", Rec."Contract ID");
+
+                        PaymentScheduleRec.SetRange("Payment Series", Rec."Payment Series");
+
+
+                        if PaymentScheduleRec.FindFirst() then
+                            FilteredSchedulePage.SetTableView(PaymentScheduleRec);
+
+
+                        PAGE.Run(PAGE::"Payment Schedule Card2", PaymentScheduleRec);
+
                     end;
                 }
                 field("Current Rent Amount"; Rec."Current Rent Amount")
