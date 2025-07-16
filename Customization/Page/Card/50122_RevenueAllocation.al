@@ -1326,6 +1326,7 @@ page 50122 "Revenue Allocation Card"
         TerminationDate: date;
         PerDayRent: Decimal;
         Noofdays: Integer;
+        RentReductionAmount: Decimal;
     begin
         CreditNoteCount := 0;
         ProcessedCount := 0;
@@ -1336,12 +1337,21 @@ page 50122 "Revenue Allocation Card"
             repeat
                 RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
                 if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
+
+                    RentReductionAmount := 0;
+                    RequestCreditNotegrid.SetRange("Request No.", RequestCreditNote."Request No.");
+                    RequestCreditNotegrid.SetFilter("Secondary Item Type", '%1', 'Rent');
+                    if RequestCreditNotegrid.FindFirst() then
+                        RentReductionAmount := RequestCreditNotegrid."Total Reduction"
+                    else
+                        // Skip processing if Rent line is not found
+                        exit;
+
                     NewLineNo := GetNextLineNo();
                     CreditNoteCount += 1;
                     // LineNo += 1;
                     ShouldProcessCreditNote := false;
 
-                    // Get contract details for this credit note
                     ContractRec.Reset();
                     ContractRec.SetRange("Contract ID", RequestCreditNotegrid."Contract ID");
                     ContractRec.SetRange("Tenant Contract Status", ContractRec."Tenant Contract Status"::Active);
@@ -1421,9 +1431,9 @@ page 50122 "Revenue Allocation Card"
               ' ' + Format(FilteredContractRec."Posting Year") + ' ' + '-' + ' ' +
               Format(FilteredContractRec."Posting Month") + ' ' + Format(FilteredContractRec."Posting Year");
                         FilteredContractRec."Owner Name" := ContractRec."Owner's Name";
-                        FilteredContractRec."Contract Amount" := -RequestCreditNotegrid."Total Reduction";
-                        FilteredContractRec."Annual Amount" := -RequestCreditNotegrid."Total Reduction";
-                        FilteredContractRec."Final Annual Amount" := -RequestCreditNotegrid."Total Reduction";
+                        FilteredContractRec."Contract Amount" := -RentReductionAmount;
+                        FilteredContractRec."Annual Amount" := -RentReductionAmount;
+                        FilteredContractRec."Final Annual Amount" := -RentReductionAmount;
                         FilteredContractRec."Per Day Rent" := Round(FilteredContractRec."Annual Amount" / CalculatedDays);
                         FilteredContractRec."Total Value" := FilteredContractRec."Per Day Rent" * Noofdays;
                         FilteredContractRec."Owner Share" := FilteredContractRec."Per Day Rent" * Noofdays;
@@ -2796,6 +2806,7 @@ page 50122 "Revenue Allocation Card"
         PerDayRent: Decimal;
         Noofdays: Integer;
         permonthrent: Decimal;
+        RentReductionAmount: Decimal;
     begin
         CreditNoteCount := 0;
         ProcessedCount := 0;
@@ -2806,6 +2817,16 @@ page 50122 "Revenue Allocation Card"
             repeat
                 RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
                 if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
+
+                    RentReductionAmount := 0;
+                    RequestCreditNotegrid.SetRange("Request No.", RequestCreditNote."Request No.");
+                    RequestCreditNotegrid.SetFilter("Secondary Item Type", '%1', 'Rent');
+                    if RequestCreditNotegrid.FindFirst() then
+                        RentReductionAmount := RequestCreditNotegrid."Total Reduction"
+                    else
+                        // Skip processing if Rent line is not found
+                        exit;
+
                     NewLineNo := GetNextLineNo();
                     CreditNoteCount += 1;
                     // LineNo += 1;
@@ -2892,9 +2913,9 @@ page 50122 "Revenue Allocation Card"
               ' ' + Format(FilteredContractRec."Posting Year") + ' ' + '-' + ' ' +
               Format(FilteredContractRec."Posting Month") + ' ' + Format(FilteredContractRec."Posting Year");
                         FilteredContractRec."Owner Name" := ContractRec."Owner's Name";
-                        FilteredContractRec."Contract Amount" := -RequestCreditNotegrid."Total Reduction";
-                        FilteredContractRec."Annual Amount" := -RequestCreditNotegrid."Total Reduction";
-                        FilteredContractRec."Final Annual Amount" := -RequestCreditNotegrid."Total Reduction";
+                        FilteredContractRec."Contract Amount" := -RentReductionAmount;
+                        FilteredContractRec."Annual Amount" := -RentReductionAmount;
+                        FilteredContractRec."Final Annual Amount" := -RentReductionAmount;
 
                         permonthrent := FilteredContractRec."Final Annual Amount" / 12;
                         FilteredContractRec."Per Month Rent" := calculatepermonthrent(permonthrent, CalculatedDays, MonthNo, FinancialYear); // Use the per day rent passed from the grid

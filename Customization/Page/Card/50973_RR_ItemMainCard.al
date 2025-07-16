@@ -1159,10 +1159,8 @@ page 50973 "Revenue Recognition Item Sub"
     var
         RequestCreditNotegrid: Record "Request Credit Note Grid";
         RequestCreditNote: Record "Request Credit Note";
-        pRevenueStructure: Record "Revenue Structure";
         ContractRec: Record "Tenancy Contract";
         RevenueRecognitionDetails: Record "Revenue Recognition Details";
-        pRevenueAllocation: Record "Revenue Allocation Details";
         ExistingRevenueRec: Record "Revenue Recognition Details";
         paymentschedule: Record "Payment Schedule2";
         ShouldProcessCreditNote: Boolean;
@@ -1177,125 +1175,141 @@ page 50973 "Revenue Recognition Item Sub"
         PerDayRent: Decimal;
         Noofdays: Integer;
         NextEntryNo: Integer;
-        revenuestructuredetails: Record "Revenue Structure Subpage";
         PostingDate: Date;
+        RentReductionAmount: Decimal;
+        SelectedItemTypes: List of [Text];
+        itemTypeFilter: Text;
     begin
         CreditNoteCount := 0;
         ProcessedCount := 0;
 
+        GetSelectedItemTypes(SelectedItemTypes);
+        itemTypeFilter := GetItemTypeFilter(SelectedItemTypes);
+
         // Debug: Check if credit note table has records
-        RequestCreditNotegrid.Reset();
-        if RequestCreditNotegrid.FindSet() then begin
+        // RequestCreditNotegrid.Reset();
+        // if RequestCreditNotegrid.FindSet() then begin
+        //     repeat
+        RequestCreditNote.SetRange(Status, RequestCreditNote.Status::Approved);
+        if RequestCreditNote.FindSet() then
             repeat
-                RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
-                if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
+                RentReductionAmount := 0;
+                RequestCreditNotegrid.SetRange("Request No.", RequestCreditNote."Request No.");
+                RequestCreditNotegrid.SetFilter(Charges, itemTypeFilter);
+                if RequestCreditNotegrid.FindSet() then
+                    repeat
+                        RentReductionAmount := RequestCreditNotegrid."Total Reduction";
+                        // else
+                        //     // Skip processing if Rent line is not found
+                        //     exit;
 
-                    if RevenueRecognitionDetails.FindLast() then
-                        NextEntryNo := RevenueRecognitionDetails."Entry No." + 1
-                    else
-                        NextEntryNo := 1;
+                        if RevenueRecognitionDetails.FindLast() then
+                            NextEntryNo := RevenueRecognitionDetails."Entry No." + 1
+                        else
+                            NextEntryNo := 1;
 
-                    CreditNoteCount += 1;
-                    // LineNo += 1;
-                    ShouldProcessCreditNote := false;
+                        CreditNoteCount += 1;
+                        // LineNo += 1;
+                        ShouldProcessCreditNote := false;
 
-                    // Get contract details for this credit note
-                    ContractRec.Reset();
-                    ContractRec.SetRange("Contract ID", RequestCreditNotegrid."Contract ID");
-                    ContractRec.SetRange("Tenant Contract Status", ContractRec."Tenant Contract Status"::Active);
-                    if ContractRec.FindFirst() then begin
-                        paymentschedule.SetRange("Contract ID", ContractRec."Contract ID");
-                        paymentschedule.SetRange("Payment Series", RequestCreditNotegrid."Payment Series");
-                        //  paymentschedule.SetRange("Secondary Item Type", 'Rent');
-                        if paymentschedule.FindSet() then begin
+                        // Get contract details for this credit note
+                        ContractRec.Reset();
+                        ContractRec.SetRange("Contract ID", RequestCreditNotegrid."Contract ID");
+                        ContractRec.SetRange("Tenant Contract Status", ContractRec."Tenant Contract Status"::Active);
+                        if ContractRec.FindFirst() then begin
+                            paymentschedule.SetRange("Contract ID", ContractRec."Contract ID");
+                            paymentschedule.SetRange("Payment Series", RequestCreditNotegrid."Payment Series");
+                            //  paymentschedule.SetRange("Secondary Item Type", 'Rent');
+                            if paymentschedule.FindSet() then begin
 
-                            // Check if contract dates overlap with selected month
-                            if ((ContractRec."Contract Start Date" <= SelectedMonthEnd) and
-                                (ContractRec."Contract End Date" >= SelectedMonthStart)) then begin
-                                ShouldProcessCreditNote := true;
+                                // Check if contract dates overlap with selected month
+                                if ((ContractRec."Contract Start Date" <= SelectedMonthEnd) and
+                                    (ContractRec."Contract End Date" >= SelectedMonthStart)) then begin
+                                    ShouldProcessCreditNote := true;
+                                end;
                             end;
                         end;
-                    end;
 
 
-                    // If contract dates match the posting month/year duration, create negative revenue entry
-                    if ShouldProcessCreditNote then begin
-                        ProcessedCount += 1;
+                        // If contract dates match the posting month/year duration, create negative revenue entry
+                        if ShouldProcessCreditNote then begin
+                            ProcessedCount += 1;
 
-                        // Initialize the record properly
-                        RevenueRecognitionDetails.Reset();
-                        RevenueRecognitionDetails.Init();
+                            // Initialize the record properly
+                            RevenueRecognitionDetails.Reset();
+                            RevenueRecognitionDetails.Init();
 
-                        // Set primary key fields first
-                        RevenueRecognitionDetails."Entry No." := NextEntryNo;
-                        RevenueRecognitionDetails."RR_No." := Rec."RR_No.";
-                        RevenueRecognitionDetails."Contract ID" := RequestCreditNotegrid."Contract ID";
-                        RevenueRecognitionDetails."Property Name" := ContractRec."Property Name";
-                        RevenueRecognitionDetails."Contract Tenure" := ContractRec."Contract Tenor";
-                        RevenueRecognitionDetails."Unit Type" := ContractRec."Usage Type";
-                        RevenueRecognitionDetails."Customer Name" := ContractRec."Customer Name";
-                        RevenueRecognitionDetails."Contract Start Date" := ContractRec."Contract Start Date";
-                        RevenueRecognitionDetails."Contract End Date" := ContractRec."Contract End Date";
-                        RevenueRecognitionDetails."Grace Days" := ContractRec."Grace Period";
-                        RevenueRecognitionDetails."Grace Start Date" := ContractRec."Grace Start Date";
-                        RevenueRecognitionDetails."Grace End Date" := ContractRec."Grace End Date";
-                        RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
+                            // Set primary key fields first
+                            RevenueRecognitionDetails."Entry No." := NextEntryNo;
+                            RevenueRecognitionDetails."RR_No." := Rec."RR_No.";
+                            RevenueRecognitionDetails."Contract ID" := RequestCreditNotegrid."Contract ID";
+                            RevenueRecognitionDetails."Property Name" := ContractRec."Property Name";
+                            RevenueRecognitionDetails."Contract Tenure" := ContractRec."Contract Tenor";
+                            RevenueRecognitionDetails."Unit Type" := ContractRec."Usage Type";
+                            RevenueRecognitionDetails."Customer Name" := ContractRec."Customer Name";
+                            RevenueRecognitionDetails."Contract Start Date" := ContractRec."Contract Start Date";
+                            RevenueRecognitionDetails."Contract End Date" := ContractRec."Contract End Date";
+                            RevenueRecognitionDetails."Grace Days" := ContractRec."Grace Period";
+                            RevenueRecognitionDetails."Grace Start Date" := ContractRec."Grace Start Date";
+                            RevenueRecognitionDetails."Grace End Date" := ContractRec."Grace End Date";
+                            RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
 
-                        if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Single Unit" then
-                            RevenueRecognitionDetails."Single Unit Names" := ContractRec."Unit Name"
-                        else if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Merge Unit" then
-                            RevenueRecognitionDetails."Single Unit Names" := ContractRec."Single Unit Name"
-                        else
-                            RevenueRecognitionDetails."Single Unit Names" := '';
+                            if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Single Unit" then
+                                RevenueRecognitionDetails."Single Unit Names" := ContractRec."Unit Name"
+                            else if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Merge Unit" then
+                                RevenueRecognitionDetails."Single Unit Names" := ContractRec."Single Unit Name"
+                            else
+                                RevenueRecognitionDetails."Single Unit Names" := '';
 
-                        PostingDate := DMY2Date(1, MonthNo, FinancialYear);
+                            PostingDate := DMY2Date(1, MonthNo, FinancialYear);
 
 
-                        // Add Termination Date
-                        if TerminationDate = 0D then
-                            RevenueRecognitionDetails."Termination Date" := 0D
-                        else
-                            RevenueRecognitionDetails."Termination Date" := TerminationDate;
+                            // Add Termination Date
+                            if TerminationDate = 0D then
+                                RevenueRecognitionDetails."Termination Date" := 0D
+                            else
+                                RevenueRecognitionDetails."Termination Date" := TerminationDate;
 
-                        // Add suspension information
-                        SuspensionRec.Reset();
-                        SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
-                        if SuspensionRec.FindFirst() then begin
-                            RevenueRecognitionDetails."Suspension Start Date" := SuspensionRec.DateEffective;
-                            RevenueRecognitionDetails."Suspension End Date" := SuspensionRec.SuspensionEndDate;
+                            // Add suspension information
+                            SuspensionRec.Reset();
+                            SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
+                            if SuspensionRec.FindFirst() then begin
+                                RevenueRecognitionDetails."Suspension Start Date" := SuspensionRec.DateEffective;
+                                RevenueRecognitionDetails."Suspension End Date" := SuspensionRec.SuspensionEndDate;
+                            end;
+
+                            ExistingRevenueRec.Reset();
+                            ExistingRevenueRec.SetRange("Contract ID", RevenueRecognitionDetails."Contract ID");
+                            if ExistingRevenueRec.FindFirst() then begin
+                                Noofdays := ExistingRevenueRec."No Of Days";
+                                RevenueRecognitionDetails."Multi Year Start Date" := ExistingRevenueRec."Multi Year Start Date";
+                                RevenueRecognitionDetails."Multi Year End Date" := ExistingRevenueRec."Multi Year End Date";
+                                RevenueRecognitionDetails."Item Type" := ExistingRevenueRec."Item Type";
+                            end;
+
+
+                            CalculatedDays := (RevenueRecognitionDetails."Multi Year End Date" - RevenueRecognitionDetails."Multi Year Start Date" + 1);
+
+                            RevenueRecognitionDetails."No Of Days" := Noofdays;
+                            RevenueRecognitionDetails."Posting Month" := MonthNo;
+                            RevenueRecognitionDetails."Posting Year" := FinancialYear;
+                            RevenueRecognitionDetails."Posting Period" := Format(RevenueRecognitionDetails."Posting Month") +
+                  ' ' + Format(RevenueRecognitionDetails."Posting Year") + ' ' + '-' + ' ' +
+                  Format(RevenueRecognitionDetails."Posting Month") + ' ' + Format(RevenueRecognitionDetails."Posting Year");
+                            RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
+                            RevenueRecognitionDetails."Contract Amount" := -RentReductionAmount;
+                            RevenueRecognitionDetails."Annual Amount" := -RentReductionAmount;
+                            RevenueRecognitionDetails."Final Annual Amount" := -RentReductionAmount;
+                            RevenueRecognitionDetails."Per Day Rent" := Round(RevenueRecognitionDetails."Annual Amount" / CalculatedDays);
+                            RevenueRecognitionDetails."Total Value" := RevenueRecognitionDetails."Per Day Rent" * Noofdays;
+                            RevenueRecognitionDetails."Owner Share" := RevenueRecognitionDetails."Per Day Rent" * Noofdays;
+                            RevenueRecognitionDetails."Description" := 'Credit Note'; // Or whatever indicates this is a credit note entry
+                            RevenueRecognitionDetails.Insert();
                         end;
-
-                        ExistingRevenueRec.Reset();
-                        ExistingRevenueRec.SetRange("Contract ID", RevenueRecognitionDetails."Contract ID");
-                        if ExistingRevenueRec.FindFirst() then begin
-                            Noofdays := ExistingRevenueRec."No Of Days";
-                            RevenueRecognitionDetails."Multi Year Start Date" := ExistingRevenueRec."Multi Year Start Date";
-                            RevenueRecognitionDetails."Multi Year End Date" := ExistingRevenueRec."Multi Year End Date";
-                            RevenueRecognitionDetails."Item Type" := ExistingRevenueRec."Item Type";
-                        end;
-
-
-                        CalculatedDays := (RevenueRecognitionDetails."Multi Year End Date" - RevenueRecognitionDetails."Multi Year Start Date" + 1);
-
-                        RevenueRecognitionDetails."No Of Days" := Noofdays;
-                        RevenueRecognitionDetails."Posting Month" := MonthNo;
-                        RevenueRecognitionDetails."Posting Year" := FinancialYear;
-                        RevenueRecognitionDetails."Posting Period" := Format(RevenueRecognitionDetails."Posting Month") +
-              ' ' + Format(RevenueRecognitionDetails."Posting Year") + ' ' + '-' + ' ' +
-              Format(RevenueRecognitionDetails."Posting Month") + ' ' + Format(RevenueRecognitionDetails."Posting Year");
-                        RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
-                        RevenueRecognitionDetails."Contract Amount" := -RequestCreditNotegrid."Total Reduction";
-                        RevenueRecognitionDetails."Annual Amount" := -RequestCreditNotegrid."Total Reduction";
-                        RevenueRecognitionDetails."Final Annual Amount" := -RequestCreditNotegrid."Total Reduction";
-                        RevenueRecognitionDetails."Per Day Rent" := Round(RevenueRecognitionDetails."Annual Amount" / CalculatedDays);
-                        RevenueRecognitionDetails."Total Value" := RevenueRecognitionDetails."Per Day Rent" * Noofdays;
-                        RevenueRecognitionDetails."Owner Share" := RevenueRecognitionDetails."Per Day Rent" * Noofdays;
-                        RevenueRecognitionDetails."Description" := 'Credit Note'; // Or whatever indicates this is a credit note entry
-                        RevenueRecognitionDetails.Insert();
-                    end;
-                end;
-            until RequestCreditNotegrid.Next() = 0;
-        end;
+                    until RequestCreditNotegrid.Next() = 0;
+            until RequestCreditNote.Next() = 0;
+        // until RequestCreditNotegrid.Next() = 0;
+        // end;
     end;
 
 
@@ -2385,125 +2399,144 @@ page 50973 "Revenue Recognition Item Sub"
         revenuestructuredetails: Record "Revenue Structure Subpage";
         PostingDate: Date;
         permonthrent: Decimal;
+        RentReductionAmount: Decimal;
+        SelectedItemTypes: List of [Text];
+        itemTypeFilter: Text;
     begin
         CreditNoteCount := 0;
         ProcessedCount := 0;
 
+
+        GetSelectedItemTypess(SelectedItemTypes);
+        itemTypeFilter := GetItemTypeFilter(SelectedItemTypes);
+
         // Debug: Check if credit note table has records
-        RequestCreditNotegrid.Reset();
-        if RequestCreditNotegrid.FindSet() then begin
+        // RequestCreditNotegrid.Reset();
+        // if RequestCreditNotegrid.FindSet() then begin
+        //     repeat
+        RequestCreditNote.SetRange(Status, RequestCreditNote.Status::Approved);
+        if RequestCreditNote.FindSet() then
             repeat
-                RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
-                if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
+                RentReductionAmount := 0;
+                RequestCreditNotegrid.SetRange("Request No.", RequestCreditNote."Request No.");
+                RequestCreditNotegrid.SetFilter(Charges, itemTypeFilter);
+                if RequestCreditNotegrid.FindSet() then
+                    repeat
+                        RentReductionAmount := RequestCreditNotegrid."Total Reduction";
+                        // else
+                        //     // Skip processing if Rent line is not found
+                        //     exit;
 
-                    if RevenueRecognitionDetails.FindLast() then
-                        NextEntryNo := RevenueRecognitionDetails."Entry No." + 1
-                    else
-                        NextEntryNo := 1;
 
-                    CreditNoteCount += 1;
-                    // LineNo += 1;
-                    ShouldProcessCreditNote := false;
+                        if RevenueRecognitionDetails.FindLast() then
+                            NextEntryNo := RevenueRecognitionDetails."Entry No." + 1
+                        else
+                            NextEntryNo := 1;
 
-                    // Get contract details for this credit note
-                    ContractRec.Reset();
-                    ContractRec.SetRange("Contract ID", RequestCreditNotegrid."Contract ID");
-                    ContractRec.SetRange("Tenant Contract Status", ContractRec."Tenant Contract Status"::Active);
-                    if ContractRec.FindFirst() then begin
-                        paymentschedule.SetRange("Contract ID", ContractRec."Contract ID");
-                        paymentschedule.SetRange("Payment Series", RequestCreditNotegrid."Payment Series");
-                        //  paymentschedule.SetRange("Secondary Item Type", 'Rent');
-                        if paymentschedule.FindSet() then begin
+                        CreditNoteCount += 1;
+                        // LineNo += 1;
+                        ShouldProcessCreditNote := false;
 
-                            // Check if contract dates overlap with selected month
-                            if ((ContractRec."Contract Start Date" <= SelectedMonthEnd) and
-                                (ContractRec."Contract End Date" >= SelectedMonthStart)) then begin
-                                ShouldProcessCreditNote := true;
+                        // Get contract details for this credit note
+                        ContractRec.Reset();
+                        ContractRec.SetRange("Contract ID", RequestCreditNotegrid."Contract ID");
+                        ContractRec.SetRange("Tenant Contract Status", ContractRec."Tenant Contract Status"::Active);
+                        if ContractRec.FindFirst() then begin
+                            paymentschedule.SetRange("Contract ID", ContractRec."Contract ID");
+                            paymentschedule.SetRange("Payment Series", RequestCreditNotegrid."Payment Series");
+                            //  paymentschedule.SetRange("Secondary Item Type", 'Rent');
+                            if paymentschedule.FindSet() then begin
+
+                                // Check if contract dates overlap with selected month
+                                if ((ContractRec."Contract Start Date" <= SelectedMonthEnd) and
+                                    (ContractRec."Contract End Date" >= SelectedMonthStart)) then begin
+                                    ShouldProcessCreditNote := true;
+                                end;
                             end;
                         end;
-                    end;
 
 
-                    // If contract dates match the posting month/year duration, create negative revenue entry
-                    if ShouldProcessCreditNote then begin
-                        ProcessedCount += 1;
+                        // If contract dates match the posting month/year duration, create negative revenue entry
+                        if ShouldProcessCreditNote then begin
+                            ProcessedCount += 1;
 
-                        // Initialize the record properly
-                        RevenueRecognitionDetails.Reset();
-                        RevenueRecognitionDetails.Init();
+                            // Initialize the record properly
+                            RevenueRecognitionDetails.Reset();
+                            RevenueRecognitionDetails.Init();
 
-                        // Set primary key fields first
-                        RevenueRecognitionDetails."Entry No." := NextEntryNo;
-                        RevenueRecognitionDetails."RR_No." := Rec."RR_No.";
-                        RevenueRecognitionDetails."Contract ID" := RequestCreditNotegrid."Contract ID";
-                        RevenueRecognitionDetails."Property Name" := ContractRec."Property Name";
-                        RevenueRecognitionDetails."Contract Tenure" := ContractRec."Contract Tenor";
-                        RevenueRecognitionDetails."Unit Type" := ContractRec."Usage Type";
-                        RevenueRecognitionDetails."Customer Name" := ContractRec."Customer Name";
-                        RevenueRecognitionDetails."Contract Start Date" := ContractRec."Contract Start Date";
-                        RevenueRecognitionDetails."Contract End Date" := ContractRec."Contract End Date";
-                        RevenueRecognitionDetails."Grace Days" := ContractRec."Grace Period";
-                        RevenueRecognitionDetails."Grace Start Date" := ContractRec."Grace Start Date";
-                        RevenueRecognitionDetails."Grace End Date" := ContractRec."Grace End Date";
-                        RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
+                            // Set primary key fields first
+                            RevenueRecognitionDetails."Entry No." := NextEntryNo;
+                            RevenueRecognitionDetails."RR_No." := Rec."RR_No.";
+                            RevenueRecognitionDetails."Contract ID" := RequestCreditNotegrid."Contract ID";
+                            RevenueRecognitionDetails."Property Name" := ContractRec."Property Name";
+                            RevenueRecognitionDetails."Contract Tenure" := ContractRec."Contract Tenor";
+                            RevenueRecognitionDetails."Unit Type" := ContractRec."Usage Type";
+                            RevenueRecognitionDetails."Customer Name" := ContractRec."Customer Name";
+                            RevenueRecognitionDetails."Contract Start Date" := ContractRec."Contract Start Date";
+                            RevenueRecognitionDetails."Contract End Date" := ContractRec."Contract End Date";
+                            RevenueRecognitionDetails."Grace Days" := ContractRec."Grace Period";
+                            RevenueRecognitionDetails."Grace Start Date" := ContractRec."Grace Start Date";
+                            RevenueRecognitionDetails."Grace End Date" := ContractRec."Grace End Date";
+                            RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
 
-                        if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Single Unit" then
-                            RevenueRecognitionDetails."Single Unit Names" := ContractRec."Unit Name"
-                        else if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Merge Unit" then
-                            RevenueRecognitionDetails."Single Unit Names" := ContractRec."Single Unit Name"
-                        else
-                            RevenueRecognitionDetails."Single Unit Names" := '';
+                            if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Single Unit" then
+                                RevenueRecognitionDetails."Single Unit Names" := ContractRec."Unit Name"
+                            else if ContractRec."Praposal Type Selected" = ContractRec."Praposal Type Selected"::"Merge Unit" then
+                                RevenueRecognitionDetails."Single Unit Names" := ContractRec."Single Unit Name"
+                            else
+                                RevenueRecognitionDetails."Single Unit Names" := '';
 
-                        PostingDate := DMY2Date(1, MonthNo, FinancialYear);
+                            PostingDate := DMY2Date(1, MonthNo, FinancialYear);
 
 
-                        // Add Termination Date
-                        if TerminationDate = 0D then
-                            RevenueRecognitionDetails."Termination Date" := 0D
-                        else
-                            RevenueRecognitionDetails."Termination Date" := TerminationDate;
+                            // Add Termination Date
+                            if TerminationDate = 0D then
+                                RevenueRecognitionDetails."Termination Date" := 0D
+                            else
+                                RevenueRecognitionDetails."Termination Date" := TerminationDate;
 
-                        // Add suspension information
-                        SuspensionRec.Reset();
-                        SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
-                        if SuspensionRec.FindFirst() then begin
-                            RevenueRecognitionDetails."Suspension Start Date" := SuspensionRec.DateEffective;
-                            RevenueRecognitionDetails."Suspension End Date" := SuspensionRec.SuspensionEndDate;
+                            // Add suspension information
+                            SuspensionRec.Reset();
+                            SuspensionRec.SetRange("Contract ID", ContractRec."Contract ID");
+                            if SuspensionRec.FindFirst() then begin
+                                RevenueRecognitionDetails."Suspension Start Date" := SuspensionRec.DateEffective;
+                                RevenueRecognitionDetails."Suspension End Date" := SuspensionRec.SuspensionEndDate;
+                            end;
+
+                            ExistingRevenueRec.Reset();
+                            ExistingRevenueRec.SetRange("Contract ID", RevenueRecognitionDetails."Contract ID");
+                            if ExistingRevenueRec.FindFirst() then begin
+                                Noofdays := ExistingRevenueRec."No Of Days";
+                                RevenueRecognitionDetails."Multi Year Start Date" := ExistingRevenueRec."Multi Year Start Date";
+                                RevenueRecognitionDetails."Multi Year End Date" := ExistingRevenueRec."Multi Year End Date";
+                                RevenueRecognitionDetails."Item Type" := ExistingRevenueRec."Item Type";
+                            end;
+
+
+                            CalculatedDays := (RevenueRecognitionDetails."Multi Year End Date" - RevenueRecognitionDetails."Multi Year Start Date" + 1);
+
+                            RevenueRecognitionDetails."No Of Days" := NoOfDays;
+                            RevenueRecognitionDetails."Posting Month" := MonthNo;
+                            RevenueRecognitionDetails."Posting Year" := FinancialYear;
+                            RevenueRecognitionDetails."Posting Period" := Format(RevenueRecognitionDetails."Posting Month") +
+                  ' ' + Format(RevenueRecognitionDetails."Posting Year") + ' ' + '-' + ' ' +
+                  Format(RevenueRecognitionDetails."Posting Month") + ' ' + Format(RevenueRecognitionDetails."Posting Year");
+                            RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
+                            RevenueRecognitionDetails."Contract Amount" := -RentReductionAmount;
+                            RevenueRecognitionDetails."Annual Amount" := -RentReductionAmount;
+                            RevenueRecognitionDetails."Final Annual Amount" := -RentReductionAmount;
+
+                            permonthrent := RevenueRecognitionDetails."Annual Amount" / 12;
+                            RevenueRecognitionDetails."Per Month Rent" := Calculatepermonthrentss(permonthrent, Noofdays, MonthNo, FinancialYear);
+                            RevenueRecognitionDetails."Total Value" := RevenueRecognitionDetails."Per Month Rent";
+                            RevenueRecognitionDetails."Owner Share" := RevenueRecognitionDetails."Per Month Rent";
+                            RevenueRecognitionDetails."Description" := 'Credit Note'; // Or whatever indicates this is a credit note entry
+                            RevenueRecognitionDetails.Insert();
                         end;
-
-                        ExistingRevenueRec.Reset();
-                        ExistingRevenueRec.SetRange("Contract ID", RevenueRecognitionDetails."Contract ID");
-                        if ExistingRevenueRec.FindFirst() then begin
-                            Noofdays := ExistingRevenueRec."No Of Days";
-                            RevenueRecognitionDetails."Multi Year Start Date" := ExistingRevenueRec."Multi Year Start Date";
-                            RevenueRecognitionDetails."Multi Year End Date" := ExistingRevenueRec."Multi Year End Date";
-                            RevenueRecognitionDetails."Item Type" := ExistingRevenueRec."Item Type";
-                        end;
-
-
-                        CalculatedDays := (RevenueRecognitionDetails."Multi Year End Date" - RevenueRecognitionDetails."Multi Year Start Date" + 1);
-
-                        RevenueRecognitionDetails."No Of Days" := NoOfDays;
-                        RevenueRecognitionDetails."Posting Month" := MonthNo;
-                        RevenueRecognitionDetails."Posting Year" := FinancialYear;
-                        RevenueRecognitionDetails."Posting Period" := Format(RevenueRecognitionDetails."Posting Month") +
-              ' ' + Format(RevenueRecognitionDetails."Posting Year") + ' ' + '-' + ' ' +
-              Format(RevenueRecognitionDetails."Posting Month") + ' ' + Format(RevenueRecognitionDetails."Posting Year");
-                        RevenueRecognitionDetails."Owner Name" := ContractRec."Owner's Name";
-                        RevenueRecognitionDetails."Contract Amount" := -RequestCreditNotegrid."Total Reduction";
-                        RevenueRecognitionDetails."Annual Amount" := -RequestCreditNotegrid."Total Reduction";
-                        RevenueRecognitionDetails."Final Annual Amount" := -RequestCreditNotegrid."Total Reduction";
-
-                        permonthrent := RevenueRecognitionDetails."Annual Amount" / 12;
-                        RevenueRecognitionDetails."Per Month Rent" := Calculatepermonthrentss(permonthrent, Noofdays, MonthNo, FinancialYear);
-                        RevenueRecognitionDetails."Total Value" := RevenueRecognitionDetails."Per Month Rent";
-                        RevenueRecognitionDetails."Owner Share" := RevenueRecognitionDetails."Per Month Rent";
-                        RevenueRecognitionDetails."Description" := 'Credit Note'; // Or whatever indicates this is a credit note entry
-                        RevenueRecognitionDetails.Insert();
-                    end;
-                end;
-            until RequestCreditNotegrid.Next() = 0;
-        end;
+                    until RequestCreditNotegrid.Next() = 0;
+            until RequestCreditNote.Next() = 0;
+        // until RequestCreditNotegrid.Next() = 0;
+        // end;
     end;
 
 
