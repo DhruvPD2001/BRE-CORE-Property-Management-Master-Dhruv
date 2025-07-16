@@ -80,6 +80,7 @@ page 50983 "RevenueAllocationApproval List"
                 trigger OnAction()
                 var
                     revenueallocation: Record "Revenue Allocation Details";
+                    RevenueAllocationPosting: Codeunit "Revenue Allocation Posting";
                 begin
                     if Rec.Status = Rec.Status::Approved then
                         Error('This entry is already approved');
@@ -92,7 +93,10 @@ page 50983 "RevenueAllocationApproval List"
                         if revenueallocation.Get(Rec."ID") then begin
                             revenueallocation.Status := revenueallocation.Status::Approve;
                             revenueallocation.Modify();
+
+                            RevenueAllocationPosting.PostRevenueAllocation(revenueallocation);
                         end;
+
                         Message('Entry has been approved successfully!');
                     end;
                 end;
