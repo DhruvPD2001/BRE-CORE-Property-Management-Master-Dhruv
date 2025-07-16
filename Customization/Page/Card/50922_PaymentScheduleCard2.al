@@ -190,18 +190,28 @@ page 50922 "Payment Schedule Card2"
                 {
                     ApplicationArea = All;
                     Caption = '"Credit Note No."';
+                    Editable = false;
                 }
 
                 field("Credit Note Amount"; Rec."Credit Note Amount")
                 {
                     ApplicationArea = All;
                     Caption = '"Credit Note Amount"';
+                    Editable = false;
                 }
 
                 field("Final Rent Amount"; Rec."Final Rent Amount")
                 {
                     ApplicationArea = All;
                     Caption = '"Final Rent Amount"';
+                    Editable = false;
+                }
+                field("Final RentAmountIncludingVAT"; Rec."Final RentAmountIncludingVAT")
+                {
+                    ApplicationArea = All;
+                    Caption = '"Final Rent Amount Including VAT"';
+                    Editable = false;
+                    //  Editable = false;
                 }
 
 
@@ -300,7 +310,9 @@ page 50922 "Payment Schedule Card2"
 
 
 
-        Rec."Final Rent Amount" := Rec."Amount Including VAT" - Rec."Credit Note Amount";
+        Rec."Final Rent Amount" := Rec."Amount" - Rec."Credit Note Amount";
+        Rec."Final RentAmountIncludingVAT" := Rec."Final Rent Amount" + (Rec."Final Rent Amount" * Rec."VAT%") / 100;
+        //    Round("Final Rent Amount" + ("Final Rent Amount" * "VAT%") / 100, 0.01);
         Rec.Modify();
     end;
 
