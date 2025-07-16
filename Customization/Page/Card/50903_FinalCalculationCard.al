@@ -193,6 +193,7 @@ page 50903 "Final Calculation Card"
                         fileName := azureBlobUploader.ValidateDocument(uploadResult, folderName);
                         if fileName <> '' then begin
                             Rec."Final Calculation Document" := fileName;
+                            Rec."Final Calculation URL" := uploadResult;
                             Rec.Modify();
                             Message('File uploaded successfully: %1', fileName);
                         end;
