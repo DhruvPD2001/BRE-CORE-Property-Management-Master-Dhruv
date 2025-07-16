@@ -174,27 +174,27 @@ page 50122 "Revenue Allocation Card"
                 end;
             }
 
-            action(PostRevenueAllocationEntries)
-            {
-                ApplicationArea = All;
-                Caption = 'Post Revenue Allocation Entries';
-                Image = PostDocument;
-                Enabled = Rec.Status = Rec.Status::Pending;
-                trigger OnAction()
-                var
-                    codeunit: Codeunit "Revenue Allocation Posting";
-                    genJournal: Record "Gen. Journal Line";
-                    GenJnlPost: Codeunit "Gen. Jnl.-Post";
-                begin
-                    if Rec.Status = Rec.Status::Pending then begin
-                        codeunit.PostRevenueAllocation(Rec);
-                        Commit();
-                        if genJournal.FindSet() then
-                            GenJnlPost.Preview(genJournal);
-                    end;
-                end;
+            // action(PostRevenueAllocationEntries)
+            // {
+            //     ApplicationArea = All;
+            //     Caption = 'Post Revenue Allocation Entries';
+            //     Image = PostDocument;
+            //     Enabled = Rec.Status = Rec.Status::Pending;
+            //     trigger OnAction()
+            //     var
+            //         codeunit: Codeunit "Revenue Allocation Posting";
+            //         genJournal: Record "Gen. Journal Line";
+            //         GenJnlPost: Codeunit "Gen. Jnl.-Post";
+            //     begin
+            //         if Rec.Status = Rec.Status::Pending then begin
+            //             // codeunit.PostRevenueAllocation(Rec);
+            //             // Commit();
+            //             // if genJournal.FindSet() then
+            //             //     GenJnlPost.Preview(genJournal);
+            //         end;
+            //     end;
 
-            }
+            // }
 
             action(RevenueAllocation)
             {
