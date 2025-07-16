@@ -360,11 +360,19 @@ page 50928 "Payment Mode Card2"
                 {
                     ApplicationArea = All;
                     Caption = '"Final Rent Amount"';
+                    Editable = false; // The ID is not editable since it's auto-incrementing
                 }
                    field("Credit Note No."; Rec."Credit Note No.")
                 {
                     ApplicationArea = All;
                     Caption = '"Credit Note No."';
+                    Editable = false; // The ID is not editable since it's auto-incrementing
+                }
+                field(FinalRentAmountIncludingVAT;Rec.FinalRentAmountIncludingVAT)
+                {
+                    ApplicationArea = All;
+                    Caption = '"Final Rent Amount Including VAT"';
+                    Editable = false;
                 }
 
 
@@ -562,7 +570,8 @@ page 50928 "Payment Mode Card2"
     trigger OnAfterGetRecord()
     var
         paymentschedul2grid : Record "Payment Schedule2";
-        paymentTypeRec: Record "Payment Type"; // Record variable for Payment Type
+        paymentTypeRec: Record "Payment Type";
+        paymentschedulegrid1: Record "Payment Schedule2"; // Record variable for Payment Type
     begin
         IsApproved:= (Rec."Approval Status" <> Rec."Approval Status"::Approved);
         // If the field is blank, assign '-'
@@ -604,8 +613,15 @@ page 50928 "Payment Mode Card2"
                 Rec.Modify();
             until paymentschedul2grid.Next() = 0;
 
-            Rec."Final Rent Amount" := Rec."Amount Including VAT" - Rec."Credit Note Amount";
-            Rec.Modify();
+            Rec."Final Rent Amount" := Rec."Amount" - Rec."Credit Note Amount";
+            Rec.FinalRentAmountIncludingVAT := 0;
+            paymentschedulegrid1.SetRange("Contract ID", Rec."Contract ID");
+            paymentschedulegrid1.SetRange("Payment Series", Rec."Payment Series");
+            if paymentschedulegrid1.FindSet() then
+                repeat
+                    Rec.FinalRentAmountIncludingVAT += paymentschedulegrid1."Final RentAmountIncludingVAT";
+                until paymentschedulegrid1.Next() = 0;
+            Rec.Modify();   
     end;
 
     trigger OnAfterGetCurrRecord()
