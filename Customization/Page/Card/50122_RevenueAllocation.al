@@ -1335,7 +1335,9 @@ page 50122 "Revenue Allocation Card"
         RequestCreditNotegrid.Reset();
         if RequestCreditNotegrid.FindSet() then begin
             repeat
-                RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                // RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                if not RequestCreditNote.Get(RequestCreditNotegrid."Request No.") then
+                    exit;
                 if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
 
                     RentReductionAmount := 0;
@@ -1482,9 +1484,13 @@ page 50122 "Revenue Allocation Card"
             SuspensionStartDate := SuspensionRec.DateEffective;
             SuspensionEndDate := SuspensionRec.SuspensionEndDate;
 
+
             // Check if suspension period overlaps with current month
             if (SuspensionStartDate <> 0D) and (SuspensionEndDate <> 0D) and
-               (SuspensionStartDate <= CurrentMonthEnd) and (SuspensionEndDate >= CurrentMonthStart) then begin
+              //    (SuspensionStartDate <= CurrentMonthEnd) and 
+              (((SuspensionEndDate >= CurrentMonthStart) and (SuspensionEndDate < CurrentMonthEnd)) OR
+                (SuspensionEndDate = CurrentMonthStart - 1)) then begin
+
 
                 // 🔹 FIXED: Use full suspension period for recovery calculation
                 // Recovery period should be the entire suspension period, not just current month overlap
@@ -2815,7 +2821,9 @@ page 50122 "Revenue Allocation Card"
         RequestCreditNotegrid.Reset();
         if RequestCreditNotegrid.FindSet() then begin
             repeat
-                RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                // RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                if not RequestCreditNote.Get(RequestCreditNotegrid."Request No.") then
+                    exit;
                 if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
 
                     RentReductionAmount := 0;
@@ -2966,7 +2974,9 @@ page 50122 "Revenue Allocation Card"
 
             // Check if suspension period overlaps with current month
             if (SuspensionStartDate <> 0D) and (SuspensionEndDate <> 0D) and
-               (SuspensionStartDate <= CurrentMonthEnd) and (SuspensionEndDate >= CurrentMonthStart) then begin
+              //    (SuspensionStartDate <= CurrentMonthEnd) and 
+              (((SuspensionEndDate >= CurrentMonthStart) and (SuspensionEndDate < CurrentMonthEnd)) OR
+                (SuspensionEndDate = CurrentMonthStart - 1)) then begin
 
                 // 🔹 FIXED: Use full suspension period for recovery calculation
                 // Recovery period should be the entire suspension period, not just current month overlap
