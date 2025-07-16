@@ -1335,7 +1335,9 @@ page 50122 "Revenue Allocation Card"
         RequestCreditNotegrid.Reset();
         if RequestCreditNotegrid.FindSet() then begin
             repeat
-                RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                // RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                if not RequestCreditNote.Get(RequestCreditNotegrid."Request No.") then
+                    exit;
                 if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
 
                     RentReductionAmount := 0;
@@ -2815,7 +2817,9 @@ page 50122 "Revenue Allocation Card"
         RequestCreditNotegrid.Reset();
         if RequestCreditNotegrid.FindSet() then begin
             repeat
-                RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                // RequestCreditNote.Get(RequestCreditNotegrid."Request No.");
+                if not RequestCreditNote.Get(RequestCreditNotegrid."Request No.") then
+                    exit;
                 if RequestCreditNote.Status = RequestCreditNote.Status::Approved then begin
 
                     RentReductionAmount := 0;
