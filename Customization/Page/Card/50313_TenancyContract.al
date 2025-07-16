@@ -1888,17 +1888,18 @@ page 50313 "Tenancy Contract Card"
                     TenancyContract: Record "Tenancy Contract";
                     ReportDubai: Report "Tenancy Contract";
                     ReportAbuDhabi: Report UmmAlQuwainContract;
+                    Emirate: Enum Emirates;
                 begin
                     TenancyContract.SetRange("Contract ID", Rec."Contract ID");
 
                     case Rec.Emirate of
-                        'Umm Al Quwain':
+                        Emirate::"Umm Al Quwain":
                             begin
                                 ReportAbuDhabi.SetTableView(TenancyContract);
                                 ReportAbuDhabi.UseRequestPage(false);
                                 ReportAbuDhabi.RunModal();
                             end;
-                        'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Fujairah', 'Ras Al Khaimah':
+                        Emirate::Dubai, Emirate::"Abu Dhabi", Emirate::Sharjah, Emirate::Ajman, Emirate::Fujairah, Emirate::"Ras Al Khaimah":
                             begin
                                 ReportDubai.SetTableView(TenancyContract);
                                 ReportDubai.UseRequestPage(false);
