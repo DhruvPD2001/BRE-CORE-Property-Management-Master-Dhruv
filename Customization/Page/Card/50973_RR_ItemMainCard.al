@@ -66,7 +66,7 @@ page 50973 "Revenue Recognition Item Sub"
                                 // Show message about fetched details
                                 Message('Revenue details have been fetched successfully.');
                             end;
-                        end else begin
+                        end else if companydata."Revenue Methods" = companydata."Revenue Methods"::"Fixed Monthly Rent" then begin
                             if not GetCurrentRevenueAllocation(RevenueAllocation) then begin
                                 Message('Unable to get Revenue Allocation details. Please ensure you are on a valid record.');
                                 exit;
@@ -82,7 +82,8 @@ page 50973 "Revenue Recognition Item Sub"
 
                                 // Show message about fetched details
                                 Message('Revenue details have been fetched successfully.');
-                            end;
+                            end else
+                                Message('First Select Revenue Method in Company Data Card');
                         end;
                     end;
                 end;
