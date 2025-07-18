@@ -98,13 +98,18 @@ page 50981 "Request CreditNote Grid"
                     Caption = 'Total Pay Amount';
                     Editable = false; // This field is calculated and not editable
                 }
+                field("Credit Note No."; Rec."Credit Note No.")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Credit Note No.';
+                    Editable = false; // This field is not editable
+                }
 
                 field("Credit Memo Generated"; Rec."Credit Memo Generated")
                 {
                     ApplicationArea = All;
                     Caption = 'Credit Memo Generated';
-                    Editable = true; // This field is calculated and not editable
-                    // This field is calculated and not editable
+                    Editable = IsFinanceManager;
                 }
 
             }
@@ -117,6 +122,7 @@ page 50981 "Request CreditNote Grid"
     var
         requestno: Code[20];
         ContractID: Integer;
+        IsFinanceManager: Boolean;
 
 
     // procedure SetRequestNo(pRequestNo: Code[20])
@@ -128,4 +134,28 @@ page 50981 "Request CreditNote Grid"
     begin
         ContractID := pContractID;
     end;
+
+    trigger OnOpenPage()
+    var
+    begin
+        IsFinanceManager := CheckUserRole();
+    end;
+
+    procedure CheckUserRole(): Boolean
+    var
+        UserPersonalization: Record "User Personalization";
+    begin
+        if UserPersonalization.Get(UserSecurityId()) then begin
+            case UserPersonalization."Profile ID" of
+                'FINANCE MANAGER':
+                    exit(true);  // Only property managers can approve/reject
+                else
+                    exit(false);
+            end;
+        end;
+        exit(false);
+    end;
+
+
+
 }
