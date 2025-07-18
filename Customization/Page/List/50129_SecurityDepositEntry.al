@@ -225,7 +225,9 @@ page 50129 "Security Deposit Entries"
                                 SummeryNetAmount := 0;
 
                                 // Scenario 1: Both are Receivable
-                                if (FinaCalculation."Total Receive" <> 0) and (PendingReceivableGrid."Total Receivable" <> 0) then begin
+                                if ((FinaCalculation."Total Receive" <> 0) and (PendingReceivableGrid."Total Receivable" <> 0) or
+                                (FinaCalculation."Total Receive" = 0) and (PendingReceivableGrid."Total Receivable" <> 0) or
+                                (FinaCalculation."Total Receive" <> 0) and (PendingReceivableGrid."Total Receivable" = 0)) then begin
                                     SummeryNetAmount := FinaCalculation."Total Receive" + ABS(PendingReceivableGrid."Total Receivable");
                                     FinaCalculation."Summery Net Balance" := SummeryNetAmount;
                                     FinaCalculation."Net Receivable From The Tenant" := SummeryNetAmount;
@@ -233,7 +235,9 @@ page 50129 "Security Deposit Entries"
                                 end
 
                                 // Scenario 2: Both are Refund
-                                else if (FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Refundable" <> 0) then begin
+                                else if ((FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Refundable" <> 0) or
+                                (FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Refundable" = 0) or
+                                (FinaCalculation."Total Refund" = 0) and (PendingReceivableGrid."Total Refundable" <> 0)) then begin
                                     SummeryNetAmount := FinaCalculation."Total Refund" + ABS(PendingReceivableGrid."Total Refundable");
                                     FinaCalculation."Summery Net Balance" := SummeryNetAmount;
                                     FinaCalculation."Amount Refundable" := FinaCalculation."Summery Net Balance";
