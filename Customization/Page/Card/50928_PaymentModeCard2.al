@@ -87,19 +87,7 @@ page 50928 "Payment Mode Card2"
                 {
                     ApplicationArea = All;
                     Editable = IsApproved;
-                    trigger OnValidate()
-                    var
-                    paymentschedul2grid : Record "Payment Schedule2";
-                    begin
-                        paymentschedul2grid.SetRange("Contract ID", Rec."Contract ID");
-                        paymentschedul2grid.SetRange("Payment Series", Rec."Payment Series");
-                        paymentschedul2grid.SetRange(Invoiced, true);
-                        if paymentschedul2grid.FindSet() then
-                            repeat
-                                paymentschedul2grid.Validate("Payment Status", Format(Rec."Payment Status"));;
-                                paymentschedul2grid.Modify();
-                            until paymentschedul2grid.Next() = 0;
-                    end;
+                    
                 }
 
                 field("Cheque Status"; Rec."Cheque Status")
