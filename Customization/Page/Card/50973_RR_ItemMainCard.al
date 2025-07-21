@@ -748,8 +748,27 @@ page 50973 "Revenue Recognition Item Sub"
         exit(NoOfDays);
     end;
 
-    // NEW: Calculate number of days for suspended period allocation
     local procedure CalculateSuspendedPeriodDays(
+        pSuspensionStartDate: Date;
+        pSuspensionEndDate: Date;
+        pAllocationEndDate: Date
+    ): Integer
+    var
+        NoOfDays: Integer;
+    begin
+        // If no suspension dates, return 0
+        if (pSuspensionStartDate = 0D) or (pSuspensionEndDate = 0D) then
+            exit(0);
+
+        // આ આખો suspension period return કરે છે
+        // તમારા case માં: 04/11/2025 - 05/10/2025 + 1 = 31 days
+        NoOfDays := pSuspensionEndDate - pSuspensionStartDate + 1;
+
+        exit(NoOfDays);
+    end;
+
+    // Also need to add a separate function for active period after suspension
+    local procedure CalculateActivePeriodDaysAfterSuspension(
         pSuspensionStartDate: Date;
         pSuspensionEndDate: Date;
         pAllocationEndDate: Date
@@ -763,16 +782,13 @@ page 50973 "Revenue Recognition Item Sub"
         if (pSuspensionStartDate = 0D) or (pSuspensionEndDate = 0D) then
             exit(0);
 
-        // Effective start is the suspension start date
-        EffectiveStartDate := pSuspensionStartDate;
+        // Start from the day AFTER suspension ends
+        EffectiveStartDate := pSuspensionEndDate + 1;
 
-        // Effective end is the minimum of suspension end date and allocation end date
-        if pSuspensionEndDate < pAllocationEndDate then
-            EffectiveEndDate := pSuspensionEndDate
-        else
-            EffectiveEndDate := pAllocationEndDate;
+        // End at allocation end date
+        EffectiveEndDate := pAllocationEndDate;
 
-        // Calculate inclusive number of days
+        // Calculate inclusive number of active days after suspension
         if EffectiveEndDate >= EffectiveStartDate then
             NoOfDays := EffectiveEndDate - EffectiveStartDate + 1
         else
@@ -801,7 +817,9 @@ page 50973 "Revenue Recognition Item Sub"
             // Check if contract was suspended and then became active within the allocation period
             if (pSuspensionStartDate <> 0D) and (pSuspensionEndDate <> 0D) then begin
                 // Check if suspension ended before allocation end date
-                if (pSuspensionEndDate < pAllocationEndDate) and (pSuspensionStartDate <= pAllocationEndDate) then
+                if (pSuspensionEndDate < pAllocationEndDate) and
+                // (pSuspensionStartDate <= pAllocationEndDate) and 
+                (pSuspensionEndDate >= pAllocationStartDate) then
                     exit(true);
             end;
         end;
@@ -861,12 +879,12 @@ page 50973 "Revenue Recognition Item Sub"
 
     // NEW: Calculate days for suspended contract (only till suspension date)
     local procedure CalculateSuspendedContractDays(
-        pContractStartDate: Date;
-        pContractEndDate: Date;
-        pAllocationMonth: Integer;
-        pAllocationYear: Integer;
-        pSuspensionDate: Date
-    ): Integer
+         pContractStartDate: Date;
+         pContractEndDate: Date;
+         pAllocationMonth: Integer;
+         pAllocationYear: Integer;
+         pSuspensionDate: Date
+     ): Integer
     var
         SelectedMonthStart: Date;
         SelectedMonthEnd: Date;
@@ -898,17 +916,18 @@ page 50973 "Revenue Recognition Item Sub"
             exit(0);
 
         // Calculate inclusive number of days till suspension date
-        NoOfDays := EffectiveEndDate - EffectiveStartDate + 1;
+        // Adding 1 to include both start and end dates
+        NoOfDays := EffectiveEndDate - EffectiveStartDate;
 
         exit(NoOfDays);
     end;
 
     // MODIFIED: Update your existing CreateRevenueRecognitionDetailDirect procedure
     local procedure CreateRevenueRecognitionDetailDirect(
-        pTenancyContract: Record "Tenancy Contract";
-        pRevenueStructure: Record "Revenue Structure";
-        pRevenueAllocation: Record "Revenue Allocation Details"
-    )
+           pTenancyContract: Record "Tenancy Contract";
+           pRevenueStructure: Record "Revenue Structure";
+           pRevenueAllocation: Record "Revenue Allocation Details"
+       )
     var
         RevenueRecognitionDetails: Record "Revenue Recognition Details";
         SuspendedReasonList: Record SuspendReasonTable;
@@ -922,6 +941,7 @@ page 50973 "Revenue Recognition Item Sub"
         SuspensionStartDate: Date;
         SuspensionEndDate: Date;
         SuspendedPeriodDays: Integer;
+        SuspendedActivePeriodDays: Integer;
         FinalCalculation: Record "Final Calculation";
         TerminationDate: Date;
         SuspensionDate: Date;
@@ -952,14 +972,13 @@ page 50973 "Revenue Recognition Item Sub"
 
         // Calculate number of days based on suspension status
         if IsContractSuspended then begin
-            // For suspended contracts, calculate days only till suspension date
             NoOfDays := CalculateSuspendedContractDays(
-                pTenancyContract."Contract Start Date",
-                pTenancyContract."Contract End Date",
-                pRevenueAllocation.Month,
-                pRevenueAllocation."Financial Year",
-                SuspensionDate
-            );
+            pTenancyContract."Contract Start Date",
+            pTenancyContract."Contract End Date",
+            pRevenueAllocation.Month,
+            pRevenueAllocation."Financial Year",
+            SuspensionDate
+        );
         end else begin
             // For normal contracts, use existing logic
             NoOfDays := CalculateNoOfDays(
@@ -978,18 +997,18 @@ page 50973 "Revenue Recognition Item Sub"
             PerDayAmount := 0;
 
         // Create revenue record only if there are days to allocate
-        if NoOfDays > 0 then begin
-            CreateRevenueRecord(
-                pTenancyContract,
-                pRevenueStructure,
-                pRevenueAllocation,
-                revenuestructuredetails,
-                PostingDate,
-                NoOfDays,
-                PerDayAmount,
-                IsContractSuspended // Pass suspension status
-            );
-        end;
+        // if NoOfDays > 0 then begin
+        //     CreateRevenueRecord(
+        //         pTenancyContract,
+        //         pRevenueStructure,
+        //         pRevenueAllocation,
+        //         revenuestructuredetails,
+        //         PostingDate,
+        //         NoOfDays,
+        //         PerDayAmount,
+        //         IsContractSuspended // Pass suspension status
+        //     );
+        // end;
 
         // Keep existing logic for suspension to active scenario
         if HasSuspensionToActiveScenario(
@@ -1000,6 +1019,11 @@ page 50973 "Revenue Recognition Item Sub"
             SuspensionEndDate
         ) then begin
             SuspendedPeriodDays := CalculateSuspendedPeriodDays(
+                SuspensionStartDate,
+                SuspensionEndDate,
+                RevenueAllocationEndDate
+            );
+            SuspendedActivePeriodDays := CalculateActivePeriodDaysAfterSuspension(
                 SuspensionStartDate,
                 SuspensionEndDate,
                 RevenueAllocationEndDate
@@ -1017,6 +1041,31 @@ page 50973 "Revenue Recognition Item Sub"
                     true
                 );
             end;
+
+            if SuspendedActivePeriodDays > 0 then begin
+                CreateRevenueRecord(
+                    pTenancyContract,
+                    pRevenueStructure,
+                    pRevenueAllocation,
+                    revenuestructuredetails,
+                    PostingDate,
+                    SuspendedActivePeriodDays,
+                    PerDayAmount,
+                    true
+                );
+            end;
+
+        end else if NoOfDays > 0 then begin
+            CreateRevenueRecord(
+                pTenancyContract,
+                pRevenueStructure,
+                pRevenueAllocation,
+                revenuestructuredetails,
+                PostingDate,
+                NoOfDays,
+                PerDayAmount,
+                IsContractSuspended // Pass suspension status
+            );
         end;
     end;
 
@@ -1956,6 +2005,26 @@ page 50973 "Revenue Recognition Item Sub"
 
     // NEW: Calculate number of days for suspended period allocation
     local procedure CalculateSuspendedPeriodDayss(
+         pSuspensionStartDate: Date;
+         pSuspensionEndDate: Date;
+         pAllocationEndDate: Date
+     ): Integer
+    var
+        NoOfDays: Integer;
+    begin
+        // If no suspension dates, return 0
+        if (pSuspensionStartDate = 0D) or (pSuspensionEndDate = 0D) then
+            exit(0);
+
+        // આ આખો suspension period return કરે છે
+        // તમારા case માં: 04/11/2025 - 05/10/2025 + 1 = 31 days
+        NoOfDays := pSuspensionEndDate - pSuspensionStartDate + 1;
+
+        exit(NoOfDays);
+    end;
+
+    // Also need to add a separate function for active period after suspension
+    local procedure CalculateActivePeriodDaysAfterSuspensions(
         pSuspensionStartDate: Date;
         pSuspensionEndDate: Date;
         pAllocationEndDate: Date
@@ -1969,16 +2038,13 @@ page 50973 "Revenue Recognition Item Sub"
         if (pSuspensionStartDate = 0D) or (pSuspensionEndDate = 0D) then
             exit(0);
 
-        // Effective start is the suspension start date
-        EffectiveStartDate := pSuspensionStartDate;
+        // Start from the day AFTER suspension ends
+        EffectiveStartDate := pSuspensionEndDate + 1;
 
-        // Effective end is the minimum of suspension end date and allocation end date
-        if pSuspensionEndDate < pAllocationEndDate then
-            EffectiveEndDate := pSuspensionEndDate
-        else
-            EffectiveEndDate := pAllocationEndDate;
+        // End at allocation end date
+        EffectiveEndDate := pAllocationEndDate;
 
-        // Calculate inclusive number of days
+        // Calculate inclusive number of active days after suspension
         if EffectiveEndDate >= EffectiveStartDate then
             NoOfDays := EffectiveEndDate - EffectiveStartDate + 1
         else
@@ -2005,11 +2071,11 @@ page 50973 "Revenue Recognition Item Sub"
             pSuspensionEndDate := SuspendedReasonList.SuspensionEndDate;
 
             // Check if contract was suspended and then became active within the allocation period
-            // Scenario: Contract was suspended, but suspension ended before or during allocation period
             if (pSuspensionStartDate <> 0D) and (pSuspensionEndDate <> 0D) then begin
                 // Check if suspension ended before allocation end date
-                // This means contract became active and we need to allocate for suspended period
-                if (pSuspensionEndDate < pAllocationEndDate) and (pSuspensionStartDate <= pAllocationEndDate) then
+                if (pSuspensionEndDate < pAllocationEndDate) and
+                // (pSuspensionStartDate <= pAllocationEndDate) and 
+                (pSuspensionEndDate >= pAllocationStartDate) then
                     exit(true);
             end;
         end;
@@ -2105,7 +2171,7 @@ page 50973 "Revenue Recognition Item Sub"
             exit(0);
 
         // Calculate inclusive number of days till suspension date
-        NoOfDays := EffectiveEndDate - EffectiveStartDate + 1;
+        NoOfDays := EffectiveEndDate - EffectiveStartDate;
 
         exit(NoOfDays);
     end;
@@ -2129,6 +2195,7 @@ page 50973 "Revenue Recognition Item Sub"
         SuspensionStartDate: Date;
         SuspensionEndDate: Date;
         SuspendedPeriodDays: Integer;
+        SuspendedActivePeriodDays: Integer;
         FinalCalculation: Record "Final Calculation";
         TerminationDate: Date;
         SuspensionDate: Date;
@@ -2185,18 +2252,18 @@ page 50973 "Revenue Recognition Item Sub"
             PerDayAmount := 0;
 
         // Create revenue record only if there are days to allocate
-        if NoOfDays > 0 then begin
-            CreateRevenueRecords(
-                pTenancyContract,
-                pRevenueStructure,
-                pRevenueAllocation,
-                revenuestructuredetails,
-                PostingDate,
-                NoOfDays,
-                PerDayAmount,
-                IsContractSuspended // Pass suspension status
-            );
-        end;
+        // if NoOfDays > 0 then begin
+        //     CreateRevenueRecords(
+        //         pTenancyContract,
+        //         pRevenueStructure,
+        //         pRevenueAllocation,
+        //         revenuestructuredetails,
+        //         PostingDate,
+        //         NoOfDays,
+        //         PerDayAmount,
+        //         IsContractSuspended // Pass suspension status
+        //     );
+        // end;
 
         // Keep existing logic for suspension to active scenario
         if HasSuspensionToActiveScenarios(
@@ -2207,6 +2274,11 @@ page 50973 "Revenue Recognition Item Sub"
             SuspensionEndDate
         ) then begin
             SuspendedPeriodDays := CalculateSuspendedPeriodDayss(
+                SuspensionStartDate,
+                SuspensionEndDate,
+                RevenueAllocationEndDate
+            );
+            SuspendedActivePeriodDays := CalculateActivePeriodDaysAfterSuspensions(
                 SuspensionStartDate,
                 SuspensionEndDate,
                 RevenueAllocationEndDate
@@ -2224,6 +2296,30 @@ page 50973 "Revenue Recognition Item Sub"
                     true
                 );
             end;
+            if SuspendedActivePeriodDays > 0 then begin
+                CreateRevenueRecords(
+                    pTenancyContract,
+                    pRevenueStructure,
+                    pRevenueAllocation,
+                    revenuestructuredetails,
+                    PostingDate,
+                    SuspendedActivePeriodDays,
+                    PerDayAmount,
+                    true
+                );
+            end;
+
+        end else if NoOfDays > 0 then begin
+            CreateRevenueRecords(
+                pTenancyContract,
+                pRevenueStructure,
+                pRevenueAllocation,
+                revenuestructuredetails,
+                PostingDate,
+                NoOfDays,
+                PerDayAmount,
+                IsContractSuspended // Pass suspension status
+            );
         end;
     end;
 
