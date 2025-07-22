@@ -1889,22 +1889,30 @@ page 50313 "Tenancy Contract Card"
                     ReportDubai: Report "Tenancy Contract";
                     ReportAbuDhabi: Report UmmAlQuwainContract;
                     Emirate: Enum Emirates;
+                    CurrentEmirateValue: Enum Emirates;
                 begin
                     TenancyContract.SetRange("Contract ID", Rec."Contract ID");
 
-                    case Rec.Emirate of
-                        Emirate::"Umm Al Quwain":
-                            begin
-                                ReportAbuDhabi.SetTableView(TenancyContract);
-                                ReportAbuDhabi.UseRequestPage(false);
-                                ReportAbuDhabi.RunModal();
-                            end;
-                        Emirate::Dubai, Emirate::"Abu Dhabi", Emirate::Sharjah, Emirate::Ajman, Emirate::Fujairah, Emirate::"Ras Al Khaimah":
-                            begin
-                                ReportDubai.SetTableView(TenancyContract);
-                                ReportDubai.UseRequestPage(false);
-                                ReportDubai.RunModal();
-                            end;
+                    // Convert Code[50] to Enum for comparison
+                    if Evaluate(CurrentEmirateValue, Rec.Emirate) then begin
+                        case CurrentEmirateValue of
+                            Emirate::"Umm Al Quwain":
+                                begin
+                                    ReportAbuDhabi.SetTableView(TenancyContract);
+                                    ReportAbuDhabi.UseRequestPage(false);
+                                    ReportAbuDhabi.RunModal();
+                                end;
+                            Emirate::Dubai, Emirate::"Abu Dhabi", Emirate::Sharjah, Emirate::Ajman, Emirate::Fujairah, Emirate::"Ras Al Khaimah":
+                                begin
+                                    ReportDubai.SetTableView(TenancyContract);
+                                    ReportDubai.UseRequestPage(false);
+                                    ReportDubai.RunModal();
+                                end;
+                            else
+                                Error('Unsupported emirate: %1', Rec.Emirate);
+                        end;
+                    end else begin
+                        Error('Invalid emirate value: %1', Rec.Emirate);
                     end;
                 end;
             }
