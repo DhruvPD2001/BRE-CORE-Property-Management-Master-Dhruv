@@ -47,7 +47,7 @@ pageextension 50302 Vendor extends "Vendor Card"
         }
         addafter("Country")
         {
-            field("Emirate"; Rec."Emirate")
+            field("Emirate"; Rec."Emirate Name")
             {
                 ApplicationArea = All;
                 Caption = 'Emirate';
@@ -61,7 +61,7 @@ pageextension 50302 Vendor extends "Vendor Card"
             {
                 ApplicationArea = All;
                 Caption = 'Community';
-                TableRelation = Community."Community Name" where("Emirate Name" = field(Emirate));
+                TableRelation = Community."Community Name" where("Emirate Name" = field("Emirate Name"));
             }
         }
     }
