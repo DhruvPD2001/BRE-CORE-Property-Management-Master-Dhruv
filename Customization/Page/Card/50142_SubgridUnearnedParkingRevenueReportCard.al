@@ -1,9 +1,9 @@
-page 50141 "Sub Unearned Revenue Card"
+page 50142 "Sub Unearned Prking Card"
 {
     PageType = ListPart;
     ApplicationArea = All;
-    SourceTable = "Sub Unearned Revenue Report";
-    Caption = 'Unearned Rent Revenue Report';
+    SourceTable = "Sub Unearned Parking Report";
+    Caption = 'Unearned Parking Revenue Report';
 
     layout
     {
