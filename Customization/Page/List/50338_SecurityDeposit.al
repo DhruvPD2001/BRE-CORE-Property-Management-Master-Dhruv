@@ -63,12 +63,12 @@ page 50338 "Security Deposit List"
                     ApplicationArea = All;
                 }
 
-                field("New_Security Deposit Amount"; Rec."New_Security Deposit Amount")
+                field("New_Security Deposit Amount"; Rec."Carry Forward Amount")
                 {
                     ApplicationArea = All;
                 }
 
-                field("Adjusted amount"; Rec."Adjusted amount")
+                field("Adjusted amount"; Rec."Security Deposit Amt. Pending")
                 {
                     ApplicationArea = All;
                 }

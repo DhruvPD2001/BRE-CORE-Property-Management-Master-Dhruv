@@ -290,7 +290,7 @@ page 50129 "Security Deposit Entries"
                                 CarryForwardGrid.Reset();
                                 CarryForwardGrid.SetRange("Contract ID", SecurityDeposit."Contract ID");
                                 CarryForwardGrid.SetRange("New Contract ID", SecurityDeposit."New_Contract ID");
-                                CarryForwardGrid.SetRange("Total Amount", SecurityDeposit."New_Security Deposit Amount"); // Additional Check
+                                CarryForwardGrid.SetRange("Total Amount", SecurityDeposit."Carry Forward Amount"); // Additional Check
 
                                 if not CarryForwardGrid.FindFirst() then begin
                                     // Create new record only if it doesn't exist
@@ -299,12 +299,12 @@ page 50129 "Security Deposit Entries"
                                     CarryForwardGrid."Entry No." := GetNextEntryNo();
                                     CarryForwardGrid."Contract ID" := SecurityDeposit."Contract ID";
                                     CarryForwardGrid."New Contract ID" := SecurityDeposit."New_Contract ID";
-                                    CarryForwardGrid."Total Amount" := SecurityDeposit."New_Security Deposit Amount";
+                                    CarryForwardGrid."Total Amount" := SecurityDeposit."Carry Forward Amount";
                                     CarryForwardGrid."Security Deposit" := 'Security Deposit';
                                     CarryForwardGrid.Insert();
                                 end else begin
                                     // Update existing record
-                                    CarryForwardGrid."Total Amount" := SecurityDeposit."New_Security Deposit Amount";
+                                    CarryForwardGrid."Total Amount" := SecurityDeposit."Carry Forward Amount";
                                     CarryForwardGrid."Security Deposit" := 'Security Deposit';
                                     CarryForwardGrid.Modify();
                                 end;
