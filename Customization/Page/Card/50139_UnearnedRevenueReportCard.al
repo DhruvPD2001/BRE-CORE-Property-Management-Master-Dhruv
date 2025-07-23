@@ -89,7 +89,6 @@ page 50139 "Unearned Revenue Report Card"
         StartDate, EndDate : Date;
         SuspendedReasonRec: Record SuspendReasonTable; // Replace with actual table name
         FinalCalculationRec: Record "Final Calculation"; // Replace with actual table name
-        SuspendedReasonText: Text[100];
         SuspendedDate: Date;
         TerminationDate: Date;
         paymentSchedule: Record "Payment Schedule2"; // Assumed name
@@ -98,6 +97,14 @@ page 50139 "Unearned Revenue Report Card"
         TotalNoofDays: Integer;
         UnearnedNoofday: Integer;
         PerDayrent: Decimal;
+        MonthlyRevenueAmount: Decimal;
+        TotalMonthlyRevenue: Decimal;
+        CurrentDate: Date;
+        MonthsInRange: Integer;
+        ActualStartDate: Date;
+        ActualEndDate: Date;
+        RevenueAllocatedDuringYear: Decimal;
+        RevenueAllocation: Decimal;
     begin
         ClearSubgridData(); // Always clear before inserting
 
@@ -123,7 +130,8 @@ page 50139 "Unearned Revenue Report Card"
                 Clear(FinalCalculationRec);
                 TotalPaidAmount := 0;
                 TotalInvoicedAmount := 0;
-
+                TotalMonthlyRevenue := 0;
+                RevenueAllocatedDuringYear := 0;
 
 
                 // 🔹1. Calculate Total Paid before Start Date
@@ -153,13 +161,12 @@ page 50139 "Unearned Revenue Report Card"
                 NewLineNo := GetNextLineNo();
 
                 // ✅ Fetch suspended reason from separate table
-                SuspendedReasonText := '';
                 SuspendedDate := 0D;
                 if tenancyContract."Tenant Contract Status" = tenancyContract."Tenant Contract Status"::Suspended then begin
                     SuspendedReasonRec.Reset();
                     SuspendedReasonRec.SetRange("Contract ID", tenancyContract."Contract ID"); // Assuming this link exists
                     if SuspendedReasonRec.FindLast() then begin // Get latest suspended reason
-                        SuspendedDate := SuspendedReasonRec.SuspensionEffectiveDate; // Replace with actual field name
+                        SuspendedDate := SuspendedReasonRec.DateEffective; // Replace with actual field name
                     end;
                 end;
 
@@ -202,10 +209,93 @@ page 50139 "Unearned Revenue Report Card"
                 else
                     unearnedRevenueBuffer."Unit Name" := '';
                 // Add more fields as required
+                RevenueAllocation := CalculateRevenueAllocation(tenancyContract."Contract ID", tenancyContract."Contract Start Date", tenancyContract."Contract End Date");
 
+                unearnedRevenueBuffer."RevenueAllocated DuringtheYear" := RevenueAllocation;
+                unearnedRevenueBuffer."Unearned Revenue Balance" := TotalPaidAmount + TotalInvoicedAmount - RevenueAllocation;
+                // Message('Revenue allocation value : ' + Format(RevenueAllocation));
+                unearnedRevenueBuffer."Shortfall/Excess" := unearnedRevenueBuffer."Unearned Revenue Balance" - unearnedRevenueBuffer.CalculatedUnearnedRevBalance;
                 unearnedRevenueBuffer.Insert();
             until tenancyContract.Next() = 0;
         end;
+    end;
+
+    local procedure CalculateRevenueAllocation(ContractID: Integer; StartDate: Date; EndDate: Date): Decimal
+    var
+        RevenueAllocationRec: Record "Revenue Allocation SubGrid"; // Replace with your actual table name
+        TotalRevenueAllocated: Decimal;
+        CurrentMonth: Integer;
+        CurrentYear: Integer;
+        StartMonth: Integer;
+        StartYear: Integer;
+        EndMonth: Integer;
+        EndYear: Integer;
+        LoopDate: Date;
+    begin
+        TotalRevenueAllocated := 0;
+
+        // Get start and end month/year
+        StartMonth := Date2DMY(StartDate, 2);
+        StartYear := Date2DMY(StartDate, 3);
+        EndMonth := Date2DMY(EndDate, 2);
+        EndYear := Date2DMY(EndDate, 3);
+
+
+        // Method 1: If Revenue Allocation table has Contract ID field
+        RevenueAllocationRec.Reset();
+        RevenueAllocationRec.SetRange("Contract ID", ContractID); // Assuming this field exists
+        RevenueAllocationRec.SetRange("Posting Year", StartYear); // Assuming financial year matches
+
+        // Filter for months within the date range
+        RevenueAllocationRec.SetFilter("Posting Month", GetMonthFilter(Rec."Starting Date Year", Rec."Ending Date Year"));
+
+        if RevenueAllocationRec.FindSet() then
+            repeat
+                // Sum up the revenue allocation for each month
+                // You'll need to replace this with the actual field name that contains the allocated amount
+                TotalRevenueAllocated += RevenueAllocationRec."Total Value"; // Replace with actual field name
+            until RevenueAllocationRec.Next() = 0;
+
+        exit(TotalRevenueAllocated);
+    end;
+
+    // ✅ Helper procedure to create month filter
+    local procedure GetMonthFilter(StartDate: Date; EndDate: Date): Text
+    var
+        StartMonth: Integer;
+        EndMonth: Integer;
+        StartYear: Integer;
+        EndYear: Integer;
+        MonthFilter: Text;
+        CurrentDate: Date;
+        MonthName: Text;
+        FetchMonth: Codeunit "Fetch Month";
+    begin
+        StartMonth := Date2DMY(StartDate, 2);
+        StartYear := Date2DMY(StartDate, 3);
+        EndMonth := Date2DMY(EndDate, 2);
+        EndYear := Date2DMY(EndDate, 3);
+
+        MonthFilter := '';
+        CurrentDate := StartDate;
+
+        while CurrentDate <= EndDate do begin
+            MonthName := FetchMonth.GetMonthName(Date2DMY(CurrentDate, 2));
+
+            if MonthFilter = '' then
+                MonthFilter := MonthName
+            else
+                MonthFilter += '|' + MonthName;
+
+            // Move to next month
+            CurrentDate := CalcDate('<1M>', DMY2Date(1, Date2DMY(CurrentDate, 2), Date2DMY(CurrentDate, 3)));
+
+            // Break if we've gone past the end date
+            if Date2DMY(CurrentDate, 2) > EndMonth then
+                break;
+        end;
+
+        exit(MonthFilter);
     end;
 
     procedure GetNextLineNo(): Integer
@@ -240,7 +330,6 @@ page 50139 "Unearned Revenue Report Card"
         StartDate, EndDate : Date;
         SuspendedReasonRec: Record SuspendReasonTable;
         FinalCalculationRec: Record "Final Calculation";
-        SuspendedReasonText: Text[100];
         SuspendedDate, TerminationDate : Date;
         paymentSchedule: Record "Payment Schedule2";
         revenueStructure: Record "Revenue Structure";
@@ -251,6 +340,14 @@ page 50139 "Unearned Revenue Report Card"
         TotalNoofDays: Integer;
         UnearnedNoofday: Integer;
         PerDayrent: Decimal;
+        MonthlyRevenueAmount: Decimal;
+        TotalMonthlyRevenue: Decimal;
+        CurrentDate: Date;
+        MonthsInRange: Integer;
+        ActualStartDate: Date;
+        ActualEndDate: Date;
+        RevenueAllocatedDuringYear: Decimal;
+        RevenueAllocation: Decimal;
     begin
         ClearSubgridDataParking();
 
@@ -278,6 +375,8 @@ page 50139 "Unearned Revenue Report Card"
                 Clear(FinalCalculationRec);
                 TotalPaidAmount := 0;
                 TotalInvoicedAmount := 0;
+                TotalMonthlyRevenue := 0;
+                RevenueAllocatedDuringYear := 0;
                 otherchargesvalue := 0;
                 HasMatchingData := false;
 
@@ -341,7 +440,7 @@ page 50139 "Unearned Revenue Report Card"
                     SuspendedReasonRec.Reset();
                     SuspendedReasonRec.SetRange("Contract ID", tenancyContract."Contract ID");
                     if SuspendedReasonRec.FindLast() then
-                        SuspendedDate := SuspendedReasonRec.SuspensionEffectiveDate;
+                        SuspendedDate := SuspendedReasonRec.DateEffective;
                 end;
 
                 if tenancyContract."Tenant Contract Status" = tenancyContract."Tenant Contract Status"::Terminated then begin
@@ -376,15 +475,106 @@ page 50139 "Unearned Revenue Report Card"
                 else
                     unearnedRevenueBuffer."Unit Name" := '';
 
+                RevenueAllocation := CalculateRevenueAllocations(tenancyContract."Contract ID", tenancyContract."Contract Start Date", tenancyContract."Contract End Date");
+
+                unearnedRevenueBuffer."RevenueAllocated DuringtheYear" := RevenueAllocation;
+                unearnedRevenueBuffer."Unearned Revenue Balance" := TotalPaidAmount + TotalInvoicedAmount - RevenueAllocation;
+                // Message('Revenue allocation value : ' + Format(RevenueAllocation));
+
                 TotalNoofDays := unearnedRevenueBuffer."End Date" - unearnedRevenueBuffer."Start Date" + 1;
                 PerDayrent := unearnedRevenueBuffer."Other Charges Value" / TotalNoofDays;
                 UnearnedNoofday := unearnedRevenueBuffer."End Date" - EndDate;
 
                 unearnedRevenueBuffer.CalculatedUnearnedRevBalance := PerDayrent * UnearnedNoofday;
+                unearnedRevenueBuffer."Shortfall/Excess" := unearnedRevenueBuffer."Unearned Revenue Balance" - unearnedRevenueBuffer.CalculatedUnearnedRevBalance;
 
                 unearnedRevenueBuffer.Insert();
             until tenancyContract.Next() = 0;
         end;
+    end;
+
+    local procedure CalculateRevenueAllocations(ContractID: Integer; StartDate: Date; EndDate: Date): Decimal
+    var
+        RevenueAllocationRec: Record "Revenue Recognition Details"; // Replace with your actual table name
+        TotalRevenueAllocated: Decimal;
+        CurrentMonth: Integer;
+        CurrentYear: Integer;
+        StartMonth: Integer;
+        StartYear: Integer;
+        EndMonth: Integer;
+        EndYear: Integer;
+        LoopDate: Date;
+        ItemTypes: List of [Text];
+        ItemTypeFilter: Text;
+    begin
+        TotalRevenueAllocated := 0;
+
+        // Get start and end month/year
+        StartMonth := Date2DMY(StartDate, 2);
+        StartYear := Date2DMY(StartDate, 3);
+        EndMonth := Date2DMY(EndDate, 2);
+        EndYear := Date2DMY(EndDate, 3);
+
+        GetSelectedItemTypes(ItemTypes);
+        ItemTypeFilter := GetItemTypeFilter(ItemTypes);
+
+
+        // Method 1: If Revenue Allocation table has Contract ID field
+        RevenueAllocationRec.Reset();
+        RevenueAllocationRec.SetRange("Contract ID", ContractID); // Assuming this field exists
+        RevenueAllocationRec.SetRange("Posting Year", StartYear); // Assuming financial year matches
+
+        // Filter for months within the date range
+        RevenueAllocationRec.SetFilter("Posting Month", GetMonthFilters(Rec."Starting Date Year", Rec."Ending Date Year"));
+        RevenueAllocationRec.SetFilter("Item Type", ItemTypeFilter);
+
+        if RevenueAllocationRec.FindSet() then
+            repeat
+                // Sum up the revenue allocation for each month
+                // You'll need to replace this with the actual field name that contains the allocated amount
+                TotalRevenueAllocated += RevenueAllocationRec."Total Value"; // Replace with actual field name
+            until RevenueAllocationRec.Next() = 0;
+
+        exit(TotalRevenueAllocated);
+    end;
+
+    // ✅ Helper procedure to create month filter
+    local procedure GetMonthFilters(StartDate: Date; EndDate: Date): Text
+    var
+        StartMonth: Integer;
+        EndMonth: Integer;
+        StartYear: Integer;
+        EndYear: Integer;
+        MonthFilter: Text;
+        CurrentDate: Date;
+        MonthName: Text;
+        FetchMonth: Codeunit "Fetch Month";
+    begin
+        StartMonth := Date2DMY(StartDate, 2);
+        StartYear := Date2DMY(StartDate, 3);
+        EndMonth := Date2DMY(EndDate, 2);
+        EndYear := Date2DMY(EndDate, 3);
+
+        MonthFilter := '';
+        CurrentDate := StartDate;
+
+        while CurrentDate <= EndDate do begin
+            MonthName := FetchMonth.GetMonthName(Date2DMY(CurrentDate, 2));
+
+            if MonthFilter = '' then
+                MonthFilter := MonthName
+            else
+                MonthFilter += '|' + MonthName;
+
+            // Move to next month
+            CurrentDate := CalcDate('<1M>', DMY2Date(1, Date2DMY(CurrentDate, 2), Date2DMY(CurrentDate, 3)));
+
+            // Break if we've gone past the end date
+            if Date2DMY(CurrentDate, 2) > EndMonth then
+                break;
+        end;
+
+        exit(MonthFilter);
     end;
 
 
