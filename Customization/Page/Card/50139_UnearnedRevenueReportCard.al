@@ -38,6 +38,15 @@ page 50139 "Unearned Revenue Report Card"
                     SubPageLink = "Header No." = field("No.");
                 }
             }
+
+            group("Other Charges Details")
+            {
+                Caption = 'Other Charges Details';
+                part("Other Charges Unearned Revenue"; "OtherCharges-UnearnedRevenue")
+                {
+                    SubPageLink = "No." = field("No.");
+                }
+            }
             group("Unearned Parking Revenue Report Report Details")
             {
                 Caption = 'Unearned Parking Revenue Report Details';
@@ -86,6 +95,9 @@ page 50139 "Unearned Revenue Report Card"
         paymentSchedule: Record "Payment Schedule2"; // Assumed name
         TotalPaidAmount: Decimal;
         TotalInvoicedAmount: Decimal;
+        TotalNoofDays: Integer;
+        UnearnedNoofday: Integer;
+        PerDayrent: Decimal;
     begin
         ClearSubgridData(); // Always clear before inserting
 
@@ -177,6 +189,11 @@ page 50139 "Unearned Revenue Report Card"
                 unearnedRevenueBuffer."Suspension Date" := SuspendedDate;
                 unearnedRevenueBuffer."Termination Date" := TerminationDate;
 
+                TotalNoofDays := unearnedRevenueBuffer."End Date" - unearnedRevenueBuffer."Start Date" + 1;
+                PerDayrent := unearnedRevenueBuffer."Contract Value" / TotalNoofDays;
+                UnearnedNoofday := unearnedRevenueBuffer."End Date" - EndDate;
+
+                unearnedRevenueBuffer.CalculatedUnearnedRevBalance := PerDayrent * UnearnedNoofday;
 
                 if tenancyContract."Praposal Type Selected" = tenancyContract."Praposal Type Selected"::"Single Unit" then
                     unearnedRevenueBuffer."Unit Name" := tenancyContract."Unit Name"
@@ -357,5 +374,23 @@ page 50139 "Unearned Revenue Report Card"
     begin
         RevenueItemDetail.SetRange("Header No.", Rec."No."); // ✅ Clear only for this header
         RevenueItemDetail.DeleteAll(true);
+    end;
+
+
+
+    trigger OnAfterGetRecord()
+    begin
+        CurrPage."Other Charges Unearned Revenue".Page.SetNo(Rec."No.");
+    end;
+
+
+    trigger OnModifyRecord(): Boolean
+    begin
+        CurrPage."Other Charges Unearned Revenue".Page.SetNo(Rec."No.");
+    end;
+
+    trigger OnInsertRecord(BelowxRec: Boolean): Boolean
+    begin
+        CurrPage."Other Charges Unearned Revenue".Page.SetNo(Rec."No.");
     end;
 }
