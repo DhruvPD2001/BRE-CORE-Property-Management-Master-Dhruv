@@ -115,7 +115,7 @@ report 50109 "Security Deposit"
                 SecurityDepositTransfer.SetRange("Contract ID", "Contract ID");  // This is the source contract
                 if SecurityDepositTransfer.FindSet() then
                     repeat
-                        CarriedForwardOutAmount += SecurityDepositTransfer."New_Security Deposit Amount";
+                        CarriedForwardOutAmount += SecurityDepositTransfer."Carry Forward Amount";
                     until SecurityDepositTransfer.Next() = 0;
 
                 // Calculate Carried Forward In - Security deposits transferred TO this contract
@@ -123,7 +123,7 @@ report 50109 "Security Deposit"
                 SecurityDepositTransfer.SetRange("New_Contract ID", "Contract ID");  // This is the destination contract
                 if SecurityDepositTransfer.FindSet() then
                     repeat
-                        CarriedForwardInAmount += SecurityDepositTransfer."New_Security Deposit Amount";
+                        CarriedForwardInAmount += SecurityDepositTransfer."Carry Forward Amount";
                     until SecurityDepositTransfer.Next() = 0;
 
 

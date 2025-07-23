@@ -130,7 +130,7 @@ page 50337 "Security Deposit Card"
                     Caption = 'Contract End Date';
                 }
 
-                field("New_Security Deposit Amount"; rec."New_Security Deposit Amount")
+                field("New_Security Deposit Amount"; rec."Carry Forward Amount")
                 {
                     ApplicationArea = All;
                     Editable = true;
@@ -143,13 +143,13 @@ page 50337 "Security Deposit Card"
                     Editable = false;
                 }
 
-                field("New_Balance Amount"; rec."New_Balance Amount")
+                field("New_Balance Amount"; rec."Security Deposit Amt. Received")
                 {
                     ApplicationArea = All;
                     Editable = false;
                 }
 
-                field("Adjusted amount"; rec."Adjusted amount")
+                field("Adjusted amount"; rec."Security Deposit Amt. Pending")
                 {
                     ApplicationArea = All;
                     Editable = false;
@@ -213,8 +213,8 @@ page 50337 "Security Deposit Card"
                 Rec."New_Contract End Date" := TenancyContractRec."Contract End Date";
                 Rec."New_Tenant Full Name" := TenancyContractRec."Customer Name";
                 Rec."New Security Amount" := TenancyContractRec."Security Deposit Amount";
-                Rec."New_Balance Amount" := TenancyContractRec."Balance Amount";
-                Rec."Adjusted amount" := TenancyContractRec."Security Amount Received"; // Update the remaining balance
+                Rec."Security Deposit Amt. Received" := TenancyContractRec."Security Deposit Amt. Received";
+                Rec."Security Deposit Amt. Pending" := TenancyContractRec."Security Amount Pending"; // Update the remaining balance
 
 
                 // Update the Narration field dynamically
@@ -239,7 +239,7 @@ page 50337 "Security Deposit Card"
                 Clear(Rec."New_Contract End Date");
                 Clear(Rec."New_Tenant Full Name");
                 Clear(Rec."New Security Amount");
-                Clear(Rec."New_Balance Amount");
+                Clear(Rec."Security Deposit Amt. Received");
 
             end else begin
                 Clear(Rec."Contract Start Date");

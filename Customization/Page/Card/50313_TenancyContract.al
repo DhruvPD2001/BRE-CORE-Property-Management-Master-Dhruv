@@ -386,7 +386,7 @@ page 50313 "Tenancy Contract Card"
                     Editable = true;
                 }
 
-                field("Balance Amount"; Rec."Balance Amount")
+                field("Balance Amount"; Rec."Security Deposit Amt. Received")
                 {
                     ApplicationArea = All;
                     Editable = true;
@@ -397,7 +397,7 @@ page 50313 "Tenancy Contract Card"
                         UpdateSecurityAmountReceived();
                     end;
                 }
-                field("Security Amount Received"; Rec."Security Amount Received")
+                field("Security Amount Received"; Rec."Security Amount Pending")
                 {
                     ApplicationArea = All;
                     Editable = true;
@@ -1872,6 +1872,10 @@ page 50313 "Tenancy Contract Card"
                     Editable = false;
                 }
             }
+            field(IsCarryForwarded; Rec.IsCarryForwarded)
+            {
+                ApplicationArea = all;
+            }
 
         }
     }
@@ -2120,10 +2124,10 @@ page 50313 "Tenancy Contract Card"
     local procedure UpdateSecurityAmountReceived()
     begin
         // Update Security Amount Received
-        if Rec."Security Deposit Amount" = Rec."Balance Amount" then
-            Rec."Security Amount Received" := 0
+        if Rec."Security Deposit Amount" = Rec."Security Deposit Amt. Received" then
+            Rec."Security Amount Pending" := 0
         else
-            Rec."Security Amount Received" := Rec."Security Deposit Amount" - Rec."Balance Amount";
+            Rec."Security Amount Pending" := Rec."Security Deposit Amount" - Rec."Security Deposit Amt. Received";
 
         // // If Balance Amount has any value (non-zero), update Security Balanced Amount
         // if Rec."Balance Amount" <> 0 then
