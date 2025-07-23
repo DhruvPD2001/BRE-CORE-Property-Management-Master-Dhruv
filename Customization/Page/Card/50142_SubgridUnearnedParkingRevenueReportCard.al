@@ -66,7 +66,7 @@ page 50142 "Sub Unearned Prking Card"
                     ApplicationArea = All;
                     Editable = false;
                 }
-                field("Contract Value"; Rec."Contract Value")
+                field("Other Charges Value"; Rec."Other Charges Value")
                 {
                     ApplicationArea = All;
                     Editable = false;
