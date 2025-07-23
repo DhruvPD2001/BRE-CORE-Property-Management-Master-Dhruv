@@ -30,10 +30,18 @@ page 50139 "Unearned Revenue Report Card"
                     ApplicationArea = All;
                 }
             }
-            group("Unearned Revenue Report Report Details")
+            group("Unearned Rent Revenue Report Report Details")
             {
-                Caption = 'Unearned Revenue Report Details';
-                part("Unearned Revenue Report Details"; "Sub Unearned Revenue Card")
+                Caption = 'Unearned Rent Revenue Report Details';
+                part("Unearned Rent Revenue Report Details"; "Sub Unearned Revenue Card")
+                {
+                    SubPageLink = "Header No." = field("No.");
+                }
+            }
+            group("Unearned Parking Revenue Report Report Details")
+            {
+                Caption = 'Unearned Parking Revenue Report Details';
+                part("Unearned Parking Revenue Report Details"; "Sub Unearned Prking Card")
                 {
                     SubPageLink = "Header No." = field("No.");
                 }
@@ -68,7 +76,11 @@ page 50139 "Unearned Revenue Report Card"
         NewLineNo: Integer;
         unearnedRevenueBuffer: Record "Sub Unearned Revenue Report"; // your buffer table
         StartDate, EndDate : Date;
-
+        SuspendedReasonRec: Record SuspendReasonTable; // Replace with actual table name
+        FinalCalculationRec: Record "Final Calculation"; // Replace with actual table name
+        SuspendedReasonText: Text[100];
+        SuspendedDate: Date;
+        TerminationDate: Date;
     begin
         ClearSubgridData(); // Always clear before inserting
 
@@ -79,6 +91,7 @@ page 50139 "Unearned Revenue Report Card"
         tenancyContract.SetFilter("Tenant Contract Status", '%1|%2|%3|%4',
             tenancyContract."Tenant Contract Status"::Active,
             tenancyContract."Tenant Contract Status"::Terminated,
+            tenancyContract."Tenant Contract Status"::Suspended,
             tenancyContract."Tenant Contract Status"::"Active-Contract Renewed",
             tenancyContract."Tenant Contract Status"::"Contract Renewed");
 
@@ -89,8 +102,31 @@ page 50139 "Unearned Revenue Report Card"
         if tenancyContract.FindSet() then begin
             repeat
                 Clear(unearnedRevenueBuffer);
+                Clear(SuspendedReasonRec);
+                Clear(FinalCalculationRec);
 
                 NewLineNo := GetNextLineNo();
+
+                // ✅ Fetch suspended reason from separate table
+                SuspendedReasonText := '';
+                SuspendedDate := 0D;
+                if tenancyContract."Tenant Contract Status" = tenancyContract."Tenant Contract Status"::Suspended then begin
+                    SuspendedReasonRec.Reset();
+                    SuspendedReasonRec.SetRange("Contract ID", tenancyContract."Contract ID"); // Assuming this link exists
+                    if SuspendedReasonRec.FindLast() then begin // Get latest suspended reason
+                        SuspendedDate := SuspendedReasonRec.SuspensionEffectiveDate; // Replace with actual field name
+                    end;
+                end;
+
+                // ✅ Fetch termination date from final calculation table
+                TerminationDate := 0D;
+                if tenancyContract."Tenant Contract Status" = tenancyContract."Tenant Contract Status"::Terminated then begin
+                    FinalCalculationRec.Reset();
+                    FinalCalculationRec.SetRange("Contract ID", tenancyContract."Contract ID"); // Assuming this link exists
+                    if FinalCalculationRec.FindLast() then begin // Get latest calculation
+                        TerminationDate := FinalCalculationRec."Termination Date"; // Replace with actual field name
+                    end;
+                end;
 
                 unearnedRevenueBuffer.Init();
                 unearnedRevenueBuffer."Header No." := Rec."No."; // ✅ Set Header No. correctly
@@ -103,6 +139,8 @@ page 50139 "Unearned Revenue Report Card"
                 unearnedRevenueBuffer."Owner Name" := tenancyContract."Owner's Name";
                 unearnedRevenueBuffer."Contract Value" := tenancyContract."Annual Rent Amount";
                 unearnedRevenueBuffer."Contract Status" := Format(tenancyContract."Tenant Contract Status");
+                unearnedRevenueBuffer."Suspension Date" := SuspendedDate;
+                unearnedRevenueBuffer."Termination Date" := TerminationDate;
 
                 if tenancyContract."Praposal Type Selected" = tenancyContract."Praposal Type Selected"::"Single Unit" then
                     unearnedRevenueBuffer."Unit Name" := tenancyContract."Unit Name"
