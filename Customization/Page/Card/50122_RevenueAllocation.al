@@ -231,7 +231,7 @@ page 50122 "Revenue Allocation Card"
                         Approvalrevenueallocation."Financial Year" := Rec."Financial Year";
                         Approvalrevenueallocation."Month" := Rec."Month";
                         Approvalrevenueallocation."Status" := Rec."Status";
-                        Approvalrevenueallocation.Insert();
+                        Approvalrevenueallocation.Insert(true);
                         Message('Approval Request Sent successfully!');
                     end;
                 end;
