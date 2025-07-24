@@ -3,7 +3,7 @@ page 50142 "Sub Unearned Prking Card"
     PageType = ListPart;
     ApplicationArea = All;
     SourceTable = "Sub Unearned Parking Report";
-    Caption = 'Unearned Parking Revenue Report';
+    Caption = 'Unearned Other Charges Revenue Report';
 
     layout
     {
