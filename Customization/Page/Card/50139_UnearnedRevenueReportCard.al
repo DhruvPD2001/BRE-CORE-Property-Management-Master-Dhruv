@@ -517,13 +517,13 @@ page 50139 "Unearned Revenue Report Card"
                 HasMatchingData := false;
 
                 // 🔹 Check PaymentSchedule for valid item + date match
-                paymentSchedule.Reset();
-                paymentSchedule.SetRange("Contract ID", tenancyContract."Contract ID");
-                paymentSchedule.SetFilter("Secondary Item Type", ItemTypeFilter);
-                paymentSchedule.SetRange("Due Date", StartDate, EndDate);
-                paymentSchedule.SetRange("Invoiced", true);
-                if paymentSchedule.FindFirst() then
-                    HasMatchingData := true;
+                // paymentSchedule.Reset();
+                // paymentSchedule.SetRange("Contract ID", tenancyContract."Contract ID");
+                // paymentSchedule.SetFilter("Secondary Item Type", ItemTypeFilter);
+                // paymentSchedule.SetRange("Due Date", StartDate, EndDate);
+                // paymentSchedule.SetRange("Invoiced", true);
+                // if paymentSchedule.FindFirst() then
+                //     HasMatchingData := true;
 
                 // 🔹 If not found in payment schedule, check Revenue Structure
                 if not HasMatchingData then begin
@@ -544,7 +544,7 @@ page 50139 "Unearned Revenue Report Card"
                 revenueStructure.SetFilter("Secondary Item Type", ItemTypeFilter);
                 if revenueStructure.FindSet() then
                     repeat
-                        otherchargesvalue += revenueStructure."Amount Including VAT";
+                        otherchargesvalue := revenueStructure."Amount Including VAT";
                     until revenueStructure.Next() = 0;
 
                 // 🔹 Sum Paid Amount before Start Date
