@@ -46,43 +46,36 @@ page 50139 "Unearned Revenue Report Card"
                 {
                     ApplicationArea = All;
                     Editable = false;
-                    Style = Strong;
                 }
                 field("Total Opening Balance"; Rec."R_Total Opening Balance")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                    Style = Strong;
                 }
                 field("Total Invoice Raised During Year"; Rec."R_T_Invoice Raised During Year")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                    Style = Strong;
                 }
                 field("Total Revenue Allocated During Year"; Rec."R_T_Revenue Allocated During Y")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                    Style = Strong;
                 }
                 field("Total Unearned Revenue Balance"; Rec."R_T_Unearned Revenue Balance")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                    Style = Strong;
                 }
                 field("Total Calculated Unearned Rev Balance"; Rec."R_T_Cal Unearned RevBalance")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                    Style = Strong;
                 }
                 field("Total Shortfall Excess"; Rec."R_Total Shortfall Excess")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                    Style = Strong;
                 }
             }
 
