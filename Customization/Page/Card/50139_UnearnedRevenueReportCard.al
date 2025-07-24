@@ -39,6 +39,53 @@ page 50139 "Unearned Revenue Report Card"
                 }
             }
 
+            group("Total For Rent Charges")
+            {
+                Caption = 'Total For Rent Charges';
+                field("Total Contract Value"; Rec."R_Total Contract Value")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Style = Strong;
+                }
+                field("Total Opening Balance"; Rec."R_Total Opening Balance")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Style = Strong;
+                }
+                field("Total Invoice Raised During Year"; Rec."R_T_Invoice Raised During Year")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Style = Strong;
+                }
+                field("Total Revenue Allocated During Year"; Rec."R_T_Revenue Allocated During Y")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Style = Strong;
+                }
+                field("Total Unearned Revenue Balance"; Rec."R_T_Unearned Revenue Balance")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Style = Strong;
+                }
+                field("Total Calculated Unearned Rev Balance"; Rec."R_T_Cal Unearned RevBalance")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Style = Strong;
+                }
+                field("Total Shortfall Excess"; Rec."R_Total Shortfall Excess")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Style = Strong;
+                }
+            }
+
             group("Other Charges Details")
             {
                 Caption = 'Other Charges Details';
@@ -47,12 +94,60 @@ page 50139 "Unearned Revenue Report Card"
                     SubPageLink = "No." = field("No.");
                 }
             }
-            group("Unearned Parking Revenue Report Report Details")
+            group("Unearned Other Charges Revenue Report Report Details")
             {
-                Caption = 'Unearned Parking Revenue Report Details';
-                part("Unearned Parking Revenue Report Details"; "Sub Unearned Prking Card")
+                Caption = 'Unearned Other Charges Revenue Report Details';
+                part("Unearned Other Charges Revenue Report Details"; "Sub Unearned Prking Card")
                 {
                     SubPageLink = "Header No." = field("No.");
+                }
+            }
+
+            group("Total For Other Charges")
+            {
+                Caption = 'Total For Other Charges';
+
+                field(TotalOtherCharges; TotalOtherCharges)
+                {
+                    Caption = 'Total Other Charges';
+                    Editable = false;
+                    ApplicationArea = All;
+                }
+                field(TotalOpeningBalance; TotalOpeningBalance)
+                {
+                    Caption = 'Total Opening Balance';
+                    Editable = false;
+                    ApplicationArea = All;
+                }
+                field(TotalInvoiceraisedduringtheyear; TotalInvoiceraisedduringtheyear)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Total Invoice Raised During the Year';
+                    Editable = false;
+                }
+                field(Totalrevenueallocatedduringtheyear; Totalrevenueallocatedduringtheyear)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Total Revenue Allocation During the Year';
+                    Editable = false;
+                }
+                field(Totalunearnedrevenuebalance; Totalunearnedrevenuebalance)
+                {
+                    Caption = 'Total Unearned Revenue Balance';
+                    Editable = false;
+                    ApplicationArea = All;
+                }
+                field(Totalcalculatedunearnedrevenuebalance; Totalcalculatedunearnedrevenuebalance)
+                {
+                    Caption = 'Total Calculated Unearned Revenue Balance';
+                    Editable = false;
+                    ApplicationArea = All;
+                }
+                field(Totalshortfall; Totalshortfall)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Total Shortfall/Excess';
+                    Editable = false;
                 }
             }
         }
@@ -75,11 +170,61 @@ page 50139 "Unearned Revenue Report Card"
                 begin
                     UnearnedRevenueRent();
                     UnearnedRevenueOtherCharges();
+                    CalculateAndUpdateTotals();
                     Message('All data for Unearned Rent Revenue and Other Charges Revenue has been fetched.');
                 end;
             }
         }
     }
+
+    procedure CalculateAndUpdateTotals()
+    var
+        unearnedRevenueBuffer: Record "Sub Unearned Revenue Report";
+        TotalContractValue: Decimal;
+        TotalOpeningBalance: Decimal;
+        TotalInvoiceRaised: Decimal;
+        TotalRevenueAllocated: Decimal;
+        TotalUnearnedRevBalance: Decimal;
+        TotalCalculatedUnearnedRevBalance: Decimal;
+        TotalShortfallExcess: Decimal;
+    begin
+        // Initialize totals
+        TotalContractValue := 0;
+        TotalOpeningBalance := 0;
+        TotalInvoiceRaised := 0;
+        TotalRevenueAllocated := 0;
+        TotalUnearnedRevBalance := 0;
+        TotalCalculatedUnearnedRevBalance := 0;
+        TotalShortfallExcess := 0;
+
+        // Calculate totals from buffer table
+        unearnedRevenueBuffer.Reset();
+        unearnedRevenueBuffer.SetRange("Header No.", Rec."No.");
+
+        if unearnedRevenueBuffer.FindSet() then begin
+            repeat
+                TotalContractValue += unearnedRevenueBuffer."Contract Value";
+                TotalOpeningBalance += unearnedRevenueBuffer."Opening Balance";
+                TotalInvoiceRaised += unearnedRevenueBuffer."Invoice Raised During the Year";
+                TotalRevenueAllocated += unearnedRevenueBuffer."RevenueAllocated DuringtheYear";
+                TotalUnearnedRevBalance += unearnedRevenueBuffer."Unearned Revenue Balance";
+                TotalCalculatedUnearnedRevBalance += unearnedRevenueBuffer.CalculatedUnearnedRevBalance;
+                TotalShortfallExcess += unearnedRevenueBuffer."Shortfall/Excess";
+            until unearnedRevenueBuffer.Next() = 0;
+        end;
+
+        // Update header record with totals
+        Rec."R_Total Contract Value" := TotalContractValue;
+        Rec."R_Total Opening Balance" := TotalOpeningBalance;
+        Rec."R_T_Invoice Raised During Year" := TotalInvoiceRaised;
+        Rec."R_T_Revenue Allocated During Y" := TotalRevenueAllocated;
+        Rec."R_T_Unearned Revenue Balance" := TotalUnearnedRevBalance;
+        Rec."R_T_Cal Unearned RevBalance" := TotalCalculatedUnearnedRevBalance;
+        Rec."R_Total Shortfall Excess" := TotalShortfallExcess;
+
+        Rec.Modify();
+        CurrPage.Update();
+    end;
 
     procedure UnearnedRevenueRent()
     var
@@ -199,7 +344,6 @@ page 50139 "Unearned Revenue Report Card"
                 TotalNoofDays := unearnedRevenueBuffer."End Date" - unearnedRevenueBuffer."Start Date" + 1;
                 PerDayrent := unearnedRevenueBuffer."Contract Value" / TotalNoofDays;
                 UnearnedNoofday := unearnedRevenueBuffer."End Date" - EndDate;
-
                 unearnedRevenueBuffer.CalculatedUnearnedRevBalance := PerDayrent * UnearnedNoofday;
 
                 if tenancyContract."Praposal Type Selected" = tenancyContract."Praposal Type Selected"::"Single Unit" then
@@ -210,7 +354,6 @@ page 50139 "Unearned Revenue Report Card"
                     unearnedRevenueBuffer."Unit Name" := '';
                 // Add more fields as required
                 RevenueAllocation := CalculateRevenueAllocation(tenancyContract."Contract ID", tenancyContract."Contract Start Date", tenancyContract."Contract End Date");
-
                 unearnedRevenueBuffer."RevenueAllocated DuringtheYear" := RevenueAllocation;
                 unearnedRevenueBuffer."Unearned Revenue Balance" := TotalPaidAmount + TotalInvoicedAmount - RevenueAllocation;
                 // Message('Revenue allocation value : ' + Format(RevenueAllocation));
@@ -491,6 +634,7 @@ page 50139 "Unearned Revenue Report Card"
                 unearnedRevenueBuffer.Insert();
             until tenancyContract.Next() = 0;
         end;
+        CalculateAndStoreTotalRevenue();
     end;
 
     local procedure CalculateRevenueAllocations(ContractID: Integer; StartDate: Date; EndDate: Date): Decimal
@@ -637,6 +781,33 @@ page 50139 "Unearned Revenue Report Card"
         RevenueItemDetail.DeleteAll(true);
     end;
 
+    procedure CalculateAndStoreTotalRevenue()
+    var
+        SubUnearnedParkingReport: Record "Sub Unearned Parking Report";
+    begin
+
+
+        SubUnearnedParkingReport.SetRange("Header No.", Rec."No.");
+        if SubUnearnedParkingReport.FindSet() then
+            repeat
+                TotalOtherCharges += SubUnearnedParkingReport."Other Charges Value";
+                TotalOpeningBalance += SubUnearnedParkingReport."Opening Balance";
+                TotalInvoiceraisedduringtheyear += SubUnearnedParkingReport."Invoice Raised During the Year";
+                Totalrevenueallocatedduringtheyear += SubUnearnedParkingReport."RevenueAllocated DuringtheYear";
+                Totalunearnedrevenuebalance += SubUnearnedParkingReport."Unearned Revenue Balance";
+                Totalcalculatedunearnedrevenuebalance += SubUnearnedParkingReport.CalculatedUnearnedRevBalance;
+                Totalshortfall += SubUnearnedParkingReport."Shortfall/Excess";
+            until SubUnearnedParkingReport.Next() = 0;
+    end;
+
+    var
+        TotalOpeningBalance: Decimal;
+        TotalOtherCharges: Decimal;
+        TotalInvoiceraisedduringtheyear: Decimal;
+        Totalrevenueallocatedduringtheyear: Decimal;
+        Totalunearnedrevenuebalance: Decimal;
+        Totalcalculatedunearnedrevenuebalance: Decimal;
+        Totalshortfall: Decimal;
 
 
     trigger OnAfterGetRecord()
