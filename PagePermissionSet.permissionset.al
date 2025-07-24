@@ -237,14 +237,9 @@ permissionset 50101 PagePermissionSet
         page "Customer Card" = X,
         page "Customer List" = X,
         report "Unearned Rent Revenue" = X,
-        page "OtherCharges-UnearnedRevenue" = X,
         page "Request Credit Note Card" = X,
         page "Request Credit Note List" = X,
         page "Request CreditNote Grid" = X,
         page RequestCreditNoteApprovalList = X,
-        page "RevenueAllocationApproval List" = X,
-        page "Sub Unearned Prking Card" = X,
-        page "Sub Unearned Revenue Card" = X,
-        page "Unearned Revenue Report Card" = X,
-        page "Unearned Revenue Report List" = X;
+        page "RevenueAllocationApproval List" = X;
 }
