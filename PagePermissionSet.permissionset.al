@@ -235,6 +235,5 @@ permissionset 50101 PagePermissionSet
         page "Request Credit Note Card" = X,
         page "Request Credit Note List" = X,
         page "Request CreditNote Grid" = X,
-        page RequestCreditNoteApprovalList = X,
-        page "RevenueAllocationApproval List" = X;
+        page RequestCreditNoteApprovalList = X;
 }
