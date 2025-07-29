@@ -40,6 +40,11 @@ page 50979 "Request Credit Note List"
                     ApplicationArea = All;
                     Caption = 'Status';
                 }
+                field("Adjust with Invoice"; Rec."Adjust with Invoice")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Adjust with Invoice';
+                }
             }
         }
     }

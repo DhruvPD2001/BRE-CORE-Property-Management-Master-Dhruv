@@ -86,8 +86,6 @@ page 50982 "RequestCreditNoteApprovalList"
                     DialogResult: Action;
                     // 💡 Include your codeunit
                     RecipientEmail: Text; // ✅ Add this
-                    GenerateCreditMemo: Codeunit "Credit Memo Generate"; // ✅ Add this
-
                 begin
                     if Rec.Status = 'Pending' then begin
 
@@ -117,8 +115,6 @@ page 50982 "RequestCreditNoteApprovalList"
                         Commit();
                         CurrPage.Update();
                         Message('Request Approved Successfully with Remarks for Contract ID: %1', SelectedRec."Contract ID");
-                        GenerateCreditMemo.GenerateCreditMemo(SelectedRec);
-
                         //     end;
                         // end;
                     end else
