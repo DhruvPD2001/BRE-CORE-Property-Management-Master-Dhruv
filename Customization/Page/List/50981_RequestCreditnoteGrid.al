@@ -68,6 +68,8 @@ page 50981 "Request CreditNote Grid"
                         then begin
                             Rec."Current Charges Amount" := PaymentSchedule2.Amount;
                             Rec."Total Reduction" := Rec."Current Charges Amount";
+                            Rec.Invoiced := PaymentSchedule2.Invoiced;
+                            Rec."Invoice ID" := PaymentSchedule2."Invoice ID";
 
                         end;
                     end;
@@ -98,6 +100,16 @@ page 50981 "Request CreditNote Grid"
                     Caption = 'Total Pay Amount';
                     Editable = false; // This field is calculated and not editable
                 }
+                field("Invoice ID"; Rec."Invoice ID")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field(Invoiced; Rec.Invoiced)
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
                 field("Credit Note No."; Rec."Credit Note No.")
                 {
                     ApplicationArea = All;
@@ -110,6 +122,8 @@ page 50981 "Request CreditNote Grid"
                     ApplicationArea = All;
                     Caption = 'Credit Memo Generated';
                     Editable = IsFinanceManager;
+
+
                 }
 
             }
@@ -117,6 +131,37 @@ page 50981 "Request CreditNote Grid"
         }
 
 
+
+    }
+    actions
+    {
+        area(Processing)
+        {
+            action(CeateandApplyCreditMemo)
+            {
+                Caption = 'Create & Apply Credit Memo';
+                Image = CreditMemo;
+                ApplicationArea = All;
+
+
+                trigger OnAction()
+                var
+                    GenerateCreditMemo: Codeunit "Credit Memo Generate";
+                    RequestCreditNoteRec: Record "Request Credit Note";
+                begin
+                    RequestCreditNoteRec.SetRange("Request No.", Rec."Request No.");
+                    RequestCreditNoteRec.SetRange(Status, RequestCreditNoteRec.Status::Approved);
+                    RequestCreditNoteRec.SetRange("Adjust with Invoice", RequestCreditNoteRec."Adjust with Invoice"::Pending);
+                    if RequestCreditNoteRec.FindFirst() then
+                        GenerateCreditMemo.GenerateCreditMemo(Rec)
+                    else
+                        if RequestCreditNoteRec.Status <> RequestCreditNoteRec.Status::Approved then
+                            Error('Credit Note must be approved before creating and applying a credit memo.');
+                    if RequestCreditNoteRec."Adjust with Invoice" = RequestCreditNoteRec."Adjust with Invoice"::Adjusted then
+                        Error('The Credit Note is already adjusted');
+                end;
+            }
+        }
     }
 
     var
@@ -124,11 +169,6 @@ page 50981 "Request CreditNote Grid"
         ContractID: Integer;
         IsFinanceManager: Boolean;
 
-
-    // procedure SetRequestNo(pRequestNo: Code[20])
-    // begin
-    //     requestno := pRequestNo;
-    // end;
 
     procedure SetContractID(pContractID: Integer)
     begin
