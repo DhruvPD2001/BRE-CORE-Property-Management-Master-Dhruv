@@ -182,6 +182,7 @@ page 50125 "Adjustment Security Deposit"
                 var
                     SecurityDepositEntry: Record "Security Deposit Entry";
                     terminationcharges: Record "Termination Charges Sub";
+                    terminationamount: Decimal;
                 begin
                     // Validate required fields
                     if Rec."Contract ID" = 0 then
@@ -203,6 +204,17 @@ page 50125 "Adjustment Security Deposit"
                     SecurityDepositEntry."End Date" := Rec."Contract End Date";
                     SecurityDepositEntry.Status := Rec.Status; // Set initial status as Open
                     SecurityDepositEntry.Insert(true);
+
+                    terminationcharges.SetRange("Contract ID", Rec."Contract ID");
+                    if terminationcharges.FindSet() then begin
+                        // Modify existing approval record
+                        repeat
+                            terminationamount += terminationcharges."Amount Including VAT";
+                        until terminationcharges.Next() = 0;
+
+                        SecurityDepositEntry."Total Amount" := terminationamount;
+                        SecurityDepositEntry.Modify();
+                    end;
                     Message('Entry posted successfully!');
 
                     // Open the entries list
