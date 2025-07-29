@@ -148,12 +148,18 @@ page 50981 "Request CreditNote Grid"
                 var
                     GenerateCreditMemo: Codeunit "Credit Memo Generate";
                     RequestCreditNoteRec: Record "Request Credit Note";
+                    UserConfirmed: Boolean;
                 begin
                     RequestCreditNoteRec.SetRange("Request No.", Rec."Request No.");
                     RequestCreditNoteRec.SetRange(Status, RequestCreditNoteRec.Status::Approved);
                     RequestCreditNoteRec.SetRange("Adjust with Invoice", RequestCreditNoteRec."Adjust with Invoice"::Pending);
-                    if RequestCreditNoteRec.FindFirst() then
-                        GenerateCreditMemo.GenerateCreditMemo(Rec)
+                    if RequestCreditNoteRec.FindFirst() then begin
+                        UserConfirmed := Confirm('Do you want to create and post the Sales Credit Memo now?', false);
+                        if UserConfirmed then
+                            GenerateCreditMemo.GenerateCreditMemo(Rec)
+                        else
+                            Message('Operation canceled by user.')
+                    end
                     else
                         if RequestCreditNoteRec.Status <> RequestCreditNoteRec.Status::Approved then
                             Error('Credit Note must be approved before creating and applying a credit memo.');
