@@ -328,18 +328,24 @@ page 50966 "Credit Note Card"
                     CreditNotetable: Record "Credit Note";
                     CreditNote: Report "Terminated Credit Note";
                     FinalCalculation: Record "Final Calculation";
+                    azureBlobUploader: Codeunit "Azure AD Blob Storage";
+                    fileName: Text;
+                    uploadResult: Text;
+                    folderName: Text;
+                    azureConfig: Record AzureConfiguration;
+                    inStream: InStream;
                     // AzureBlobUploader: Codeunit "Azure Blob Management";
                     Billingcalculationgrid: Record "Final Billing Calculation Grid";
-                    InStream: InStream;
-                    FileName: Text;
-                    SASUrlBase: Text;
-                    SASUrlWithFileName: Text;
-                    UploadResult: Text;
+                    // InStream: InStream;
+                    // FileName: Text;
+                    // SASUrlBase: Text;
+                    // SASUrlWithFileName: Text;
+                    // UploadResult: Text;
                     TempBlob: Codeunit "Temp Blob";
-                    ValidFormats: List of [Text];
-                    FileExtension: Text[10];
-                    FileSize: Decimal;
-                    ConfigRecord: Record AzureConfiguration;
+                    // ValidFormats: List of [Text];
+                    // FileExtension: Text[10];
+                    // FileSize: Decimal;
+                    // ConfigRecord: Record AzureConfiguration;
                     ReportID: Integer; // Your report ID
                     RecRef: RecordRef;
                     FieldRef1: FieldRef;
@@ -353,14 +359,14 @@ page 50966 "Credit Note Card"
                     //  CreditNote.SetTableView(CreditNotetable);
                     //CreditNote.RunModal();
 
-                    if not ConfigRecord.FindFirst() then
-                        Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
-                    ValidFormats.Add('.png');
-                    ValidFormats.Add('.jpg');
-                    ValidFormats.Add('.jpeg');
+                    // if not ConfigRecord.FindFirst() then
+                    //     Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
+                    // ValidFormats.Add('.png');
+                    // ValidFormats.Add('.jpg');
+                    // ValidFormats.Add('.jpeg');
 
-                    SASUrlBase := ConfigRecord."SAS URL";
-                    FileExtension := '.pdf';
+                    // SASUrlBase := ConfigRecord."SAS URL";
+                    // FileExtension := '.pdf';
                     ReportID := 50117;
                     //  RecRef.Open(DATABASE::"Sales Header"); // Open the table reference
                     // RecRef.GetTable(Rec);
@@ -372,16 +378,25 @@ page 50966 "Credit Note Card"
 
                     // Open the correct record in RecRef
                     RecRef.GetTable(creditmemo);
-                    // RecRef.GetTable(Rec);
+                    RecRef.GetTable(Rec);
                     TempBlob.CreateOutStream(OutStream);
                     Report.SaveAs(ReportID, '', ReportFormat::Pdf, OutStream, RecRef);
-
                     TempBlob.CreateInStream(InStream);
-                    FileName := 'CreditNote' + Format(Rec."ID") + FileExtension;
-                    SASUrlWithFileName := StrSubstNo('%1/%2?%3', CopyStr(SASUrlBase, 1, StrPos(SASUrlBase, '?') - 1), FileName, CopyStr(SASUrlBase, StrPos(SASUrlBase, '?') + 1));
-                    UploadResult := documentattachment.UploadDocumentToBlobStorage(SASUrlWithFileName, FileName, InStream);
-                    Rec."Credit Note Document" := FileName;
-                    Rec."Credit Note URL" := UploadResult;
+
+                    FileName := 'CreditNote' + Format(Rec."ID") + '.pdf';
+                    // SASUrlWithFileName := StrSubstNo('%1/%2?%3', CopyStr(SASUrlBase, 1, StrPos(SASUrlBase, '?') - 1), FileName, CopyStr(SASUrlBase, StrPos(SASUrlBase, '?') + 1));
+                    // UploadResult := documentattachment.UploadDocumentToBlobStorage(SASUrlWithFileName, FileName, InStream);
+                    // Rec."Credit Note Document" := FileName;
+                    // Rec."Credit Note URL" := UploadResult;
+
+                    folderName := 'Payment Receipt';
+                    uploadResult := azureBlobUploader.UploadDocumentToBlob(inStream, fileName, folderName);
+                    if fileName <> '' then begin
+                        Rec."Credit Note Document" := fileName;
+                        Rec."Credit Note URL" := uploadResult;
+                        Rec.Modify();
+                        Message('File uploaded successfully: %1', fileName);
+                    end;
                     Rec.Modify();
 
                     Billingcalculationgrid.SetRange("Contract ID", Rec."Contract ID");
