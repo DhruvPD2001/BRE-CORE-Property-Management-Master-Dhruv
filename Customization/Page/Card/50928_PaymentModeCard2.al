@@ -35,7 +35,7 @@ page 50928 "Payment Mode Card2"
                 field("Amount Including VAT"; Rec."Amount Including VAT")
                 {
                     ApplicationArea = All;
-                    Editable = IsApproved; // The ID is not editable since it's auto-incrementing
+                    Editable = IsApproved and false; // The ID is not editable since it's auto-incrementing
                 }
 
 
@@ -43,7 +43,7 @@ page 50928 "Payment Mode Card2"
                 field("Due Date"; Rec."Due Date")
                 {
                     ApplicationArea = All;
-                    Editable = IsApproved;  // The ID is not editable since it's auto-incrementing
+                    Editable = IsApproved  and false;  // The ID is not editable since it's auto-incrementing
                 }
 
 
@@ -309,13 +309,14 @@ page 50928 "Payment Mode Card2"
                 {
                     Caption = 'Payment Received Date';
                     Editable = false;
+                    Visible = false;
                 }   
 
             field("View Invoice"; Rec."View Invoice")
             {
                 ApplicationArea = All;
                 Caption = 'View Receipt Document';
-               // Editable = false;
+                Editable = false;
                 DrillDown = true;
                 trigger OnDrillDown()
                 var
@@ -337,6 +338,7 @@ page 50928 "Payment Mode Card2"
             {
                 ApplicationArea = All;
                 Caption = 'View Reciept document URL';
+                Visible = false;
             }
                 field("Payment Reminder"; rec."Payment Reminder")
                 {
@@ -349,6 +351,7 @@ page 50928 "Payment Mode Card2"
                 {
                     ApplicationArea = All;
                     Caption = '"Credit Note Amount"';
+                      Editable = false; // The ID is not editable since it's auto-incrementing
                 }
 
                 field("Final Rent Amount"; Rec."Final Rent Amount")

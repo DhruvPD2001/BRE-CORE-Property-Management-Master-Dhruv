@@ -13,9 +13,9 @@ page 50951 "Final Billing Calculation"
             repeater(Group)
             {
                 field(RevenueDescription; Rec.RevenueDescription) { Caption = 'Revenue Description'; ApplicationArea = All; Editable = false; }
-                field("Contract ID"; Rec."Contract ID") { Caption = 'Contract ID'; ApplicationArea = All; Editable = false; }
+                field("Contract ID"; Rec."Contract ID") { Caption = 'Contract ID'; ApplicationArea = All; Editable = false; Visible = false; }
 
-                field("Entry No"; Rec."Entry No") { Caption = 'Entry No.'; ApplicationArea = All; Editable = false; }
+                field("Entry No"; Rec."Entry No") { Caption = 'Entry No.'; ApplicationArea = All; Editable = false; Visible = false; }
 
                 field(InvoicedAmount; Rec.InvoicedAmount) { Caption = 'Invoiced Amount'; ApplicationArea = All; Editable = false; }
                 field(InvoicedVAT; Rec.InvoicedVAT) { Caption = 'Invoiced VAT'; ApplicationArea = All; Editable = false; }
@@ -31,12 +31,14 @@ page 50951 "Final Billing Calculation"
                     Caption = 'Termination Date';
                     ApplicationArea = All;
                     Editable = false;
+                    Visible = false;
                 }
                 field("Payment Type"; Rec."Payment Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Payment Type';
                     Editable = false;
+                    Visible = false;
 
                 }
                 field("Property Classification"; Rec."Property Classification")
@@ -44,6 +46,7 @@ page 50951 "Final Billing Calculation"
                     ApplicationArea = All;
                     Caption = 'Property Classification';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Invoiced"; Rec.Invoiced)
                 {
@@ -219,8 +222,9 @@ page 50951 "Final Billing Calculation"
                         field("Invoice Document URL"; Rec."Invoice Document URL")
                         {
                             ApplicationArea = All;
-
+                            Editable = false;
                             Caption = 'Invoice Document URL';
+                            Visible = false;
                             //  DrillDown = true;
 
                         }
@@ -273,6 +277,8 @@ page 50951 "Final Billing Calculation"
                         {
                             ApplicationArea = All;
                             Caption = 'Credit Note Document URL';
+                            Editable = false;
+                            Visible = false;
                             //  DrillDown = true;
 
                         }

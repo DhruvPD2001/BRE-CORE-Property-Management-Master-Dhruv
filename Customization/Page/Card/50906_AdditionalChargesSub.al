@@ -71,6 +71,7 @@ page 50906 "Additional Charges Sub Card"
                     ApplicationArea = All;
                     Lookup = true;
                     Visible = false;
+                    Editable = false;
                 }
 
                 field("Tenant ID"; Rec."Tenant ID")
@@ -78,6 +79,7 @@ page 50906 "Additional Charges Sub Card"
                     ApplicationArea = All;
                     Lookup = true;
                     Visible = false;
+                    Editable = false;
                 }
                 field(Invoiced; Rec.Invoiced)
                 {
@@ -86,10 +88,13 @@ page 50906 "Additional Charges Sub Card"
                 field("Invoiced ID"; Rec."Invoiced ID")
                 {
                     ApplicationArea = All;
+                    Editable = false;
                 }
                 field("Unit Type"; Rec."Unit Type")
                 {
                     ApplicationArea = All;
+                    Editable = false;
+                    Visible = false;
                 }
             }
 
@@ -154,8 +159,8 @@ page 50906 "Additional Charges Sub Card"
                     ApplicationArea = All;
                     Caption = 'Invoice Document URL';
                     ToolTip = 'Click to view the invoice document.';
-
-
+                    Editable = false;
+                    Visible = false;
                 }
 
             }
