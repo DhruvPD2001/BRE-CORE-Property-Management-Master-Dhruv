@@ -76,82 +76,82 @@ page 50125 "Adjustment Security Deposit"
                     end;
                 }
             }
-            group(Adjust_Installment)
-            {
-                Visible = ShowAdjustInstallment;
-                field("Payment Series"; Rec."Payment Series")
-                {
-                    ApplicationArea = All;
+            // group(Adjust_Installment)
+            // {
+            //     Visible = ShowAdjustInstallment;
+            //     field("Payment Series"; Rec."Payment Series")
+            //     {
+            //         ApplicationArea = All;
 
-                    // Trasfer from Table Start  
-                    trigger OnLookup(var Text: Text): Boolean
-                    var
-                        PaymentMode2Rec: Record "Payment Mode2";
-                        Selection: Page "Payment Mode2 List";
-                        SelectedPaymentSeries: Text[250];
-                        TotalAmount: Decimal;
-                        TotalVATAmount: Decimal;
-                        TotalAmountInclVAT: Decimal;
-                    begin
-                        // First check if Contract ID is selected
-                        if Rec."Contract ID" = 0 then
-                            Error('Please select a Contract ID first');
+            //         // Trasfer from Table Start  
+            //         trigger OnLookup(var Text: Text): Boolean
+            //         var
+            //             PaymentMode2Rec: Record "Payment Mode2";
+            //             Selection: Page "Payment Mode2 List";
+            //             SelectedPaymentSeries: Text[250];
+            //             TotalAmount: Decimal;
+            //             TotalVATAmount: Decimal;
+            //             TotalAmountInclVAT: Decimal;
+            //         begin
+            //             // First check if Contract ID is selected
+            //             if Rec."Contract ID" = 0 then
+            //                 Error('Please select a Contract ID first');
 
-                        // Filter Payment Mode2 records based on Contract ID
-                        PaymentMode2Rec.Reset();
-                        PaymentMode2Rec.SetRange("Contract ID", Rec."Contract ID");
+            //             // Filter Payment Mode2 records based on Contract ID
+            //             PaymentMode2Rec.Reset();
+            //             PaymentMode2Rec.SetRange("Contract ID", Rec."Contract ID");
 
-                        Selection.LookupMode(true);
-                        Selection.SetTableView(PaymentMode2Rec);
+            //             Selection.LookupMode(true);
+            //             Selection.SetTableView(PaymentMode2Rec);
 
-                        if Selection.RunModal() = ACTION::LookupOK then begin
-                            // Clear totals
-                            Clear(TotalAmount);
-                            Clear(TotalVATAmount);
-                            Clear(TotalAmountInclVAT);
-                            Clear(SelectedPaymentSeries);
+            //             if Selection.RunModal() = ACTION::LookupOK then begin
+            //                 // Clear totals
+            //                 Clear(TotalAmount);
+            //                 Clear(TotalVATAmount);
+            //                 Clear(TotalAmountInclVAT);
+            //                 Clear(SelectedPaymentSeries);
 
-                            Selection.SetSelectionFilter(PaymentMode2Rec);
-                            if PaymentMode2Rec.FindSet() then begin
-                                repeat
-                                    // Add to payment series string
-                                    if SelectedPaymentSeries <> '' then
-                                        SelectedPaymentSeries := SelectedPaymentSeries + ',';
-                                    SelectedPaymentSeries := SelectedPaymentSeries + PaymentMode2Rec."Payment Series";
+            //                 Selection.SetSelectionFilter(PaymentMode2Rec);
+            //                 if PaymentMode2Rec.FindSet() then begin
+            //                     repeat
+            //                         // Add to payment series string
+            //                         if SelectedPaymentSeries <> '' then
+            //                             SelectedPaymentSeries := SelectedPaymentSeries + ',';
+            //                         SelectedPaymentSeries := SelectedPaymentSeries + PaymentMode2Rec."Payment Series";
 
-                                    // Sum up amounts
-                                    TotalAmount += PaymentMode2Rec.Amount;
-                                    TotalVATAmount += PaymentMode2Rec."VAT Amount";
-                                    TotalAmountInclVAT += PaymentMode2Rec."Amount Including VAT";
-                                until PaymentMode2Rec.Next() = 0;
+            //                         // Sum up amounts
+            //                         TotalAmount += PaymentMode2Rec.Amount;
+            //                         TotalVATAmount += PaymentMode2Rec."VAT Amount";
+            //                         TotalAmountInclVAT += PaymentMode2Rec."Amount Including VAT";
+            //                     until PaymentMode2Rec.Next() = 0;
 
-                                // Set all values to the record
-                                Rec."Payment Series" := SelectedPaymentSeries;
-                                Rec.Amount := TotalAmount;
-                                Rec."VAT Amount" := TotalVATAmount;
-                                Rec."Amount Including VAT" := TotalAmountInclVAT;
-                            end;
-                        end;
-                    end;
-                    // Trasfer from Table End
-                }
-                field(Amount; Rec.Amount)
-                {
-                    ApplicationArea = All;
-                }
-                field("VAT Amount"; Rec."VAT Amount")
-                {
-                    ApplicationArea = All;
-                }
-                field("Amount Including VAT"; Rec."Amount Including VAT")
-                {
-                    ApplicationArea = All;
-                }
-                field("Due Date"; Rec."Due Date")
-                {
-                    ApplicationArea = All;
-                }
-            }
+            //                     // Set all values to the record
+            //                     Rec."Payment Series" := SelectedPaymentSeries;
+            //                     Rec.Amount := TotalAmount;
+            //                     Rec."VAT Amount" := TotalVATAmount;
+            //                     Rec."Amount Including VAT" := TotalAmountInclVAT;
+            //                 end;
+            //             end;
+            //         end;
+            //         // Trasfer from Table End
+            //     }
+            //     field(Amount; Rec.Amount)
+            //     {
+            //         ApplicationArea = All;
+            //     }
+            //     field("VAT Amount"; Rec."VAT Amount")
+            //     {
+            //         ApplicationArea = All;
+            //     }
+            //     field("Amount Including VAT"; Rec."Amount Including VAT")
+            //     {
+            //         ApplicationArea = All;
+            //     }
+            //     field("Due Date"; Rec."Due Date")
+            //     {
+            //         ApplicationArea = All;
+            //     }
+            // }
             group(Termination_Charges)
             {
                 Visible = ShowTerminationCharges;
@@ -187,8 +187,8 @@ page 50125 "Adjustment Security Deposit"
                     if Rec."Contract ID" = 0 then
                         Error('Contract ID must be specified');
 
-                    if (Rec."Security Amount Status" = Rec."Security Amount Status"::" ") then
-                        Error('Please select Security Amount Status');
+                    // if (Rec."Security Amount Status" = Rec."Security Amount Status"::" ") then
+                    //     Error('Please select Security Amount Status');
 
                     // if Rec.Amount = 0 then
                     //     Error('Amount must be specified');
@@ -212,7 +212,6 @@ page 50125 "Adjustment Security Deposit"
         }
     }
     var
-        ShowAdjustInstallment: Boolean;
         ShowTerminationCharges: Boolean;
 
     trigger OnAfterGetRecord()
@@ -279,14 +278,14 @@ page 50125 "Adjustment Security Deposit"
     local procedure SetControlVisibility()
     begin
         case Rec."Security Amount Status" of
-            Rec."Security Amount Status"::"Adjust Installment":
-                begin
-                    ShowAdjustInstallment := true;
-                    ShowTerminationCharges := false;
-                end;
+            // Rec."Security Amount Status"::"Adjust Installment":
+            //     begin
+            //         ShowAdjustInstallment := true;
+            //         ShowTerminationCharges := false;
+            //     end;
             Rec."Security Amount Status"::"Termination Charges":
                 begin
-                    ShowAdjustInstallment := false;
+                    // ShowAdjustInstallment := false;
                     ShowTerminationCharges := true;
 
                     // Clear Adjust Installment fields
@@ -297,22 +296,22 @@ page 50125 "Adjustment Security Deposit"
                     Rec."Due Date" := 0D;
                     Rec.Modify(false);
                 end;
-            Rec."Security Amount Status"::"All Charges":  // NEW CASE for "All Charges"
-                begin
-                    ShowAdjustInstallment := true;
-                    ShowTerminationCharges := true;
-                end;
+            // Rec."Security Amount Status"::"All Charges":  // NEW CASE for "All Charges"
+            //     begin
+            //         ShowAdjustInstallment := true;
+            //         ShowTerminationCharges := true;
+            //     end;
             else begin
-                ShowAdjustInstallment := false;
+                // ShowAdjustInstallment := false;
                 ShowTerminationCharges := false;
 
                 // Clear Adjust Installment fields
-                Rec."Payment Series" := '';
-                Rec.Amount := 0;
-                Rec."VAT Amount" := 0;
-                Rec."Amount Including VAT" := 0;
-                Rec."Due Date" := 0D;
-                Rec.Modify(false);
+                // Rec."Payment Series" := '';
+                // Rec.Amount := 0;
+                // Rec."VAT Amount" := 0;
+                // Rec."Amount Including VAT" := 0;
+                // Rec."Due Date" := 0D;
+                //  Rec.Modify(false);
             end;
         end;
     end;
