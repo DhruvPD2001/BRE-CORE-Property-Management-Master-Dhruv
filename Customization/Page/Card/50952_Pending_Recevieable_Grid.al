@@ -11,8 +11,8 @@ page 50952 "Pending Recevieable Grid"
         {
             repeater(Group)
             {
-                field("Contract ID"; Rec."Contract ID") { ApplicationArea = All; Caption = 'Contract ID'; Editable = false; }
-                field("Entry No"; Rec."Entry No") { Caption = 'Entry No.'; ApplicationArea = All; Editable = false; }
+                field("Contract ID"; Rec."Contract ID") { ApplicationArea = All; Caption = 'Contract ID'; Editable = false; Visible = false; }
+                field("Entry No"; Rec."Entry No") { Caption = 'Entry No.'; ApplicationArea = All; Editable = false; Visible = false; }
 
                 field(RevenueDescription; Rec.RevenueDescription) { ApplicationArea = All; Caption = 'Revenue Description'; Editable = false; }
                 field(RevisedAmount; Rec.RevisedAmount) { ApplicationArea = All; Caption = 'Revised Amount'; Editable = false; }
@@ -29,12 +29,14 @@ page 50952 "Pending Recevieable Grid"
                     ApplicationArea = All;
                     Caption = 'Termination Date';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Payment Type"; Rec."Payment Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Payment Type';
                     Editable = false;
+                    Visible = false;
 
                 }
             }

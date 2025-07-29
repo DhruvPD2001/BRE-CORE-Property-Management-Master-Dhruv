@@ -15,18 +15,21 @@ page 50950 "Final Revenue Calculation Grid"
                 {
                     ApplicationArea = All;
                     Caption = 'Revenue Description';
+                    Editable = false;
                 }
                 field("Contract ID"; Rec."Contract ID")
                 {
                     ApplicationArea = All;
                     Caption = 'Contract ID';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Entry No."; Rec."Entry No.")
                 {
                     ApplicationArea = All;
                     Caption = 'Entry No.';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Original Amount"; Rec."Original Amount")
                 {
@@ -96,6 +99,7 @@ page 50950 "Final Revenue Calculation Grid"
                     ApplicationArea = All;
                     Caption = 'Actual Contract Tenure';
                     Editable = false;
+                    Visible = false;
 
                 }
                 field("Per Day Rent"; Rec."Per Day Rent")
@@ -103,23 +107,28 @@ page 50950 "Final Revenue Calculation Grid"
                     ApplicationArea = All;
                     Caption = 'Per Day Rent';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Revised VAT %"; Rec."Revised VAT %")
                 {
                     ApplicationArea = All;
                     Caption = 'Reviseed VAT %';
                     Editable = false;
+                    Visible = false;
                 }
                 field("ContractYear(Termination Date)"; Rec."ContractYear(Termination Date)")
                 {
                     ApplicationArea = All;
                     Caption = 'Contract Year On Termination Date';
+                    Editable = false;
+                    Visible = false;
                 }
                 field("Annual Rent Amount TermiYear"; Rec."Annual Rent Amount TermiYear")
                 {
                     ApplicationArea = All;
                     Caption = 'Annual Rent Amount of Termination Year';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Total No. Of Days"; Rec."Total No. Of Days")
                 {
@@ -127,13 +136,14 @@ page 50950 "Final Revenue Calculation Grid"
                     Caption = 'Total No. Of Days(Termination Year)';
                     ToolTip = 'Enter the Total No. Of Days.';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Payment Type"; Rec."Payment Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Payment Type';
                     Editable = false;
-
+                    Visible = false;
                 }
 
             }

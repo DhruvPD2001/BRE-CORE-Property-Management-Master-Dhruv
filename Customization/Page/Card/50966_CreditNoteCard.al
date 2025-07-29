@@ -116,6 +116,7 @@ page 50966 "Credit Note Card"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    Visible = false;
                 }
                 field("Contract Start Date"; Rec."Contract Start Date")
                 {
@@ -268,7 +269,7 @@ page 50966 "Credit Note Card"
                         ApprovalCreditNote."Contract Start Date" := CreditNote."Contract Start Date";
                         ApprovalCreditNote."Contract End Date" := CreditNote."Contract End Date";
                         ApprovalCreditNote."Tenant Name" := CreditNote."Tenant Name";
-                        ApprovalCreditNote."Credit Note Type" := CreditNote."Credit Note Type";
+                        ApprovalCreditNote."Credit Note Type" := CreditNote."Credit Note Type"::"Termination Credit Note";
                         ApprovalCreditNote.Modify();
 
                         billingcalculation.SetRange("Contract ID", Rec."Contract ID");
@@ -293,7 +294,7 @@ page 50966 "Credit Note Card"
                         ApprovalCreditNote."Contract Start Date" := CreditNote."Contract Start Date";
                         ApprovalCreditNote."Contract End Date" := CreditNote."Contract End Date";
                         ApprovalCreditNote."Tenant Name" := CreditNote."Tenant Name";
-                        ApprovalCreditNote."Credit Note Type" := CreditNote."Credit Note Type";
+                        ApprovalCreditNote."Credit Note Type" := CreditNote."Credit Note Type"::"Termination Credit Note";
                         ApprovalCreditNote.Insert(true);
                         //  Message('Approval Request Sent successfully!');
 

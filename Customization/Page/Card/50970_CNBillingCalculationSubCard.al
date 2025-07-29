@@ -21,6 +21,7 @@ page 50970 "Billing Calculation CN Card"
                 {
                     ApplicationArea = all;
                     Caption = 'Credit Note ID';
+                    Editable = false;
                 }
 
                 field("Contract ID"; Rec."Contract ID")

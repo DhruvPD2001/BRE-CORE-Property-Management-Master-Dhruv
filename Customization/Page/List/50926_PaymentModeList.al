@@ -32,12 +32,26 @@ page 50926 "Payment Mode List"
                 //     Caption = 'Proposal ID';
                 // }
 
+                field("Contract Start date"; Rec."Contract Start date")
+                {
+                    ApplicationArea = All;
+                }
+                field("Contract End date"; Rec."Contract End date")
+                {
+                    ApplicationArea = All;
+                }
+
                 field("Tenant ID"; Rec."Tenant ID")
                 {
                     ApplicationArea = All;
                     Caption = 'Tenant ID';
                 }
 
+                field("Tenant Name"; Rec."Tenant Name")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Tenant Name';
+                }
 
 
             }

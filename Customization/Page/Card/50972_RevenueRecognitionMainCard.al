@@ -67,7 +67,7 @@ page 50972 "Revenue Recognition Main"
 
                             if SourceRec.FindFirst() then begin
                                 // Store RI_No from SourceRec to Link field
-                                TargetRec.Link := SourceRec."RI_No.";
+                                //  TargetRec.Link := SourceRec."RI_No.";
 
                                 // Store header record RR_No. to current line
                                 TargetRec."RR_No." := Rec."RR_No."; // Rec is header/page context

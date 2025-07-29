@@ -24,21 +24,16 @@ page 50927 "Payment Mode Card"
                     //Editable = false; // The ID is not editable since it's auto-incrementing
                 }
 
-                // field("PS ID"; Rec."PS ID")
-                // {
-                //     ApplicationArea = All;
-                //     // Editable = false; // The ID is not editable since it's auto-incrementing
-                // }
-
-                //Caption = 'Primary Item Details';
-                // field("Proposal ID"; Rec."Proposal ID")
-                // {
-                //     ApplicationArea = All;
-                //     // Editable = false; // The ID is not editable since it's auto-incrementing
-                //     Lookup = true;
-
-
-                // }
+                field("Contract Start date"; Rec."Contract Start date")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Contract End date"; Rec."Contract End date")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
 
                 field("Tenant ID"; Rec."Tenant ID")
                 {

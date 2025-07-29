@@ -113,46 +113,53 @@ page 50922 "Payment Schedule Card2"
                 {
                     ApplicationArea = All;
                     Caption = 'Invoice ID';
-                    //Editable = false;
+                    Editable = false;
                 }
                 field("Contract Status"; Rec."Contract Status")
                 {
                     ApplicationArea = All;
                     Caption = 'Contract Status';
-                    //  Editable = false;
+                    Editable = false;
+                    Visible = false;
 
                 }
                 field("Overdue Invoice"; Rec."Overdue Invoice")
                 {
                     ApplicationArea = All;
                     Caption = 'Overdue Invoice';
-                    //Editable = false;
+                    Editable = false;
+                    Visible = false;
                 }
                 field("Property ID"; Rec."Property ID")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    Visible = false;
                 }
                 field("No of Days"; Rec."No of Days")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    Visible = false;
                 }
                 field("Workflow frequency date"; Rec."Workflow frequency date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    Visible = false;
                 }
                 field("Contract start date"; Rec."Contract start date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    Visible = false;
                 }
                 field("VAT%"; Rec."VAT%")
                 {
                     ApplicationArea = All;
                     Caption = 'VAT%';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Payment Status"; Rec."Payment Status")
                 {
@@ -164,6 +171,7 @@ page 50922 "Payment Schedule Card2"
                     ApplicationArea = All;
                     Caption = 'Payment Received Date';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Property Classification"; Rec."Property Classification")
                 {
@@ -178,6 +186,7 @@ page 50922 "Payment Schedule Card2"
                     ApplicationArea = All;
                     Caption = 'Payment Mode';
                     Editable = false;
+                    Visible = false;
 
                 }
                 field("Cheque Number"; Rec."Cheque Number")
@@ -185,12 +194,14 @@ page 50922 "Payment Schedule Card2"
                     ApplicationArea = All;
                     Caption = 'Cheque Number';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Credit Note No."; Rec."Credit Note No.")
                 {
                     ApplicationArea = All;
                     Caption = '"Credit Note No."';
                     Editable = false;
+                    Visible = false;
                 }
 
                 field("Credit Note Amount"; Rec."Credit Note Amount")
@@ -198,6 +209,7 @@ page 50922 "Payment Schedule Card2"
                     ApplicationArea = All;
                     Caption = '"Credit Note Amount"';
                     Editable = false;
+                    Visible = false;
                 }
 
                 field("Final Rent Amount"; Rec."Final Rent Amount")
@@ -205,13 +217,14 @@ page 50922 "Payment Schedule Card2"
                     ApplicationArea = All;
                     Caption = '"Final Rent Amount"';
                     Editable = false;
+                    Visible = false;
                 }
                 field("Final RentAmountIncludingVAT"; Rec."Final RentAmountIncludingVAT")
                 {
                     ApplicationArea = All;
                     Caption = '"Final Rent Amount Including VAT"';
                     Editable = false;
-                    //  Editable = false;
+                    Visible = false;
                 }
 
 

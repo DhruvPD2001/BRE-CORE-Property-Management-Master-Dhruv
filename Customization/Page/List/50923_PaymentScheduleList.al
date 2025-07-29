@@ -20,16 +20,27 @@ page 50923 "Payment Schedule List"
                     ApplicationArea = All;
                     Caption = 'Contract_ID';
                 }
-                // field("Proposal ID"; Rec."Proposal ID")
-                // {
-                //     ApplicationArea = All;
-                //     Caption = 'Proposal ID';
-                // }
+                field("Contract Start Date"; Rec."Contract Start date")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Contract Start Date';
+                }
+
+                field("Contract End Date"; Rec."Contract End date")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Contract End Date';
+                }
 
                 field("Tenant ID"; Rec."Tenant ID")
                 {
                     ApplicationArea = All;
                     Caption = 'Tenant ID';
+                }
+                field("Tenant Name"; Rec."Tenant Name")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Tenant Name';
                 }
                 // field("Total Amount Including VAT"; Rec."Total Amount Including VAT")
                 // {
