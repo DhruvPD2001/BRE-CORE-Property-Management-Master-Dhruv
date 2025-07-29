@@ -56,9 +56,16 @@ pageextension 50102 UnitManagement extends "O365 Activities"
                     ToolTip = 'Count of all units.';
 
                     trigger OnDrillDown()
+                    var
+                        item: Record Item; // Replace with your actual Property Table
+                        itemListPage: Page "Item List"; // Replace with your actual Item List Page
                     begin
+                        item.SetRange("Item Template", item."Item Template"::Service); // Assuming you have a field to filter units
+                        item.SetRange("Item type template", item."Item type template"::"Unit Service"); // Filter by Free status
                         // Drill down to the vacant property list page
-                        PAGE.RUN(PAGE::"Item List");
+                        itemListPage.SetTableView(item); // Set the filtered view
+                        // PAGE.RUN(PAGE::"Item List");
+                        itemListPage.Run(); // Open the Item List page with the filtered view
                     end;
                 }
             }
@@ -359,6 +366,8 @@ pageextension 50102 UnitManagement extends "O365 Activities"
     var
         PropertyRec: Record Item; // Replace with your actual Property Table
     begin
+        PropertyRec.SetRange("Item Template", PropertyRec."Item Template"::Service); // Assuming you have a field to filter units
+        propertyRec.SetRange("Item type template", PropertyRec."Item type template"::"Unit Service"); // Filter by Free status
         // PropertyRec.SetRange(, 'Residential'); // Filter by Vacant status
         exit(PropertyRec.Count()); // Return the count of vacant properties
     end;

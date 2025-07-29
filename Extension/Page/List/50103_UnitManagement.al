@@ -140,14 +140,4 @@ pageextension 50103 ItemListExtension extends "Item List"
         end;
         exit(SelectedUnits);
     end;
-
-    trigger OnOpenPage()
-    var
-
-    begin
-        Rec.SetRange(Type, Rec.Type::Service);
-    end;
-
-
-
 }
