@@ -458,7 +458,7 @@ page 50335 "Contract Renewal Card"
                 field("Renewal Contract Status"; rec."Renewal Contract Status")
                 {
                     ApplicationArea = All;
-                    Editable = true; // The ID is not editable since it's auto-incrementing
+                    Editable = false; // The ID is not editable since it's auto-incrementing
                 }
 
                 field("Original Contract ID"; rec."Original Contract ID")
@@ -491,6 +491,7 @@ page 50335 "Contract Renewal Card"
                 {
                     ApplicationArea = All;
                     Editable = true; // The ID is not editable since it's auto-incrementing
+                    Caption = 'Contract Renewal Proposal Status';
                 }
 
 

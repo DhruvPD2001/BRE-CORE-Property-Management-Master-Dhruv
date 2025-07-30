@@ -317,7 +317,7 @@ page 50313 "Tenancy Contract Card"
                 field("Contract End Date"; Rec."Contract End Date")
                 {
                     ApplicationArea = All;
-                    Editable = true;
+                    Editable = false;
                 }
                 field("Contract Tenor"; Rec."Contract Tenor")
                 {
