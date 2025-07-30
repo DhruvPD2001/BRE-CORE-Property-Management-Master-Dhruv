@@ -416,6 +416,11 @@ page 50313 "Tenancy Contract Card"
                     Caption = 'Security Deposit Amount Balance';
                 }
             }
+            field(IsCarryForwarded; Rec.IsCarryForwarded)
+            {
+                ApplicationArea = all;
+                Visible = false;
+            }
 
             // Group for Grace Period Information
             group("Grace Period Info")
@@ -1872,10 +1877,7 @@ page 50313 "Tenancy Contract Card"
                     Editable = false;
                 }
             }
-            field(IsCarryForwarded; Rec.IsCarryForwarded)
-            {
-                ApplicationArea = all;
-            }
+
 
         }
     }
