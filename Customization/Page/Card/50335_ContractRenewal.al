@@ -207,6 +207,16 @@ page 50335 "Contract Renewal Card"
                     ApplicationArea = All;
                     Editable = false;
                 }
+                field("Usage Type"; Rec."Usage Type")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Unit Type"; Rec."Unit Type")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
 
                 field("Single Unit Name"; Rec."Single Unit Name")
                 {
