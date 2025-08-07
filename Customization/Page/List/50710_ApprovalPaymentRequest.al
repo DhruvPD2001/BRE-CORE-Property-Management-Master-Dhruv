@@ -7,7 +7,7 @@ page 50710 "Approval Payment Request"
     UsageCategory = Lists;
     InsertAllowed = false;
     ModifyAllowed = true;
-    DeleteAllowed = false;
+    DeleteAllowed = true;
 
     layout
     {
