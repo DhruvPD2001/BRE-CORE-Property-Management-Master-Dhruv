@@ -113,7 +113,7 @@ page 50922 "Payment Schedule Card2"
                 {
                     ApplicationArea = All;
                     Caption = 'Invoice ID';
-                    Editable = false;
+                     Editable = InvoicedField;
                 }
                 field("Contract Status"; Rec."Contract Status")
                 {
