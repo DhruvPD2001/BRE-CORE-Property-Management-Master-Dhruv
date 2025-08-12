@@ -1,9 +1,9 @@
-page 50961 "Brokerage Master Data List"
+page 50954 "Management Fee MasterData List"
 {
     PageType = List;
-    SourceTable = "Brokerage Master Data";
+    SourceTable = "Management Fee MasterData";
     ApplicationArea = All;
-    Caption = 'Brokerage Master Data';
+    Caption = 'Management Fee Master Data';
     UsageCategory = Lists;
     InsertAllowed = false;
     ModifyAllowed = false;
@@ -19,6 +19,7 @@ page 50961 "Brokerage Master Data List"
                     ApplicationArea = All;
                     Editable = false;
                     DrillDown = true;
+                    ToolTip = 'Specifies the unique identifier for the vendor. Click to view the vendor profile.';
 
                     trigger OnDrillDown()
                     var
@@ -35,29 +36,14 @@ page 50961 "Brokerage Master Data List"
                 {
                     ApplicationArea = All;
                     Editable = false;
-                }
-                field("Contract ID"; Rec."Contract ID")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    DrillDown = true;
-
-                    trigger OnDrillDown()
-                    var
-                        tenancycontract: Record "Tenancy Contract";
-                    begin
-                        tenancycontract.SetRange("Contract ID", Rec."Contract ID");
-                        if tenancycontract.FindSet() then
-                            PAGE.RunModal(PAGE::"Tenancy Contract Card", tenancycontract)
-                        else
-                            Message('No Property Registration found using FindFirst either.');
-                    end;
+                    ToolTip = 'Specifies the full name of the vendor.';
                 }
                 field("Property ID"; Rec."Property ID")
                 {
                     ApplicationArea = All;
                     Editable = false;
                     DrillDown = true;
+                    ToolTip = 'Specifies the unique identifier for the property. Click to view the property registration details.';
 
                     trigger OnDrillDown()
                     var
@@ -74,92 +60,74 @@ page 50961 "Brokerage Master Data List"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the name of the property.';
                 }
                 field("Start Date"; Rec."Start Date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the date when the contract or agreement starts.';
                 }
                 field("End Date"; Rec."End Date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the date when the contract or agreement ends.';
                 }
                 field("Property Type"; Rec."Property Type")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the type of the property, such as commercial or residential.';
                 }
                 field("Calculation Method"; Rec."Calculation Method")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                }
-                field("Base Amount"; Rec."Base Amount")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                }
-                field("Base Amount Type"; Rec."Base Amount Type")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
+                    ToolTip = 'Specifies the method used to calculate the payment or amount.';
                 }
                 field("Percentage Type"; Rec."Percentage Type")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the basis for the percentage calculation.';
                 }
 
                 field("Percentage"; Rec."Percentage")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the percentage value used in the calculation.';
                 }
                 field("Amount"; Rec."Amount")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the calculated amount for the contract.';
+                }
+                field("Base Amount"; Rec."Base Amount")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the base amount before applying percentage or other calculations.';
                 }
                 field("Frequency Of Payment"; Rec."Frequency Of Payment")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies how often payments are made, such as monthly, quarterly, or annually.';
                 }
                 field("Contract Status"; Rec."Contract Status")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the current status of the contract, such as Active, Pending, or Terminated.';
                 }
-                field("Owner Name"; Rec."Owner Name")
+                field("Company ID"; Rec."Company ID")
                 {
                     ApplicationArea = All;
                     Editable = false;
-                }
-                // field("Unit ID"; Rec."Unit ID")
-                // {
-                //     ApplicationArea = All;
-                //     Editable = false;
-                // }
-                field("Unit Number"; Rec."Unit Number")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                }
-                field("Unit Name"; Rec."Unit Name")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                }
-                field("Tenant Name"; Rec."Tenant Name")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                }
-                field("Owner ID"; Rec."Owner ID")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
+                    ToolTip = 'Specifies the unique identifier for the company associated with this contract.';
                 }
             }
         }

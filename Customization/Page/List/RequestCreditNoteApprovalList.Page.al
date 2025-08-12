@@ -20,12 +20,15 @@ page 50982 "RequestCreditNoteApprovalList"
                     ApplicationArea = All;
                     Caption = 'ID';
                     Editable = false;
+                    ToolTip = 'Displays the unique system-generated ID for this record.';
                 }
                 field("Request No."; Rec."Request No.")
                 {
                     ApplicationArea = All;
                     Caption = 'Request No.';
                     Editable = false;
+                    ToolTip = 'Shows the request number. Click to drill down and view the related Request Credit Note details.';
+
                     trigger OnDrillDown()
                     var
                         RequestCreditNote: Record "Request Credit Note";
@@ -42,24 +45,28 @@ page 50982 "RequestCreditNoteApprovalList"
                     ApplicationArea = All;
                     Caption = 'Contract ID';
                     Editable = false;
+                    ToolTip = 'Displays the ID of the contract linked to this request.';
                 }
                 field("Tenant No."; Rec."Tenant No.")
                 {
                     ApplicationArea = All;
                     Caption = 'Tenant No.';
                     Editable = false;
+                    ToolTip = 'Displays the tenant number associated with this request.';
                 }
                 field("Request Date"; Rec."Request Date")
                 {
                     ApplicationArea = All;
                     Caption = 'Request Date';
                     Editable = false;
+                    ToolTip = 'Shows the date on which the request was created.';
                 }
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
                     Caption = 'Status';
                     Editable = false;
+                    ToolTip = 'Indicates the current status of the request.';
                 }
             }
         }
@@ -75,26 +82,16 @@ page 50982 "RequestCreditNoteApprovalList"
                 Caption = 'Approve';
                 Visible = IsFinanceManager;
                 Image = Approve;
+                ToolTip = 'Approve this record. Available only to Finance Managers.';
 
                 trigger OnAction()
 
                 var
                     SelectedRec: Record RequestCreditNoteApprovalList;
                     RequestCreditNote: Record "Request Credit Note";
-                    RemarkDialog: Page "DialogBoxForInvoiceRejection";
-                    RemarkText: Text;
-                    DialogResult: Action;
-                    // 💡 Include your codeunit
-                    RecipientEmail: Text; // ✅ Add this
                 begin
                     if Rec.Status = 'Pending' then begin
 
-
-                        // if DialogResult = Action::OK then begin
-                        //     RemarkText := RemarkDialog.GetReason();
-
-                        //     if RemarkText <> '' then begin
-                        // Update approval table
                         SelectedRec := Rec;
                         SelectedRec.Status := 'Approved';
                         SelectedRec.Modify();
@@ -102,15 +99,12 @@ page 50982 "RequestCreditNoteApprovalList"
                         // Update all matching Vendor Proposal records
                         RequestCreditNote.SetRange("Request No.", SelectedRec."Request No.");
                         RequestCreditNote.SetRange("Contract ID", SelectedRec."Contract ID");
-                        if RequestCreditNote.FindSet() then begin
+                        if RequestCreditNote.FindSet() then
                             repeat
 
                                 RequestCreditNote.Status := RequestCreditNote.Status::Approved;
                                 RequestCreditNote.Modify();
                             until RequestCreditNote.Next() = 0;
-                        end;
-
-
 
                         Commit();
                         CurrPage.Update();
@@ -127,6 +121,7 @@ page 50982 "RequestCreditNoteApprovalList"
                 Caption = 'Reject';
                 Visible = IsFinanceManager;
                 Image = Reject;
+                ToolTip = 'Reject this record. Available only to Finance Managers.';
 
                 trigger OnAction()
                 var
@@ -146,20 +141,19 @@ page 50982 "RequestCreditNoteApprovalList"
                                 // Update in approval table
                                 SelectedRec := Rec;
                                 SelectedRec.Status := 'Rejected';
-                                SelectedRec.Remark := RemarkText;
+                                SelectedRec.Remark := CopyStr(RemarkText, 1, StrLen(RemarkText));
                                 SelectedRec.Modify();
 
                                 // Update in vendor proposal table
                                 RequestCreditNote1.SetRange("Request No.", SelectedRec."Request No.");
                                 RequestCreditNote1.SetRange("Contract ID", SelectedRec."Contract ID");
-                                if RequestCreditNote1.FindSet() then begin
+                                if RequestCreditNote1.FindSet() then
                                     repeat
-                                        RequestCreditNote1."Reason for Rejection" := RemarkText;
+                                        RequestCreditNote1."Reason for Rejection" := CopyStr(RemarkText, 1, StrLen(RemarkText));
                                         RequestCreditNote1.Status := RequestCreditNote1.Status::Rejected;
                                         RequestCreditNote1.Modify();
                                         RequestCreditNote1.Modify();
                                     until RequestCreditNote1.Next() = 0;
-                                end;
 
                                 Commit();
                                 CurrPage.Update();
@@ -192,14 +186,14 @@ page 50982 "RequestCreditNoteApprovalList"
     var
         UserPersonalization: Record "User Personalization";
     begin
-        if UserPersonalization.Get(UserSecurityId()) then begin
+        if UserPersonalization.Get(UserSecurityId()) then
             case UserPersonalization."Profile ID" of
                 'FINANCE MANAGER':
                     exit(true);  // Only property managers can approve/reject
                 else
                     exit(false);
             end;
-        end;
+
         exit(false);
     end;
 

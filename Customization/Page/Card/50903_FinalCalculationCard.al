@@ -16,11 +16,13 @@ page 50903 "Final Calculation Card"
                 {
                     ApplicationArea = All;
                     Editable = false; // The ID is not editable since it's auto-incrementing
+                    ToolTip = 'Specifies the unique identifier for the contract.';
                 }
                 field("FC ID"; Rec."FC ID")
                 {
                     ApplicationArea = All;
                     Editable = false; // The ID is not editable since it's auto-incrementing
+                    ToolTip = 'Specifies the Final Calculation or related reference for the contract.';
                 }
                 field("Contract Start Date"; Rec."Contract Start Date")
                 {
@@ -64,15 +66,14 @@ page 50903 "Final Calculation Card"
 
                     trigger OnValidate()
                     var
+                        FinalCalculation: Record "Final Calculation";
                         TerminateDate: Date;
                         DaysCal: Integer;
                         StartDate: Date;
-                        FinalCalculation: Record "Final Calculation";
-
                     begin
                         FinalCalculation.SetRange("FC ID", Rec."FC ID");
                         FinalCalculation.SetRange("Contract ID", Rec."Contract ID");
-                        if FinalCalculation.FindFirst() then begin
+                        if not FinalCalculation.IsEmpty() then begin
 
                             StartDate := Rec."Contract Start Date";
                             TerminateDate := Rec."Termination Date";
@@ -84,7 +85,6 @@ page 50903 "Final Calculation Card"
                         // CurrPage.Update();
 
                         GetContractTerminationYear();
-
                         Fetchperdayrent();
                         PopulateRevenueCalculationGrid();
                         GetDataTenancyContract();
@@ -114,18 +114,21 @@ page 50903 "Final Calculation Card"
                     Caption = 'Tenant ID';
                     Lookup = true;
                     Editable = false;
+                    ToolTip = 'Specifies the unique identifier of the tenant associated with the contract.';
                 }
                 field("Tenant Email"; Rec."Tenant Email")
                 {
                     ApplicationArea = All;
                     Caption = 'Tenant Email';
                     Editable = false;
+                    ToolTip = 'Displays the email address of the tenant.';
                 }
                 field("Tenant Name"; Rec."Tenant Name")
                 {
                     ApplicationArea = All;
                     Caption = 'Tenant Name';
                     Editable = false;
+                    ToolTip = 'Shows the full name of the tenant.';
                 }
                 field("Original Contract Tenure"; Rec."Original Contract Tenure")
                 {
@@ -161,12 +164,14 @@ page 50903 "Final Calculation Card"
                     ApplicationArea = All;
                     Caption = 'Annual Rent Amount of Termination Year';
                     Editable = false;
+                    ToolTip = 'Displays the annual rent amount applicable for the year of termination.';
                 }
                 field("Status"; Rec.Status)
                 {
                     ApplicationArea = All;
                     Caption = 'Status';
                     Editable = false;
+                    ToolTip = 'Indicates the current status of the record.';
                 }
 
                 field("Termination Status"; Rec."Termination Status")
@@ -174,6 +179,7 @@ page 50903 "Final Calculation Card"
                     ApplicationArea = All;
                     Editable = false;
                     Caption = 'Termination Type';
+                    ToolTip = 'Shows the type of termination for the contract.';
                 }
                 field("Final Calculation Document"; Rec."Final Calculation Document")
                 {
@@ -181,6 +187,7 @@ page 50903 "Final Calculation Card"
                     Caption = 'Final Calculation Document';
                     DrillDown = true;
                     Editable = false;
+                    ToolTip = 'Click to upload or view the final calculation document related to this record.';
 
                     trigger OnDrillDown()
                     var
@@ -192,8 +199,8 @@ page 50903 "Final Calculation Card"
                         folderName := 'finalcalculationdocument';
                         fileName := azureBlobUploader.ValidateDocument(uploadResult, folderName);
                         if fileName <> '' then begin
-                            Rec."Final Calculation Document" := fileName;
-                            Rec."Final Calculation URL" := uploadResult;
+                            Rec."Final Calculation Document" := CopyStr(fileName, 1, StrLen(fileName));
+                            Rec."Final Calculation URL" := CopyStr(uploadResult, 1, StrLen(uploadResult));
                             Rec.Modify();
                             Message('File uploaded successfully: %1', fileName);
                         end;
@@ -206,6 +213,7 @@ page 50903 "Final Calculation Card"
                     Caption = 'Credit Note Document';
                     DrillDown = true;
                     Editable = false;
+                    ToolTip = 'Click to view the credit note document in your browser.';
 
                     trigger OnDrillDown()
                     var
@@ -229,6 +237,7 @@ page 50903 "Final Calculation Card"
                     ApplicationArea = All;
                     Editable = false;
                     Visible = false;
+                    ToolTip = 'Stores the URL for the credit note document.';
                 }
 
                 // field("Credit Note"; Rec."Credit Note")
@@ -389,6 +398,7 @@ page 50903 "Final Calculation Card"
                     {
                         ApplicationArea = All;
                         Editable = false;
+                        ToolTip = 'Specifies the unique identifier for the contract.';
                         // trigger OnValidate()
                         // begin
                         //     FetchSecurityDepositInfo();
@@ -398,16 +408,19 @@ page 50903 "Final Calculation Card"
                     {
                         ApplicationArea = All;
                         Editable = false;
+                        ToolTip = 'Shows the amount of the carried forward security deposit.';
                     }
                     field("Adjustment Security Deposit"; Rec."Adjustment Security Deposit")
                     {
                         ApplicationArea = All;
                         Editable = false;
+                        ToolTip = 'Displays the adjusted security deposit amount.';
                     }
                     field("Net Balance"; Rec."Net Balance")
                     {
                         ApplicationArea = All;
                         Editable = false;
+                        ToolTip = 'Shows the net balance after adjustments.';
                     }
                 }
                 group("Carry Forward the Security Deposit To")
@@ -426,22 +439,26 @@ page 50903 "Final Calculation Card"
                         ApplicationArea = All;
                         Caption = 'Security Deposit';
                         Editable = false;
+                        ToolTip = 'Displays the refundable security deposit amount.';
                     }
                     field("Chiller Deposit"; Rec."Chiller Deposit")
                     {
                         ApplicationArea = All;
                         Editable = false;
+                        ToolTip = 'Shows the refundable chiller deposit amount.';
                     }
                     field("Other Deposit"; Rec."Other Deposit")
                     {
                         ApplicationArea = All;
                         Editable = false;
+                        ToolTip = 'Displays other refundable deposits.';
                     }
                     field("Total Net Balance"; Rec."Total Refundable Deposit")
                     {
                         ApplicationArea = All;
                         Caption = 'Total Refundable Deposit';
                         Editable = false;
+                        ToolTip = 'Shows the total amount of refundable deposits.';
                     }
                 }
 
@@ -452,32 +469,38 @@ page 50903 "Final Calculation Card"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Displays the total claim amount.';
                 }
                 field("Total Adjustment"; Rec."Total Adjustment")
                 {
                     ApplicationArea = All;
                     Editable = false;
                     Visible = false;
+                    ToolTip = 'Shows the total adjustment amount.';
                 }
                 field("Total Refund"; Rec."Total Refund")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Displays the total refund amount to the tenant.';
                 }
                 field("Total Receive"; Rec."Total Receive")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Shows the total amount received from the tenant.';
                 }
                 field("Summery Net Balance"; Rec."Summery Net Balance")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Displays the final net balance summary.';
                 }
                 field("Amount Refundable"; Rec."Amount Refundable")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Shows the amount refundable to the tenant.';
                     trigger OnValidate()
                     begin
                         if Rec."Amount Refundable" <> 0 then
@@ -491,6 +514,7 @@ page 50903 "Final Calculation Card"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Displays the amount receivable from the tenant.';
 
                     trigger OnValidate()
                     begin
@@ -540,10 +564,9 @@ page 50903 "Final Calculation Card"
                 ApplicationArea = All;
                 Caption = 'Final Calculation';
                 Image = PostDocument;
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
                 Enabled = CanPost;
+                ToolTip = 'Perform the final calculation for this record before posting.';
+
                 trigger OnAction()
                 var
                     ApprovalFinalCalculation: Record "Approval Final Calculation";
@@ -582,18 +605,18 @@ page 50903 "Final Calculation Card"
                         ApprovalFinalCalculation."Contract Amount" := Rec."Contract Amount";
 
 
-                        if FinalCalculation.FindSet() then begin
+                        if FinalCalculation.FindSet() then
                             // If found, get the latest RS ID
-                            FinalCalculationid := ApprovalFinalCalculation."FC ID";
-                        end else begin
+                            FinalCalculationid := ApprovalFinalCalculation."FC ID"
+                        else
                             // If no record is found, create a new Revenue Structure record
                             FinalCalculation.Init();
-                            FinalCalculation.Insert(true);
-                            FinalCalculation.Modify(true);  // Insert the new record and generate the RS ID
+                        FinalCalculation.Insert(true);
+                        FinalCalculation.Modify(true);  // Insert the new record and generate the RS ID
 
-                            // Get the newly created RS ID
-                            FinalCalculationid := ApprovalFinalCalculation."FC ID";
-                        end;
+                        // Get the newly created RS ID
+                        FinalCalculationid := ApprovalFinalCalculation."FC ID";
+
                         ApprovalFinalCalculation."Link" := FinalCalculationid;
                         ApprovalFinalCalculation.Insert(true);
 
@@ -607,6 +630,8 @@ page 50903 "Final Calculation Card"
             action("Run Report")
             {
                 ApplicationArea = All;
+                Image = Report;
+                ToolTip = 'Execute the selected report to view or analyze the related data.';
                 trigger OnAction()
                 var
                     Finalcalculation: Record "Final Calculation";
@@ -623,21 +648,19 @@ page 50903 "Final Calculation Card"
     //////////////////  START Final Revenue Calculation Grid ////////////////////
     procedure PopulateRevenueCalculationGrid()
     var
-        FinalCalcHeader: Record "Final Calculation";
         FinalRevCalcGrid: Record "Final Revenue Calculation Grid";
         RentCalc: Record "Rent Calculation";
-        TenancyContractLine: Record "Tenancy Contract Subpage";
     begin
         // Clear existing lines in Final Revenue Calculation Grid for this contract
         FinalRevCalcGrid.SetRange("Contract ID", Rec."Contract ID");
-        if FinalRevCalcGrid.FindSet() then begin
+        if FinalRevCalcGrid.FindSet() then
             FinalRevCalcGrid.DeleteAll();
-        end;
+
 
         // Step 1: Get main rent amount from Rent Calculation table
         // RentCalc.Reset();
         RentCalc.SetRange("Contract ID", Rec."Contract ID");
-        if RentCalc.FindSet() then begin
+        if RentCalc.FindSet() then
             repeat
                 FinalRevCalcGrid.Init();
                 FinalRevCalcGrid."Contract ID" := RentCalc."Contract ID";
@@ -653,8 +676,6 @@ page 50903 "Final Calculation Card"
                 FinalRevCalcGrid.Insert();
                 Clear(FinalRevCalcGrid);
             until RentCalc.Next() = 0;
-        end;
-
     end;
 
 
@@ -667,7 +688,7 @@ page 50903 "Final Calculation Card"
 
         // TenancyContractLine.Reset();
         TenancyContractLine1.SetRange("ContractID", Rec."Contract ID");
-        if TenancyContractLine1.FindSet() then begin
+        if TenancyContractLine1.FindSet() then
             repeat
                 FinalRevCalcGrid1.Init();
                 FinalRevCalcGrid1."Contract ID" := Rec."Contract ID";
@@ -687,36 +708,23 @@ page 50903 "Final Calculation Card"
                 FinalRevCalcGrid1.Insert();
                 Clear(FinalRevCalcGrid1);
             until TenancyContractLine1.Next() = 0;
-        end;
     end;
 
     procedure GetContractTerminationYear()
     var
-        ContractStartDate: Date;
-        ContractEndDate: Date;
-        YearStartDate: Date;
-        YearEndDate: Date;
-        YearNumber: Integer;
-        StartYear: Integer;
-        UserYear: Integer;
-        FinalCalculation: Record "Final Calculation";
-        RentCalculation: Record "Rent Calculation";
         RentCalculationSub: Record "Rent Calculation Subpage";
+        UserYear: Integer;
         Terminationdate: Date;
-        Perdayrent: Decimal;
-
     begin
         UserYear := 0;
         Terminationdate := Rec."Termination Date";
         RentCalculationSub.SetRange("Contract ID", Rec."Contract ID");
-        if RentCalculationSub.FindSet() then begin
+        if RentCalculationSub.FindSet() then
             repeat
-
-
                 if (Terminationdate >= RentCalculationSub."Period Start Date") and (Terminationdate <= RentCalculationSub."Period End Date") then
                     UserYear := RentCalculationSub.Year;
             until (RentCalculationSub.Next() = 0) or (UserYear <> 0);
-        end;
+
         Rec."ContractYear(Termination Date)" := UserYear;
         Rec.Modify();
     end;
@@ -742,35 +750,32 @@ page 50903 "Final Calculation Card"
     procedure RentCalculate()
     var
         RentCalculationSub: Record "Rent Calculation Subpage";
-        RentCalculate: Record "Rent Calculate Sub";
+        RentCalculates: Record "Rent Calculate Sub";
     begin
 
 
-        RentCalculate.SetRange("Contract ID", Rec."Contract ID");
-        if RentCalculate.FindSet() then begin
-            RentCalculate.DeleteAll();
-        end;
+        RentCalculates.SetRange("Contract ID", Rec."Contract ID");
+        if RentCalculates.FindSet() then
+            RentCalculates.DeleteAll();
 
         // TenancyContractLine.Reset();
         RentCalculationSub.SetRange("Contract ID", Rec."Contract ID");
         RentCalculationSub.SetRange("Tenant ID", Rec."Tenant ID");
-        if RentCalculationSub.FindSet() then begin
+        if RentCalculationSub.FindSet() then
             repeat
-                RentCalculate.Init();
-                RentCalculate."Contract ID" := Rec."Contract ID";
-                RentCalculate."Tenant ID" := Rec."Tenant ID";
+                RentCalculates.Init();
+                RentCalculates."Contract ID" := Rec."Contract ID";
+                RentCalculates."Tenant ID" := Rec."Tenant ID";
                 // Calculate VAT amount based on percentage
-                RentCalculate."Year" := RentCalculationSub."Year";
-                RentCalculate."Period Start Date" := RentCalculationSub."Period Start Date";
-                RentCalculate."Period End Date" := RentCalculationSub."Period End Date";
-                RentCalculate."Number Of Days" := RentCalculationSub."Number Of Days";
-                RentCalculate."Final Annual Amount" := RentCalculationSub."Final Annual Amount";
-                RentCalculate."Per Day Rent" := RentCalculationSub."Per Day Rent";
-                RentCalculate.Insert();
-                Clear(RentCalculate);
+                RentCalculates."Year" := RentCalculationSub."Year";
+                RentCalculates."Period Start Date" := RentCalculationSub."Period Start Date";
+                RentCalculates."Period End Date" := RentCalculationSub."Period End Date";
+                RentCalculates."Number Of Days" := RentCalculationSub."Number Of Days";
+                RentCalculates."Final Annual Amount" := RentCalculationSub."Final Annual Amount";
+                RentCalculates."Per Day Rent" := RentCalculationSub."Per Day Rent";
+                RentCalculates.Insert();
+                Clear(RentCalculates);
             until RentCalculationSub.Next() = 0;
-        end;
-
     end;
 
     procedure OtherPaymentCalculate()
@@ -780,12 +785,12 @@ page 50903 "Final Calculation Card"
 
     begin
         OtherPaymentCalculateSub.SetRange("Contract ID", Rec."Contract ID");
-        if OtherPaymentCalculateSub.FindSet() then begin
+        if OtherPaymentCalculateSub.FindSet() then
             OtherPaymentCalculateSub.DeleteAll();
-        end;
+
 
         TenancyContractSub.SetRange("ContractID", Rec."Contract ID");
-        if TenancyContractSub.FindSet() then begin
+        if TenancyContractSub.FindSet() then
             repeat
                 OtherPaymentCalculateSub.Init();
                 OtherPaymentCalculateSub."Contract ID" := Rec."Contract ID";
@@ -799,7 +804,6 @@ page 50903 "Final Calculation Card"
                 OtherPaymentCalculateSub.Insert();
                 Clear(OtherPaymentCalculateSub);
             until TenancyContractSub.Next() = 0;
-        end;
 
     end;
 
@@ -807,14 +811,14 @@ page 50903 "Final Calculation Card"
     var
         TenancyContractSub: Record "Tenancy Contract Subpage";
         //PaymentSchedule2: Record "Payment Schedule2";
-        RevenueCalculate: Record "Revenue Calculate Sub";
+        RevenueCalculates: Record "Revenue Calculate Sub";
 
     begin
 
-        RevenueCalculate.SetRange("Contract ID", Rec."Contract ID");
-        if RevenueCalculate.FindSet() then begin
-            RevenueCalculate.DeleteAll();
-        end;
+        RevenueCalculates.SetRange("Contract ID", Rec."Contract ID");
+        if RevenueCalculates.FindSet() then
+            RevenueCalculates.DeleteAll();
+
 
         TenancyContractSub.SetRange("ContractID", Rec."Contract ID");
         TenancyContractSub.SetRange("TenantID", Rec."Tenant ID");
@@ -822,17 +826,17 @@ page 50903 "Final Calculation Card"
         TenancyContractSub.SetRange("Payment Type", 1);
         if TenancyContractSub.FindSet() then
             repeat
-                RevenueCalculate.Init();
-                RevenueCalculate."Contract ID" := TenancyContractSub."ContractID";
-                RevenueCalculate."Tenant ID" := TenancyContractSub."TenantId";
-                RevenueCalculate."Secondary Item Type" := TenancyContractSub."Secondary Item Type";
-                RevenueCalculate.Amount := TenancyContractSub.Amount;
-                RevenueCalculate."VAT Amount" := TenancyContractSub."VAT Amount";
-                RevenueCalculate."Amount Including VAT" := TenancyContractSub."Amount Including VAT";
-                RevenueCalculate."Installment Start Date" := TenancyContractSub."Start Date";
-                RevenueCalculate."Installment End Date" := TenancyContractSub."End Date";
-                RevenueCalculate.Insert();
-                Clear(RevenueCalculate);
+                RevenueCalculates.Init();
+                RevenueCalculates."Contract ID" := TenancyContractSub."ContractID";
+                RevenueCalculates."Tenant ID" := TenancyContractSub."TenantId";
+                RevenueCalculates."Secondary Item Type" := TenancyContractSub."Secondary Item Type";
+                RevenueCalculates.Amount := TenancyContractSub.Amount;
+                RevenueCalculates."VAT Amount" := TenancyContractSub."VAT Amount";
+                RevenueCalculates."Amount Including VAT" := TenancyContractSub."Amount Including VAT";
+                RevenueCalculates."Installment Start Date" := TenancyContractSub."Start Date";
+                RevenueCalculates."Installment End Date" := TenancyContractSub."End Date";
+                RevenueCalculates.Insert();
+                Clear(RevenueCalculates);
             until TenancyContractSub.Next() = 0;
     end;
 
@@ -845,7 +849,7 @@ page 50903 "Final Calculation Card"
         // TenancyContractLine.Reset();
         RevenueStructureSub.SetRange("Contract ID", Rec."Contract ID");
         RevenueStructureSub.SetRange("Tenant ID", Rec."Tenant ID");
-        if RevenueStructureSub.FindSet() then begin
+        if RevenueStructureSub.FindSet() then
             repeat
                 RevenueCalculateSub.Init();
                 RevenueCalculateSub."Contract ID" := Rec."Contract ID";
@@ -860,7 +864,6 @@ page 50903 "Final Calculation Card"
                 RevenueCalculateSub.Insert();
                 Clear(RevenueCalculateSub);
             until RevenueStructureSub.Next() = 0;
-        end;
 
     end;
 
@@ -991,14 +994,14 @@ page 50903 "Final Calculation Card"
     begin
         // Clear existing lines in Final Revenue Calculation Grid for this contract
         BillinCalcGrid.SetRange("Contract ID", Rec."Contract ID");
-        if BillinCalcGrid.FindSet() then begin
+        if BillinCalcGrid.FindSet() then
             BillinCalcGrid.DeleteAll();
-        end;
+
 
         // Step 1: Get main rent amount from Rent Calculation table
         // RentCalc.Reset();
         RentCalc1.SetRange("Contract ID", Rec."Contract ID");
-        if RentCalc1.FindSet() then begin
+        if RentCalc1.FindSet() then
             repeat
                 BillinCalcGrid.Init();
                 BillinCalcGrid."Contract ID" := RentCalc1."Contract ID";
@@ -1015,7 +1018,6 @@ page 50903 "Final Calculation Card"
                 BillinCalcGrid.Insert();
                 Clear(BillinCalcGrid);
             until RentCalc1.Next() = 0;
-        end;
 
     end;
 
@@ -1029,7 +1031,7 @@ page 50903 "Final Calculation Card"
     begin
         // TenancyContractLine.Reset();
         TenancyContractLine2.SetRange("ContractID", Rec."Contract ID");
-        if TenancyContractLine2.FindSet() then begin
+        if TenancyContractLine2.FindSet() then
             repeat
                 BillingCalc1.Init();
                 BillingCalc1."Contract ID" := Rec."Contract ID";
@@ -1047,7 +1049,6 @@ page 50903 "Final Calculation Card"
                 BillingCalc1.Insert();
                 Clear(BillingCalc1);
             until TenancyContractLine2.Next() = 0;
-        end;
     end;
 
 
@@ -1063,14 +1064,14 @@ page 50903 "Final Calculation Card"
     begin
         // Clear existing lines in Final Revenue Calculation Grid for this contract
         RecvieableCalcGrid.SetRange("Contract ID", Rec."Contract ID");
-        if RecvieableCalcGrid.FindSet() then begin
+        if RecvieableCalcGrid.FindSet() then
             RecvieableCalcGrid.DeleteAll();
-        end;
+
 
         // Step 1: Get main rent amount from Rent Calculation table
         // RentCalc.Reset();
         RentCalc2.SetRange("Contract ID", Rec."Contract ID");
-        if RentCalc2.FindSet() then begin
+        if RentCalc2.FindSet() then
             repeat
                 RecvieableCalcGrid.Init();
                 RecvieableCalcGrid."Contract ID" := RentCalc2."Contract ID";
@@ -1081,8 +1082,6 @@ page 50903 "Final Calculation Card"
                 RecvieableCalcGrid.Insert();
                 Clear(RecvieableCalcGrid);
             until RentCalc2.Next() = 0;
-        end;
-
     end;
 
 
@@ -1092,11 +1091,9 @@ page 50903 "Final Calculation Card"
         TenancyContractLine3: Record "Tenancy Contract Subpage";
 
     begin
-
-
         // TenancyContractLine.Reset();
         TenancyContractLine3.SetRange("ContractID", Rec."Contract ID");
-        if TenancyContractLine3.FindSet() then begin
+        if TenancyContractLine3.FindSet() then
             repeat
                 RecvieableCalcGrid1.Init();
                 RecvieableCalcGrid1."Contract ID" := Rec."Contract ID";
@@ -1106,7 +1103,6 @@ page 50903 "Final Calculation Card"
                 RecvieableCalcGrid1.Insert();
                 Clear(RecvieableCalcGrid1);
             until TenancyContractLine3.Next() = 0;
-        end;
     end;
 
     ////////////////// END /////////////////////////
@@ -1117,26 +1113,27 @@ page 50903 "Final Calculation Card"
     procedure PaymentDetailsFromPaymentSchedule2()
     var
         paymentschedule2Card: Record "Payment Schedule2";
-        paymentdetails: Record "Payment Details";
+        paymentdetail: Record "Payment Details";
     begin
-        paymentdetails.SetRange("Contract ID", Rec."Contract ID");
-        if paymentdetails.FindSet() then begin
-            paymentdetails.DeleteAll();
-        end;
+        paymentdetail.SetRange("Contract ID", Rec."Contract ID");
+        if paymentdetail.FindSet() then
+            paymentdetail.DeleteAll();
+
+
         paymentschedule2Card.SetRange("Contract ID", Rec."Contract ID");
         if paymentschedule2Card.FindSet() then
             repeat
-                paymentdetails.Init();
-                paymentdetails."Contract ID" := paymentschedule2Card."Contract ID";
-                paymentdetails."Item Description" := paymentschedule2Card."Secondary Item Type";
-                paymentdetails.Amount := paymentschedule2Card.Amount;
-                paymentdetails."VAT Amount" := paymentschedule2Card."VAT Amount";
-                paymentdetails."Amount Including VAT" := paymentschedule2Card."Amount Including VAT";
-                paymentdetails."Payment Status" := paymentschedule2Card."Payment Status";
-                paymentdetails."Payment Date" := paymentschedule2Card."Due Date";
-                paymentdetails."Termination Date" := Rec."Termination Date";
-                paymentdetails.Insert();
-                Clear(paymentdetails);
+                paymentdetail.Init();
+                paymentdetail."Contract ID" := paymentschedule2Card."Contract ID";
+                paymentdetail."Item Description" := paymentschedule2Card."Secondary Item Type";
+                paymentdetail.Amount := paymentschedule2Card.Amount;
+                paymentdetail."VAT Amount" := paymentschedule2Card."VAT Amount";
+                paymentdetail."Amount Including VAT" := paymentschedule2Card."Amount Including VAT";
+                paymentdetail."Payment Status" := paymentschedule2Card."Payment Status";
+                paymentdetail."Payment Date" := paymentschedule2Card."Due Date";
+                paymentdetail."Termination Date" := Rec."Termination Date";
+                paymentdetail.Insert();
+                Clear(paymentdetail);
             until paymentschedule2Card.Next() = 0;
 
     end;

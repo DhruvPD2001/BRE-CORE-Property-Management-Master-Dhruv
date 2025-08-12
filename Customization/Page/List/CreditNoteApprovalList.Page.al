@@ -20,13 +20,16 @@ page 50969 "Credit Note Approval List"
                     ApplicationArea = All;
                     Caption = 'Status';
                     Editable = false;
+                    ToolTip = 'Indicates the current status of the record, such as Approved or Rejected.';
                 }
+
                 field("ID"; Rec."ID")
                 {
                     ApplicationArea = All;
                     Caption = 'ID';
                     Editable = false;
                     DrillDown = true;
+                    ToolTip = 'Unique identifier for this record. Click to view the related Credit Note details.';
 
                     trigger OnDrillDown()
                     var
@@ -45,6 +48,7 @@ page 50969 "Credit Note Approval List"
                     Caption = 'FC ID';
                     Editable = false;
                     DrillDown = true;
+                    ToolTip = 'Final Calculation ID linked to this record. Click to view the related Final Calculation details.';
 
                     trigger OnDrillDown()
                     var
@@ -63,6 +67,7 @@ page 50969 "Credit Note Approval List"
                     Caption = 'Contract ID';
                     Editable = false;
                     DrillDown = true;
+                    ToolTip = 'Contract number linked to this record. Click to view the related Tenancy Contract details.';
 
                     trigger OnDrillDown()
                     var
@@ -79,17 +84,20 @@ page 50969 "Credit Note Approval List"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the amount stated on the credit note for this record.';
                 }
 
                 field("Contract Start Date"; Rec."Contract Start Date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'The start date of the related contract.';
                 }
                 field("Contract End Date"; Rec."Contract End Date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'The end date of the related contract.';
                 }
 
                 field("Tenant ID"; Rec."Tenant ID")
@@ -97,18 +105,21 @@ page 50969 "Credit Note Approval List"
                     ApplicationArea = All;
                     Caption = 'Tenant ID';
                     Editable = false;
+                    ToolTip = 'Unique identifier for the tenant linked to this record.';
                 }
                 field("Tenant Name"; Rec."Tenant Name")
                 {
                     ApplicationArea = All;
                     Caption = 'Tenant Name';
                     Editable = false;
+                    ToolTip = 'Name of the tenant linked to this record.';
                 }
                 field("Credit Note Type"; Rec."Credit Note Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Credit Note Type';
                     Editable = false;
+                    ToolTip = 'Specifies the type or category of the credit note.';
                 }
 
             }
@@ -124,10 +135,8 @@ page 50969 "Credit Note Approval List"
                 ApplicationArea = All;
                 Caption = 'Approve';
                 Image = Approve;
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
                 Visible = IsFinanceManager;
+                ToolTip = 'Approve this record. Available only to Finance Managers.';
 
 
                 trigger OnAction()
@@ -166,10 +175,8 @@ page 50969 "Credit Note Approval List"
                 ApplicationArea = All;
                 Caption = 'Reject';
                 Image = Cancel;
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
                 Visible = IsFinanceManager;
+                ToolTip = 'Reject this record. Available only to Finance Managers.';
 
                 trigger OnAction()
                 var
@@ -180,7 +187,7 @@ page 50969 "Credit Note Approval List"
                     if Rec.Status = Rec.Status::Reject then
                         Error('This entry is already rejected');
 
-                    if Confirm('Do you want to reject this entry?') then begin
+                    if Confirm('Do you want to reject this entry?') then
                         if DialogPage.RunModal() = Action::OK then begin
                             ReasonForRejection := DialogPage.GetReason();
 
@@ -195,14 +202,13 @@ page 50969 "Credit Note Approval List"
                             // Update Credit Note record
                             if CreditNote.Get(Rec."ID") then begin
                                 CreditNote.Status := CreditNote.Status::Reject;
-                                CreditNote."Reason for Rejection" := ReasonForRejection;
+                                CreditNote."Reason for Rejection" := CopyStr(ReasonForRejection, 1, StrLen(ReasonForRejection));
                                 CreditNote.Modify();
                             end;
 
                             Message('Entry has been rejected successfully!');
                         end else
                             Error('Rejection cancelled.');
-                    end;
                 end;
 
             }
@@ -224,8 +230,7 @@ page 50969 "Credit Note Approval List"
         UserPersonalization: Record "User Personalization";
     begin
 
-        if UserPersonalization.Get(UserSecurityId()) then begin
-
+        if UserPersonalization.Get(UserSecurityId()) then
             case UserPersonalization."Profile ID" of
                 'PROPERTY MANAGER':
                     exit(false);
@@ -234,12 +239,10 @@ page 50969 "Credit Note Approval List"
                 'finance manager':
                     exit(true);
             end;
-        end;
 
         exit(false);
     end;
 
     var
         IsFinanceManager: Boolean;
-        IsFieldEditable: Boolean;
 }

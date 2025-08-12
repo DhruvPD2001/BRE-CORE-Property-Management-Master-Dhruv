@@ -17,6 +17,7 @@ page 50905 "Category Card"
                 {
                     ApplicationArea = All;
                     Editable = false; // The ID is not editable since it's auto-incrementing
+                    ToolTip = 'Displays the unique system-generated ID for this record.';
                 }
                 field("Primary Item Type"; Rec."Primary Item Type")
                 {

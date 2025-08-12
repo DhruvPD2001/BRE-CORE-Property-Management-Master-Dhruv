@@ -17,32 +17,36 @@ page 50907 "Secondary Item List"
                 {
                     ApplicationArea = All;
                     Caption = 'ID';
+                    ToolTip = 'Specifies the unique identifier for this record.';
                 }
                 field("Primary Item Type"; Rec."Primary Item Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Primary Item';
                     TableRelation = "Primary Item";
-                    // Display the Primary Classification description
-                    Lookup = true; // Enable lookup to Primary Classification
+                    ToolTip = 'Specifies the main item associated with this record. Select from the list of available primary items.';
+                    Lookup = true;
                 }
                 field("Category Types"; Rec."Category Types")
                 {
                     ApplicationArea = All;
                     Caption = 'Category Types';
                     TableRelation = "Category Type";
+                    ToolTip = 'Specifies the category type linked to the selected primary item.';
                 }
 
                 field("Secondary Item Type"; Rec."Secondary Item Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Secondary Item Type';
+                    ToolTip = 'Specifies the secondary item associated with this record, if applicable.';
                 }
 
                 field("VAT %"; Rec."VAT %")
                 {
                     ApplicationArea = All;
                     Caption = 'VAT %';
+                    ToolTip = 'Specifies the VAT (Value-Added Tax) percentage applicable to this item.';
                 }
             }
         }
