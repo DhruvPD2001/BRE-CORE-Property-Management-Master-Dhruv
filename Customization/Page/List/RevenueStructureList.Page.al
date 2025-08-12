@@ -1,11 +1,11 @@
-page 50948 "Rent Calculation List"
+page 50913 "Revenue Structure List"
 {
     PageType = List;
-    SourceTable = "Rent Calculation";
+    SourceTable = "Revenue Structure";
     ApplicationArea = All;
-    Caption = 'Rent Calculation List';
+    Caption = 'Revenue Structure List';
     UsageCategory = Lists;
-    CardPageId = 50945;
+    CardPageId = 50912;
 
 
     layout
@@ -18,38 +18,45 @@ page 50948 "Rent Calculation List"
                 {
                     ApplicationArea = All;
                     Caption = 'Contract ID';
+                    ToolTip = 'Specifies the unique identifier for the contract.';
                 }
-                field("RC_ID"; Rec."RC ID")
+                field("RS_ID"; Rec."RS ID")
                 {
                     ApplicationArea = All;
-                    Caption = 'RC_ID';
+                    Caption = 'RS_ID';
+                    ToolTip = 'Specifies the unique Revenue Structure ID associated with the contract.';
                 }
                 field("Secondary Item Type"; Rec."Secondary Item Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Secondary Item Type';
+                    ToolTip = 'Specifies the secondary item linked to the contract, if applicable.';
                 }
                 field("Amount"; Rec."Amount")
                 {
                     ApplicationArea = All;
                     Caption = 'Amount';
+                    ToolTip = 'Specifies the monetary value related to this contract entry.';
                 }
 
                 field("Contract Start Date"; Rec."Contract Start Date")
                 {
                     ApplicationArea = All;
                     Caption = 'Contract Start Date';
+                    ToolTip = 'Specifies the date on which the contract becomes active.';
                 }
                 field("Contract End Date"; Rec."Contract End Date")
                 {
                     ApplicationArea = All;
                     Caption = 'Contract End Date';
+                    ToolTip = 'Specifies the date on which the contract is scheduled to end.';
                 }
 
                 field("Number of Installments"; Rec."Number of Installments")
                 {
                     ApplicationArea = All;
                     Caption = 'Number of Instalments';
+                    ToolTip = 'Specifies the total number of payment instalments agreed upon in the contract.';
                 }
 
             }

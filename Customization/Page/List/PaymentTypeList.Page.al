@@ -17,11 +17,13 @@ page 50937 "Payment Type List"
                 {
                     ApplicationArea = All;
                     Caption = 'Payment ID';
+                    ToolTip = 'Specifies the unique identifier for the payment record.';
                 }
                 field("Payment Method"; Rec."Payment Method")
                 {
                     ApplicationArea = All;
                     Caption = 'Payment Method';
+                    ToolTip = 'Specifies the method used to make the payment, such as cash, bank transfer, or cheque.';
                 }
             }
         }

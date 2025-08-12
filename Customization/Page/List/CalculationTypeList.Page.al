@@ -17,11 +17,13 @@ page 50960 "Calculation Type List"
                 {
                     ApplicationArea = All;
                     Caption = 'ID';
+                    ToolTip = 'Specifies the unique identifier for the record.';
                 }
                 field("Calculation Type"; Rec."Calculation Type")
                 {
                     ApplicationArea = All;
                     Caption = 'Calculation Type';
+                    ToolTip = 'Specifies the type of calculation applied for this record.';
                 }
             }
         }

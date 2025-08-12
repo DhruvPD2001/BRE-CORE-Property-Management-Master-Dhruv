@@ -18,41 +18,46 @@ page 50916 "Approval FinalCalculation List"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the unique identifier for this record.';
                 }
                 field("Status"; Rec."Status")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the current status of the contract or record.';
                 }
 
                 field("Tenant ID"; Rec."Tenant ID")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the unique identifier for the tenant linked to this contract.';
                 }
 
                 field("Contract ID"; Rec."Contract ID")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the unique identifier for the contract.';
                 }
 
                 field("FC ID"; Rec."FC ID")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the Final Calculation or related reference for the contract.';
                 }
 
                 field("Link"; Rec."Link")
                 {
                     ApplicationArea = All;
                     DrillDown = true;
+                    ToolTip = 'Specifies the related record link. Click to open the associated Final Calculation record.';
 
 
                     trigger OnDrillDown()
                     var
                         FinalCalculation: Record "Final Calculation";
-                        FinalCalculationid: Integer;
                     begin
 
                         // Navigate to the Revenue Structure Card page
@@ -68,30 +73,29 @@ page 50916 "Approval FinalCalculation List"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the date on which the contract becomes active.';
                 }
 
                 field("Contract End Date"; Rec."Contract End Date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the date on which the contract is scheduled to end.';
                 }
 
                 field("Termination Date"; Rec."Termination Date")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the date on which the contract is terminated.';
                 }
 
                 field("Contract Amount"; Rec."Contract Amount")
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    ToolTip = 'Specifies the total monetary value of the contract.';
                 }
-
-
-
-
-
             }
         }
     }
@@ -106,10 +110,8 @@ page 50916 "Approval FinalCalculation List"
                 ApplicationArea = All;
                 Caption = 'Approve';
                 Image = Approve;
-                Promoted = true;
-                PromotedCategory = Process;
-                PromotedIsBig = true;
                 Visible = IsFinanceManager;
+                ToolTip = 'Click to approve the selected record. This action is available only to Finance Managers.';
 
 
                 trigger OnAction()
@@ -152,8 +154,7 @@ page 50916 "Approval FinalCalculation List"
         UserPersonalization: Record "User Personalization";
     begin
 
-        if UserPersonalization.Get(UserSecurityId()) then begin
-
+        if UserPersonalization.Get(UserSecurityId()) then
             case UserPersonalization."Profile ID" of
                 'PROPERTY MANAGER':
                     exit(false);
@@ -162,13 +163,11 @@ page 50916 "Approval FinalCalculation List"
                 'finance manager':
                     exit(true);
             end;
-        end;
 
         exit(false);
     end;
 
     var
         IsFinanceManager: Boolean;
-        IsFieldEditable: Boolean;
 
 }
