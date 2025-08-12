@@ -232,20 +232,22 @@ page 50129 "Security Deposit Entries"
                                     FinaCalculation."Summery Net Balance" := SummeryNetAmount;
                                     FinaCalculation."Net Receivable From The Tenant" := SummeryNetAmount;
                                     FinaCalculation."Amount Refundable" := 0;
-                                end
+                                end;
 
                                 // Scenario 2: Both are Refund
-                                else if ((FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Refundable" <> 0) or
+
+                                if ((FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Refundable" <> 0) or
                                 (FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Refundable" = 0) or
                                 (FinaCalculation."Total Refund" = 0) and (PendingReceivableGrid."Total Refundable" <> 0)) then begin
                                     SummeryNetAmount := FinaCalculation."Total Refund" + ABS(PendingReceivableGrid."Total Refundable");
                                     FinaCalculation."Summery Net Balance" := SummeryNetAmount;
                                     FinaCalculation."Amount Refundable" := FinaCalculation."Summery Net Balance";
                                     FinaCalculation."Net Receivable From The Tenant" := 0;
-                                end
+                                end;
 
                                 // Scenario 3: Refund (500) - Receivable (300) => 200 Amount Refundable
-                                else if (FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Receivable" <> 0) then begin
+
+                                if (FinaCalculation."Total Refund" <> 0) and (PendingReceivableGrid."Total Receivable" <> 0) then begin
                                     SummeryNetAmount := FinaCalculation."Total Refund" - PendingReceivableGrid."Total Receivable";
                                     FinaCalculation."Summery Net Balance" := SummeryNetAmount;
                                     if SummeryNetAmount > 0 then begin
@@ -255,10 +257,11 @@ page 50129 "Security Deposit Entries"
                                         FinaCalculation."Net Receivable From The Tenant" := ABS(SummeryNetAmount); // Negative => Receivable
                                         FinaCalculation."Amount Refundable" := 0;
                                     end;
-                                end
+                                end;
 
                                 // Scenario 4: Receive (500) - Refundable (300) => 200 Net Receivable
-                                else if (FinaCalculation."Total Receive" <> 0) and (PendingReceivableGrid."Total Refundable" <> 0) then begin
+
+                                if (FinaCalculation."Total Receive" <> 0) and (PendingReceivableGrid."Total Refundable" <> 0) then begin
                                     SummeryNetAmount := FinaCalculation."Total Receive" - PendingReceivableGrid."Total Refundable";
                                     FinaCalculation."Summery Net Balance" := SummeryNetAmount;
                                     if SummeryNetAmount > 0 then begin
@@ -436,8 +439,8 @@ page 50129 "Security Deposit Entries"
         DocumentNo := 'REFUND-' + Format(Rec."Contract ID");
 
         finalcalculation.SetRange("Contract ID", Rec."Contract ID");
-        if not finalcalculation.FindFirst() then
-            Error('Invoice not found for Contract ID %1', Rec."Contract ID");
+        // if not finalcalculation.FindFirst() then
+        //     Error('Invoice not found for Contract ID %1', Rec."Contract ID");
 
         Tenantid := finalcalculation."Tenant ID";
         Tenantname := finalcalculation."Tenant Name";
@@ -454,12 +457,12 @@ page 50129 "Security Deposit Entries"
             finalsettlmentRefund.Modify();
         end;
         TerminationCharges.SetRange("Contract ID", Rec."Contract ID");
-        if not TerminationCharges.FindFirst() then
-            Error('Invoice not found for Contract ID %1', Rec."Contract ID");
+        // if not TerminationCharges.FindFirst() then
+        //     Error('Invoice not found for Contract ID %1', Rec."Contract ID");
 
         BillingCalculation.SetRange("Contract ID", Rec."Contract ID");
-        if not BillingCalculation.FindFirst() then
-            Error('Invoice not found for Contract ID %1', Rec."Contract ID");
+        // if not BillingCalculation.FindFirst() then
+        //     Error('Invoice not found for Contract ID %1', Rec."Contract ID");
 
         InvoiceNo := BillingCalculation."Posted Invoice ID";
         AdditionalInvoiceNo := TerminationCharges."Posted Invoice ID";
