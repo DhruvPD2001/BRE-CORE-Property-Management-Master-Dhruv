@@ -593,6 +593,9 @@ page 50928 "Payment Mode Card2"
                 Rec."Payment mode" := paymentTypeRec."Payment Method"; // Set the first Payment Method as default
 
 
+         if Rec."Payment Status" = PaymentStatus::Cancelled then
+                exit; // Do nothing if already cancelled
+
          if Rec."Payment Status" = PaymentStatus::Received then
                 exit;
 
