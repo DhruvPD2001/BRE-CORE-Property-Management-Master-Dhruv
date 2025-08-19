@@ -426,46 +426,67 @@ page 50129 "Security Deposit Entries"
         JournalTemplateName := 'CASH RECE';
         JournalBatchName := 'DEFAULT';
 
-        // if not GenJnlTemplate.Get(JournalTemplateName) then
-        //     Error('The Journal Template %1 does not exist.', JournalTemplateName);
+        // Validate Journal Template and Batch
+        if not GenJnlTemplate.Get(JournalTemplateName) then
+            Error('The Journal Template %1 does not exist.', JournalTemplateName);
 
-        // GenJnlBatch.Reset();
-        // GenJnlBatch.SetRange("Journal Template Name", JournalTemplateName);
-        // GenJnlBatch.SetRange(Name, JournalBatchName);
-        // if not GenJnlBatch.FindFirst() then
-        //     Error('The Journal Batch %1 does not exist for template %2.', JournalBatchName, JournalTemplateName);
+        GenJnlBatch.Reset();
+        GenJnlBatch.SetRange("Journal Template Name", JournalTemplateName);
+        GenJnlBatch.SetRange(Name, JournalBatchName);
+        if not GenJnlBatch.FindFirst() then
+            Error('The Journal Batch %1 does not exist for template %2.', JournalBatchName, JournalTemplateName);
 
         PostingDate := Today();
         DocumentNo := 'REFUND-' + Format(Rec."Contract ID");
 
+        // *** FIXED: Properly retrieve Final Calculation record ***
+        finalcalculation.Reset();
         finalcalculation.SetRange("Contract ID", Rec."Contract ID");
-        // if not finalcalculation.FindFirst() then
-        //     Error('Invoice not found for Contract ID %1', Rec."Contract ID");
+        if not finalcalculation.FindFirst() then
+            Error('Final Calculation not found for Contract ID %1', Rec."Contract ID");
 
+        // Get values from Final Calculation
         Tenantid := finalcalculation."Tenant ID";
         Tenantname := finalcalculation."Tenant Name";
         securitydeposit := Round(finalcalculation."Net Balance");
         chillerdeposit := Round(finalcalculation."Chiller Deposit");
         otherdeposit := Round(finalcalculation."Other Deposit");
 
+        // Debug message to check values
+        Message('Values Retrieved - Security: %1, Chiller: %2, Other: %3, Tenant: %4',
+                securitydeposit, chillerdeposit, otherdeposit, Tenantid);
 
+        // Update Final Settlement Refund
+        finalsettlmentRefund.Reset();
         finalsettlmentRefund.SetRange("Contract ID", finalcalculation."Contract ID");
-        if finalsettlmentRefund.FindSet() then begin
+        if finalsettlmentRefund.FindFirst() then begin
             finalsettlmentRefund."Adjust Security Deposit" := securitydeposit;
             finalsettlmentRefund."Adjust Chiller Deposit" := chillerdeposit;
             finalsettlmentRefund."Adjust other deposit" := otherdeposit;
             finalsettlmentRefund.Modify();
         end;
+
+        // *** FIXED: Properly retrieve Termination Charges ***
+        TerminationCharges.Reset();
         TerminationCharges.SetRange("Contract ID", Rec."Contract ID");
-        // if not TerminationCharges.FindFirst() then
-        //     Error('Invoice not found for Contract ID %1', Rec."Contract ID");
+        if not TerminationCharges.FindFirst() then begin
+            Message('No Termination Charges found for Contract ID %1', Rec."Contract ID");
+            Totaladdtionalcharges := 0;
+            AdditionalInvoiceNo := '';
+        end else begin
+            AdditionalInvoiceNo := TerminationCharges."Posted Invoice ID";
+        end;
 
+        // *** FIXED: Properly retrieve Billing Calculation ***
+        BillingCalculation.Reset();
         BillingCalculation.SetRange("Contract ID", Rec."Contract ID");
-        // if not BillingCalculation.FindFirst() then
-        //     Error('Invoice not found for Contract ID %1', Rec."Contract ID");
+        if not BillingCalculation.FindFirst() then begin
+            Message('No Billing Calculation found for Contract ID %1', Rec."Contract ID");
+            InvoiceNo := '';
+        end else begin
+            InvoiceNo := BillingCalculation."Posted Invoice ID";
+        end;
 
-        InvoiceNo := BillingCalculation."Posted Invoice ID";
-        AdditionalInvoiceNo := TerminationCharges."Posted Invoice ID";
         // Calculate total additional charges
         Totaladdtionalcharges := 0;
         TerminationCharges.Reset();
@@ -477,10 +498,16 @@ page 50129 "Security Deposit Entries"
 
         // Get total receivable from Pending Receivable Grid
         TotalReceivable := 0;
+        PendingReceivableGrid.Reset();
         PendingReceivableGrid.SetRange("Contract ID", Rec."Contract ID");
         if PendingReceivableGrid.FindFirst() then
             TotalReceivable := PendingReceivableGrid."Total Receivable";
 
+        // Debug message for amounts
+        Message('Calculated Amounts - Total Additional Charges: %1, Total Receivable: %2',
+                Totaladdtionalcharges, TotalReceivable);
+
+        // Get last line number
         GenJnlLine.Reset();
         GenJnlLine.SetRange("Journal Template Name", JournalTemplateName);
         GenJnlLine.SetRange("Journal Batch Name", JournalBatchName);
@@ -489,15 +516,29 @@ page 50129 "Security Deposit Entries"
         else
             LastLineNo := 10000;
 
-        // Main loop: continue until all deposits or both charges/receivable are zero
-        while ((securitydeposit > 0))
-              and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) do begin
+        // *** FIXED: Add validation before processing ***
+        if (securitydeposit = 0) and (chillerdeposit = 0) and (otherdeposit = 0) then begin
+            Error('No deposit amounts found to process for Contract ID %1', Rec."Contract ID");
+        end;
 
-            // 1. Apply to Security Deposit
+        if (Totaladdtionalcharges = 0) and (TotalReceivable = 0) then begin
+            Error('No charges or receivables found to apply deposits against for Contract ID %1', Rec."Contract ID");
+        end;
+
+        // *** SECURITY DEPOSIT PROCESSING ***
+        while ((securitydeposit > 0)) and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) do begin
             if (securitydeposit > 0) and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) then begin
                 if Totaladdtionalcharges > 0 then begin
                     AppliedAmount := Min(securitydeposit, Totaladdtionalcharges);
-                    // Create journal line
+
+                    // *** FIXED: Add validation for required fields ***
+                    if (Tenantid = '') then
+                        Error('Tenant ID is blank for Contract ID %1', Rec."Contract ID");
+
+                    // if (AdditionalInvoiceNo = '') then
+                    //     Error('Additional Invoice No is blank for Contract ID %1', Rec."Contract ID");
+
+                    // Create journal line for Additional Charges
                     Clear(GenJnlLine);
                     GenJnlLine.Init();
                     GenJnlLine."Journal Template Name" := JournalTemplateName;
@@ -519,15 +560,24 @@ page 50129 "Security Deposit Entries"
 
                     securitydeposit -= AppliedAmount;
                     Totaladdtionalcharges -= AppliedAmount;
+
+                    // Update final settlement refund
+                    finalsettlmentRefund1.Reset();
                     finalsettlmentRefund1.SetRange("Contract ID", Rec."Contract ID");
-                    if finalsettlmentRefund1.FindSet() then begin
+                    if finalsettlmentRefund1.FindFirst() then begin
                         finalsettlmentRefund1."Adjust Security Deposit" := securitydeposit;
                         finalsettlmentRefund1.Modify();
                     end;
                     LastLineNo += 10000;
+
                 end else if TotalReceivable > 0 then begin
                     AppliedAmount := Min(securitydeposit, TotalReceivable);
-                    // Create journal line
+
+                    // *** FIXED: Add validation for Invoice No ***
+                    // if (InvoiceNo = '') then
+                    //     Error('Invoice No is blank for Contract ID %1', Rec."Contract ID");
+
+                    // Create journal line for Receivable
                     Clear(GenJnlLine);
                     GenJnlLine.Init();
                     GenJnlLine."Journal Template Name" := JournalTemplateName;
@@ -549,8 +599,10 @@ page 50129 "Security Deposit Entries"
 
                     securitydeposit -= AppliedAmount;
                     TotalReceivable -= AppliedAmount;
+
+                    finalsettlmentRefund1.Reset();
                     finalsettlmentRefund1.SetRange("Contract ID", Rec."Contract ID");
-                    if finalsettlmentRefund1.FindSet() then begin
+                    if finalsettlmentRefund1.FindFirst() then begin
                         finalsettlmentRefund1."Adjust Security Deposit" := securitydeposit;
                         finalsettlmentRefund1.Modify();
                     end;
@@ -558,14 +610,21 @@ page 50129 "Security Deposit Entries"
                 end;
             end;
         end;
-        while ((chillerdeposit > 0))
-                      and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) do begin
 
-            // 2. Apply to Chiller Deposit
+        // *** CHILLER DEPOSIT PROCESSING ***
+        while ((chillerdeposit > 0)) and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) do begin
             if (chillerdeposit > 0) and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) then begin
                 if Totaladdtionalcharges > 0 then begin
                     AppliedAmount := Min(chillerdeposit, Totaladdtionalcharges);
-                    // Create journal line
+
+                    // Validation for required fields
+                    if (Tenantid = '') then
+                        Error('Tenant ID is blank for Contract ID %1', Rec."Contract ID");
+
+                    // if (AdditionalInvoiceNo = '') then
+                    //     Error('Additional Invoice No is blank for Contract ID %1', Rec."Contract ID");
+
+                    // Create journal line for Additional Charges
                     Clear(GenJnlLine);
                     GenJnlLine.Init();
                     GenJnlLine."Journal Template Name" := JournalTemplateName;
@@ -587,15 +646,23 @@ page 50129 "Security Deposit Entries"
 
                     chillerdeposit -= AppliedAmount;
                     Totaladdtionalcharges -= AppliedAmount;
+
+                    finalsettlmentRefund1.Reset();
                     finalsettlmentRefund1.SetRange("Contract ID", Rec."Contract ID");
-                    if finalsettlmentRefund1.FindSet() then begin
+                    if finalsettlmentRefund1.FindFirst() then begin
                         finalsettlmentRefund1."Adjust Chiller Deposit" := chillerdeposit;
                         finalsettlmentRefund1.Modify();
                     end;
                     LastLineNo += 10000;
+
                 end else if TotalReceivable > 0 then begin
                     AppliedAmount := Min(chillerdeposit, TotalReceivable);
-                    // Create journal line
+
+                    // Validation for Invoice No
+                    // if (InvoiceNo = '') then
+                    //     Error('Invoice No is blank for Contract ID %1', Rec."Contract ID");
+
+                    // Create journal line for Receivable
                     Clear(GenJnlLine);
                     GenJnlLine.Init();
                     GenJnlLine."Journal Template Name" := JournalTemplateName;
@@ -617,8 +684,10 @@ page 50129 "Security Deposit Entries"
 
                     chillerdeposit -= AppliedAmount;
                     TotalReceivable -= AppliedAmount;
+
+                    finalsettlmentRefund1.Reset();
                     finalsettlmentRefund1.SetRange("Contract ID", Rec."Contract ID");
-                    if finalsettlmentRefund1.FindSet() then begin
+                    if finalsettlmentRefund1.FindFirst() then begin
                         finalsettlmentRefund1."Adjust Chiller Deposit" := chillerdeposit;
                         finalsettlmentRefund1.Modify();
                     end;
@@ -627,13 +696,20 @@ page 50129 "Security Deposit Entries"
             end;
         end;
 
-        while ((otherdeposit > 0))
-                    and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) do begin
-            // 3. Apply to Other Deposit
+        // *** OTHER DEPOSIT PROCESSING ***
+        while ((otherdeposit > 0)) and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) do begin
             if (otherdeposit > 0) and ((Totaladdtionalcharges > 0) or (TotalReceivable > 0)) then begin
                 if Totaladdtionalcharges > 0 then begin
                     AppliedAmount := Min(otherdeposit, Totaladdtionalcharges);
-                    // Create journal line
+
+                    // Validation for required fields
+                    if (Tenantid = '') then
+                        Error('Tenant ID is blank for Contract ID %1', Rec."Contract ID");
+
+                    // if (AdditionalInvoiceNo = '') then
+                    //     Error('Additional Invoice No is blank for Contract ID %1', Rec."Contract ID");
+
+                    // Create journal line for Additional Charges
                     Clear(GenJnlLine);
                     GenJnlLine.Init();
                     GenJnlLine."Journal Template Name" := JournalTemplateName;
@@ -655,15 +731,23 @@ page 50129 "Security Deposit Entries"
 
                     otherdeposit -= AppliedAmount;
                     Totaladdtionalcharges -= AppliedAmount;
+
+                    finalsettlmentRefund1.Reset();
                     finalsettlmentRefund1.SetRange("Contract ID", Rec."Contract ID");
-                    if finalsettlmentRefund1.FindSet() then begin
+                    if finalsettlmentRefund1.FindFirst() then begin
                         finalsettlmentRefund1."Adjust other deposit" := otherdeposit;
                         finalsettlmentRefund1.Modify();
                     end;
                     LastLineNo += 10000;
+
                 end else if TotalReceivable > 0 then begin
                     AppliedAmount := Min(otherdeposit, TotalReceivable);
-                    // Create journal line
+
+                    // Validation for Invoice No
+                    // if (InvoiceNo = '') then
+                    //     Error('Invoice No is blank for Contract ID %1', Rec."Contract ID");
+
+                    // Create journal line for Receivable
                     Clear(GenJnlLine);
                     GenJnlLine.Init();
                     GenJnlLine."Journal Template Name" := JournalTemplateName;
@@ -685,8 +769,10 @@ page 50129 "Security Deposit Entries"
 
                     otherdeposit -= AppliedAmount;
                     TotalReceivable -= AppliedAmount;
+
+                    finalsettlmentRefund1.Reset();
                     finalsettlmentRefund1.SetRange("Contract ID", Rec."Contract ID");
-                    if finalsettlmentRefund1.FindSet() then begin
+                    if finalsettlmentRefund1.FindFirst() then begin
                         finalsettlmentRefund1."Adjust other deposit" := otherdeposit;
                         finalsettlmentRefund1.Modify();
                     end;
@@ -695,15 +781,19 @@ page 50129 "Security Deposit Entries"
             end;
         end;
 
+        // *** FINAL POSTING ***
         GenJnlLine.Reset();
         GenJnlLine.SetRange("Journal Template Name", JournalTemplateName);
         GenJnlLine.SetRange("Journal Batch Name", JournalBatchName);
-        if not GenJnlLine.IsEmpty() then
+        if not GenJnlLine.IsEmpty() then begin
             if Confirm('Do you want to post journal lines?', true) then begin
                 Codeunit.Run(Codeunit::"Gen. Jnl.-Post", GenJnlLine);
                 Message('Journal entries have been created and posted successfully');
             end else
                 exit;
+        end else begin
+            Message('No journal lines were created. Please check the data for Contract ID: %1', Rec."Contract ID");
+        end;
     end;
 
     // Helper function
