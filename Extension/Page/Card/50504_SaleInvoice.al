@@ -137,6 +137,7 @@ pageextension 50504 SalesInvoice extends "Sales Invoice"
                     begin
                         if Rec."Approval Status" = Rec."Approval Status"::Approved then begin
                             emailrecord.SendInvoice(Rec); // Pass the current record if needed
+                            Message('Now you can Post the invoice as it is approved');
                         end else
                             if Rec."Approval Status" = Rec."Approval Status"::Rejected then begin
                                 ShowDialogBox.DialogboxForRejection(Rec);
