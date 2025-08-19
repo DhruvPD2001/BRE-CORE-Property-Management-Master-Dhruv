@@ -41,10 +41,6 @@ pageextension 50103 ItemListExtension extends "Item List"
         {
             Visible = false;
         }
-        modify(Description)
-        {
-            Visible = false;
-        }
 
         addbefore(Description)
         {
