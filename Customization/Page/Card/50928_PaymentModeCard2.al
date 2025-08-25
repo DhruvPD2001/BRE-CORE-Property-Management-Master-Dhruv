@@ -372,8 +372,12 @@ page 50928 "Payment Mode Card2"
                     Caption = '"Final Rent Amount Including VAT"';
                     Editable = false;
                 }
-
-
+                field(PortalSidePaymentProcessing;Rec.PortalSidePaymentProcessing)
+                {
+                     ApplicationArea = All;
+                    Caption = '"PortalSidePaymentProcessing"';
+                    Editable = true;
+                }
             }
 
 
