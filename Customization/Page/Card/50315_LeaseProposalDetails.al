@@ -1214,6 +1214,7 @@ page 50315 "Lease Proposal Card"
 //-------------Calculate Lease Duration--------------//
 procedure CalculateLeaseDuration()
     var
+        FetchMonth: Codeunit "Fetch Month";
         LeaseStartDate: Date;
         LeaseEndDate: Date;
         Years: Integer;
@@ -1222,6 +1223,7 @@ procedure CalculateLeaseDuration()
         DurationText: Text[50];
         TempStartDate: Date;
         DaysDifference: Integer;
+        daysInMonth: Integer;
     begin
         LeaseStartDate := Rec."Lease Start Date";
         LeaseEndDate := Rec."Lease End Date";
@@ -1256,6 +1258,27 @@ procedure CalculateLeaseDuration()
 
                     // Calculate the remaining days
                     Days := LeaseEndDate - TempStartDate + 1;
+
+                    if Days >= 28 then begin
+                        daysInMonth := FetchMonth.GetNoofDaysInMonth(Date2DMY(TempStartDate, 2), Date2DMY(TempStartDate, 3));
+                        if Days = daysInMonth then begin
+                            Months := Months + 1;
+                            Days := 0;
+                        end
+                        else if Days > daysInMonth then begin
+                            Months := Months + 1;
+                            Days := Days - daysInMonth;
+                        end;
+                    end;
+
+                    if Months = 12 then begin
+                        Years := Years + 1;
+                        Months := 0;
+                    end
+                    else if Months > 12 then begin
+                        Years := Years + (Months div 12);
+                        Months := Months mod 12;
+                    end;
                 end;
 
                 // Build the duration text

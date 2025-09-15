@@ -121,6 +121,11 @@ page 50305 "Property Registration Card"
                 //     ApplicationArea = All;
                 // }
 
+                field("Country"; rec."Country")
+                {
+                    ApplicationArea = All;
+                    // Lookup = true;
+                }
                 field("Emirate"; rec."Emirate Name")
                 {
                     ApplicationArea = All;
