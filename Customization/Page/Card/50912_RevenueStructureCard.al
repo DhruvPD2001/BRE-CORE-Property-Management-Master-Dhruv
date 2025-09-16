@@ -311,13 +311,13 @@ page 50912 "Revenue Structure Card"
         TotalMonths := CalculateTotalMonths(Rec."Contract Start Date", Rec."Contract End Date");
 
         TotalDays := (Rec."Contract End Date" - Rec."Contract Start Date") + 1;
-        DailyRate := Rec."Amount Including VAT" / TotalDays;
+        DailyRate := Rec.Amount / TotalDays;
 
         CurrentDate := Rec."Contract Start Date";
         Method1Total := 0;
         Method2Total := 0;
         RecCount := 0;
-        MonthlyRate2 := Round(Rec."Amount Including VAT" / TotalMonths);
+        MonthlyRate2 := Round(Rec.Amount / TotalMonths);
 
         // First pass - calculate all monthly values
         while CurrentDate <= Rec."Contract End Date" do begin
@@ -390,7 +390,7 @@ page 50912 "Revenue Structure Card"
         end;
 
         // Adjust the last month's amount for Method 2 to ensure total matches contract amount
-        RemainingAmount := Rec."Amount Including VAT" - (Method2Total - TempSubpageRecs[RecCount]."RR - Method 2 (Month)");
+        RemainingAmount := Rec.Amount - (Method2Total - TempSubpageRecs[RecCount]."RR - Method 2 (Month)");
         TempSubpageRecs[RecCount]."RR - Method 2 (Month)" := RemainingAmount;
 
         // Insert all records into the actual table
