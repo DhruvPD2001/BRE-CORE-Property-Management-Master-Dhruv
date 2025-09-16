@@ -157,7 +157,7 @@ permissionset 50101 PagePermissionSet
         page "Revenue Recognition List" = X,
         page "Revenue Structure Card" = X,
         page "Revenue Structure List" = X,
-         page "RevenueRecognition Othercharge" = X,
+        page "RevenueRecognition Othercharge" = X,
         page "Secondary Item Card" = X,
         page "Secondary Item List" = X,
         page "Security Deposit Card" = X,
@@ -205,5 +205,6 @@ permissionset 50101 PagePermissionSet
         page "Request Credit Note Card" = X,
         page "Request Credit Note List" = X,
         page "Request CreditNote Grid" = X,
-        page RequestCreditNoteApprovalList = X;
+        page RequestCreditNoteApprovalList = X,
+        codeunit SendListPendingCreditNoteInv = X;
 }
