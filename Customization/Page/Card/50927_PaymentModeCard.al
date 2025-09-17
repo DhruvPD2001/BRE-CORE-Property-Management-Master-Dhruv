@@ -79,6 +79,7 @@ page 50927 "Payment Mode Card"
                 field("On-hold"; Rec."On-hold")
                 {
                     ApplicationArea = All;
+                    Visible = false;
                     Editable = IsFieldEditable;
                     // trigger OnValidate()
                     // var
