@@ -29,10 +29,18 @@ page 50929 "Split Payment Change Card"
                     var
                         PaymentMode2Rec: Record "Payment Mode2";
                         Selection: Page "Payment Mode2 List";
+                        ExistingSeries: Text;
+                        SplitPayChange: Record "Split Payment Change";
                     begin
                         // Ensure Contract ID is selected first
                         if Rec."Contract ID" = 0 then
                             Error('Please select a Contract ID first');
+
+                        // ✅ Check if any line already has a Payment Series
+                        SplitPayChange.Reset();
+                        SplitPayChange.SetRange("Contract ID", Rec."Contract ID");
+                        if SplitPayChange.FindFirst() then
+                            ExistingSeries := SplitPayChange."Split Payment Series";
 
                         // Filter Payment Mode2 records based on Contract ID
                         PaymentMode2Rec.Reset();
@@ -44,6 +52,13 @@ page 50929 "Split Payment Change Card"
 
                         if Selection.RunModal() = ACTION::LookupOK then begin
                             Selection.SetSelectionFilter(PaymentMode2Rec);
+
+                            if PaymentMode2Rec.FindSet() then
+                                // ✅ Validation: check against existing series
+                                if (ExistingSeries <> '') and (ExistingSeries <> PaymentMode2Rec."Payment Series") then
+                                    Error(
+                                      'You can only select the same Payment Series (%1) for all lines.',
+                                      ExistingSeries);
 
                             if PaymentMode2Rec.FindSet() then begin
                                 Rec."Split Payment Series" := PaymentMode2Rec."Payment Series"; // Select only one value
@@ -57,22 +72,21 @@ page 50929 "Split Payment Change Card"
                     ApplicationArea = All;
                     Caption = 'Secondary Item Type';
 
-                    // Trasfer from Table Start
+                    // Trasfer from Table Star
+
                     trigger OnLookup(var Text: Text): Boolean
                     var
-                        PaymentMode2Rec: Record "Payment Mode2";
-                        Selection: Page "Payment Schedule2 List";
                         PaymentSchedule2Rec: Record "Payment Schedule2";
-                        SelectedPaymentSeries: Text[250];
-                        TotalAmount: Decimal;
-                        TotalVATAmount: Decimal;
-                        TotalAmountInclVAT: Decimal;
+                        SelectedSchedule: Record "Payment Schedule2";
+                        Selection: Page "Payment Schedule2 List";
+                        TempSelected: Record "Payment Schedule2" temporary;
+                        NewLine: Record "Split Payment Change"; // table where split lines are stored
                     begin
-                        // First check if Contract ID is selected
+                        // ✅ Contract ID validation
                         if Rec."Contract ID" = 0 then
                             Error('Please select a Contract ID first');
 
-                        // Filter Payment Mode2 records based on Contract ID
+                        // ✅ Show only records for this Contract + Payment Series
                         PaymentSchedule2Rec.Reset();
                         PaymentSchedule2Rec.SetRange("Contract ID", Rec."Contract ID");
                         PaymentSchedule2Rec.SetRange("Payment Series", Rec."Split Payment Series");
@@ -81,34 +95,103 @@ page 50929 "Split Payment Change Card"
                         Selection.SetTableView(PaymentSchedule2Rec);
 
                         if Selection.RunModal() = ACTION::LookupOK then begin
-                            // Clear totals
-                            Clear(TotalAmount);
-                            Clear(TotalVATAmount);
-                            Clear(TotalAmountInclVAT);
-                            Clear(SelectedPaymentSeries);
+                            // Capture only selected rows
+                            Selection.SetSelectionFilter(SelectedSchedule);
 
-                            Selection.SetSelectionFilter(PaymentSchedule2Rec);
-                            if PaymentSchedule2Rec.FindSet() then begin
+                            // Store selected rows in temporary buffer
+                            if SelectedSchedule.FindSet() then
                                 repeat
-                                    // Add to payment series string
-                                    if SelectedPaymentSeries <> '' then
-                                        SelectedPaymentSeries := SelectedPaymentSeries + ',';
-                                    SelectedPaymentSeries := SelectedPaymentSeries + PaymentSchedule2Rec."Secondary Item Type";
+                                    TempSelected.Init();
+                                    TempSelected.TransferFields(SelectedSchedule);
+                                    TempSelected.Insert();
+                                until SelectedSchedule.Next() = 0;
 
-                                    // Sum up amounts
-                                    TotalAmount += PaymentSchedule2Rec.Amount;
-                                    TotalVATAmount += PaymentSchedule2Rec."VAT Amount";
-                                    TotalAmountInclVAT += PaymentSchedule2Rec."Amount Including VAT";
-                                until PaymentSchedule2Rec.Next() = 0;
-
-                                // Set all values to the record
-                                Rec."Secondary Item Type" := SelectedPaymentSeries;
-                                Rec."Split Amount" := TotalAmount;
-                                Rec."Split VAT Amount" := TotalVATAmount;
-                                Rec."Split Amount Including VAT" := TotalAmountInclVAT;
+                            // ✅ Use the first selected row to update current line
+                            if TempSelected.FindFirst() then begin
+                                Rec."Secondary Item Type" := TempSelected."Secondary Item Type";
+                                Rec."Split Amount" := TempSelected.Amount;
+                                Rec."Split VAT Amount" := TempSelected."VAT Amount";
+                                Rec."Split Amount Including VAT" := TempSelected."Amount Including VAT";
+                                Rec.Modify();
                             end;
+
+                            // ✅ Insert new lines for items NOT selected
+                            PaymentSchedule2Rec.Reset();
+                            PaymentSchedule2Rec.SetRange("Contract ID", Rec."Contract ID");
+                            PaymentSchedule2Rec.SetRange("Payment Series", Rec."Split Payment Series");
+
+                            if PaymentSchedule2Rec.FindSet() then
+                                repeat
+                                    TempSelected.SetRange("Contract ID", PaymentSchedule2Rec."Contract ID");
+                                    TempSelected.SetRange("Payment Series", PaymentSchedule2Rec."Payment Series");
+                                    TempSelected.SetRange("Secondary Item Type", PaymentSchedule2Rec."Secondary Item Type");
+                                    if not TempSelected.FindFirst() then begin
+                                        NewLine.Init();
+                                        NewLine."Contract ID" := Rec."Contract ID";
+                                        NewLine."Tenant Id" := Rec."Tenant Id";
+                                        NewLine."Split Payment Series" := Rec."Split Payment Series";
+                                        NewLine."Secondary Item Type" := PaymentSchedule2Rec."Secondary Item Type";
+                                        NewLine."Split Amount" := PaymentSchedule2Rec.Amount;
+                                        NewLine."Split VAT Amount" := PaymentSchedule2Rec."VAT Amount";
+                                        NewLine."Split Amount Including VAT" := PaymentSchedule2Rec."Amount Including VAT";
+                                        NewLine.Insert();
+                                    end;
+                                until PaymentSchedule2Rec.Next() = 0;
                         end;
+                        CurrPage.Update(true);
                     end;
+
+                    // trigger OnLookup(var Text: Text): Boolean
+                    // var
+                    //     PaymentMode2Rec: Record "Payment Mode2";
+                    //     Selection: Page "Payment Schedule2 List";
+                    //     PaymentSchedule2Rec: Record "Payment Schedule2";
+                    //     SelectedPaymentSeries: Text[250];
+                    //     TotalAmount: Decimal;
+                    //     TotalVATAmount: Decimal;
+                    //     TotalAmountInclVAT: Decimal;
+                    // begin
+                    //     // First check if Contract ID is selected
+                    //     if Rec."Contract ID" = 0 then
+                    //         Error('Please select a Contract ID first');
+
+                    //     // Filter Payment Mode2 records based on Contract ID
+                    //     PaymentSchedule2Rec.Reset();
+                    //     PaymentSchedule2Rec.SetRange("Contract ID", Rec."Contract ID");
+                    //     PaymentSchedule2Rec.SetRange("Payment Series", Rec."Split Payment Series");
+
+                    //     Selection.LookupMode(true);
+                    //     Selection.SetTableView(PaymentSchedule2Rec);
+
+                    //     if Selection.RunModal() = ACTION::LookupOK then begin
+                    //         // Clear totals
+                    //         Clear(TotalAmount);
+                    //         Clear(TotalVATAmount);
+                    //         Clear(TotalAmountInclVAT);
+                    //         Clear(SelectedPaymentSeries);
+
+                    //         Selection.SetSelectionFilter(PaymentSchedule2Rec);
+                    //         if PaymentSchedule2Rec.FindSet() then begin
+                    //             repeat
+                    //                 // Add to payment series string
+                    //                 if SelectedPaymentSeries <> '' then
+                    //                     SelectedPaymentSeries := SelectedPaymentSeries + ',';
+                    //                 SelectedPaymentSeries := SelectedPaymentSeries + PaymentSchedule2Rec."Secondary Item Type";
+
+                    //                 // Sum up amounts
+                    //                 TotalAmount += PaymentSchedule2Rec.Amount;
+                    //                 TotalVATAmount += PaymentSchedule2Rec."VAT Amount";
+                    //                 TotalAmountInclVAT += PaymentSchedule2Rec."Amount Including VAT";
+                    //             until PaymentSchedule2Rec.Next() = 0;
+
+                    //             // Set all values to the record
+                    //             Rec."Secondary Item Type" := SelectedPaymentSeries;
+                    //             Rec."Split Amount" := TotalAmount;
+                    //             Rec."Split VAT Amount" := TotalVATAmount;
+                    //             Rec."Split Amount Including VAT" := TotalAmountInclVAT;
+                    //         end;
+                    //     end;
+                    // end;
                     // Trasfer from Table End
                 }
                 field("Split Due Date"; Rec."Split Due Date")

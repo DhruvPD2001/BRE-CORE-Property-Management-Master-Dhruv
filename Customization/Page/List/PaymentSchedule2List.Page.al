@@ -39,6 +39,11 @@ page 50925 "Payment Schedule2 List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the total amount including VAT.';
                 }
+                field("Due Date"; Rec."Due Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the Due Date.';
+                }
             }
         }
     }
