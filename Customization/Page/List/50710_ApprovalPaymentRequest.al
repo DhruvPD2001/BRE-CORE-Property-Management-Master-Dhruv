@@ -41,6 +41,18 @@ page 50710 "Approval Payment Request"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    DrillDown = true;
+
+                    trigger OnDrillDown()
+                    var
+                        Tenantprofile: Record Customer;
+                    begin
+                        Tenantprofile.SetRange("No.", Rec."Tenant ID");
+                        if Tenantprofile.FindSet() then
+                            PAGE.RunModal(PAGE::"Customer Card", Tenantprofile)
+                        else
+                            Message('No Customer found using FindFirst either.');
+                    end;
                 }
                 field("Proposal ID"; Rec."Proposal ID")
                 {
@@ -52,8 +64,18 @@ page 50710 "Approval Payment Request"
                 {
                     ApplicationArea = All;
                     Editable = false;
+                    DrillDown = true;
 
-
+                    trigger OnDrillDown()
+                    var
+                        tenancycontact: Record "Tenancy Contract";
+                    begin
+                        tenancycontact.SetRange("Contract ID", Rec."Contract ID");
+                        if tenancycontact.FindSet() then
+                            PAGE.RunModal(PAGE::"Tenancy Contract Card", tenancycontact)
+                        else
+                            Message('No Tenancy Contract found using FindFirst either.');
+                    end;
                 }
                 field("Payment Series"; Rec."Payment Series")
                 {
