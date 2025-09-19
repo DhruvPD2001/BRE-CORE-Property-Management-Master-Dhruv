@@ -286,8 +286,8 @@ page 50710 "Approval Payment Request"
 
                     // Extract and store `Items` in a list
                     Clear(itemList);
-                    if PaymentChangeReqTable."Items".Contains(',') then begin
-                        foreach ItemSeries in PaymentChangeReqTable."Items".Split(',') do
+                    if PaymentChangeReqTable."Items".Contains(', ') then begin
+                        foreach ItemSeries in PaymentChangeReqTable."Items".Split(', ') do
                             itemList.Add(DelChr(ItemSeries, '>', ' '));
                     end else
                         itemList.Add(PaymentChangeReqTable."Items");
@@ -386,8 +386,8 @@ page 50710 "Approval Payment Request"
 
 
                     Clear(paymentSeriesNos);
-                    if PaymentChangeReqTable."Payment Series".Contains(',') then begin
-                        foreach paymentSeries in PaymentChangeReqTable."Payment Series".Split(',') do
+                    if PaymentChangeReqTable."Payment Series".Contains(', ') then begin
+                        foreach paymentSeries in PaymentChangeReqTable."Payment Series".Split(', ') do
                             paymentSeriesNos.Add(DelChr(paymentSeries, '=', ' '));
                     end else begin
                         paymentSeriesNos.Add(PaymentChangeReqTable."Payment Series");
