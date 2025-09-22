@@ -34,6 +34,9 @@ report 50102 "Proposal Report"
             column(CompanyPicture; CompanyInfo.Picture)
             {
             }
+            column(CompanyName; CompanyInfo.Name)
+            {
+            }
 
         }
     }
