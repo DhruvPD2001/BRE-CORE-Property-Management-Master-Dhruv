@@ -1374,7 +1374,7 @@ page 50313 "Tenancy Contract Card"
 
                                         // Find the first unit's details in Merge DifferentSquare table
                                         MU_differentsquare.SetRange("Contract ID", Tenancycontract."Contract ID");
-                                        MU_differentsquare.SetRange("MD_Unit ID", SingleUnitName); // Filter by the first unit name
+                                        //  MU_differentsquare.SetRange("MD_Unit ID", SingleUnitName); // Filter by the first unit name
                                         if MU_differentsquare.FindSet() then begin
                                             repeat
                                                 // Update Revenue Structure Subpage
