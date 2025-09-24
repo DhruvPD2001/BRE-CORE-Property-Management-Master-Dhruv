@@ -462,7 +462,7 @@ page 50313 "Tenancy Contract Card"
                 field("Single Rent Calculation"; Rec."Single Rent Calculation")
                 {
                     ApplicationArea = All;
-                    Editable = Rec."Praposal Type Selected" = Rec."Praposal Type Selected"::"Single Unit";
+                    Editable = false;
 
                     trigger OnValidate()
                     begin
@@ -473,7 +473,7 @@ page 50313 "Tenancy Contract Card"
                 field("Merge Rent Calculation"; Rec."Merge Rent Calculation")
                 {
                     ApplicationArea = All;
-                    Editable = Rec."Praposal Type Selected" = Rec."Praposal Type Selected"::"Merge Unit";
+                    Editable = false;
 
                     trigger OnValidate()
                     begin
