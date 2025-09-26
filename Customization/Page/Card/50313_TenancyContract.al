@@ -273,7 +273,7 @@ page 50313 "Tenancy Contract Card"
                 field("Base Unit of Measure"; rec."Base Unit of Measure")
                 {
                     ApplicationArea = All;
-                    Lookup = true;
+                    Editable = false;
                 }
 
                 field("Makani Number"; Rec."Makani Number")
@@ -302,6 +302,7 @@ page 50313 "Tenancy Contract Card"
                 field("Facilities/Amenities"; rec."Facilities/Amenities")
                 {
                     ApplicationArea = All;
+                    Editable = false;
                 }
             }
 

@@ -964,7 +964,7 @@ page 50315 "Lease Proposal Card"
     trigger OnAfterGetRecord()
     begin
         // EnableSingleUnit := true;
-        // UpdateUnitEnableState();
+        UpdateUnitEnableState();
         CurrPage."Revenue".Page.SetProposalId(Rec."Proposal ID");
         CurrPage."Revenue".Page.SetStartEndDate(Rec."Lease Start Date", Rec."Lease End Date", Rec."Unit Name", Rec."Property Name", Rec."Unit Size", Rec."Tenant Full Name");
         CurrPage."Revenue".Page.SetTenantID(Rec."Tenant ID");
