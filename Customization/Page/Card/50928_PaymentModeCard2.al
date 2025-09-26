@@ -94,9 +94,9 @@ page 50928 "Payment Mode Card2"
                 field("Cheque Status"; Rec."Cheque Status")
                 {
                     ApplicationArea = All;
-                    Editable = IsApproved;
+                    Editable = IsApproved AND (Rec."Payment Mode" = 'Cheque');
                     //Editable = (Rec."Payment Mode" = 'Cheque') and (Rec."Payment Status" <> Rec."Payment Status"::Cancelled);  
-                    //Editable = (Rec."Payment Mode" = 'Cheque'); // Editable only if Payment Mode is 'Cheque'
+                   // Editable = (Rec."Payment Mode" = 'Cheque'); // Editable only if Payment Mode is 'Cheque'
                     //Editable = not ((Rec."Payment Mode" = 'Cheque') and (Rec."Payment Status" = Rec."Payment Status"::Cancelled));
                     // trigger OnValidate()
                     // begin
