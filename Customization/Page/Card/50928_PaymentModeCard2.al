@@ -4,6 +4,7 @@ page 50928 "Payment Mode Card2"
     SourceTable = "Payment Mode2";
     ApplicationArea = All;
     Caption = 'Payment Details';
+    DeleteAllowed = false;
 
     layout
     {
@@ -78,7 +79,7 @@ page 50928 "Payment Mode Card2"
                 field("Deposit Status"; Rec."Deposit Status")
                 {
                     ApplicationArea = All;
-                    Editable = false;
+                   // Editable = false;
                     //Editable = (Rec."Payment Mode" = 'Cheque') and (Rec."Payment Status" <> Rec."Payment Status"::Cancelled);  
                     //Editable = not ((Rec."Payment Mode" = 'Cheque') and (Rec."Payment Status" = Rec."Payment Status"::Cancelled));
                 }
