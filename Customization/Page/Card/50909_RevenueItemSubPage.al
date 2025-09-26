@@ -31,6 +31,10 @@ page 50909 "Revenue Item SubPage Card"
 
                     trigger OnValidate()
                     begin
+                        // ✅ Check if Secondary Item Type is empty
+                        if Rec."Secondary Item Type" = '' then
+                            Error('Please select the Secondary Item Type before entering an Amount.');
+
                         UpdateLeaseProposalAmount();
                     end;
 

@@ -5,6 +5,7 @@ page 50939 "Tenancy Contract SubPage Card"
     // UsageCategory = Administration;
     SourceTable = "Tenancy Contract Subpage";
     Caption = 'Other Payments';
+    DeleteAllowed = false;
 
     layout
     {

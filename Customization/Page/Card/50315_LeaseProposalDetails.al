@@ -704,9 +704,11 @@ page 50315 "Lease Proposal Card"
 
             group("Other Payments")
             {
+                Editable = Rec."Proposal Status" <> Rec."Proposal Status"::Approved;
+
                 part("Revenue"; "Revenue Item SubPage Card")
                 {
-                    SubPageLink = ProposalID = FIELD("Proposal ID"); // Link to filter attachments for this owner only
+                    SubPageLink = "ProposalID" = FIELD("Proposal ID"); // Link to filter attachments for this owner only
                     ApplicationArea = All;
                     // Visible = isVisible;
                 }
