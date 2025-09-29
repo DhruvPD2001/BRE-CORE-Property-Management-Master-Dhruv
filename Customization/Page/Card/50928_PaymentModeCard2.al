@@ -618,6 +618,7 @@ page 50928 "Payment Mode Card2"
             else 
             if Rec."Due Date" < Today() then 
                 Rec."Payment Status" := PaymentStatus::Overdue;
+                OverduePaymentSendRequest();
          
             Rec.Modify();
         // if Rec."Due Date" <> xRec."Due Date" then begin
@@ -871,6 +872,46 @@ begin
 // Refresh the page so all records are visible again
 CurrPage.Update(false);
 end;
+
+
+
+
+
+
+
+
+
+procedure OverduePaymentSendRequest()
+var
+    OverduePaymentList: Record "OverDuePaymentmode";
+    approvalstatus: Enum "Approval Status Enum";
+begin
+    // ✅ Check if Due Date is past today
+    if Rec."Due Date" < Today() then begin
+        // Update Payment Status to Overdue
+        Rec."Payment Status" := Rec."Payment Status"::Overdue;
+        Rec.Modify();
+
+        // ✅ Check if record already exists to avoid duplicate
+        OverduePaymentList.Reset();
+        OverduePaymentList.SetRange("Tenant Id", Rec."Tenant Id");
+        OverduePaymentList.SetRange("Contract ID", Rec."Contract ID");
+        OverduePaymentList.SetRange("Payment Series", Rec."Payment Series");
+        if not OverduePaymentList.FindFirst() then begin
+            // Insert only if no existing overdue request
+            OverduePaymentList.Init();
+            OverduePaymentList."Status" := approvalstatus::Pending;
+            OverduePaymentList."Tenant Id" := Rec."Tenant Id";
+            OverduePaymentList."Contract ID" := Rec."Contract ID";
+            OverduePaymentList."Payment Series" := Rec."Payment Series";
+            OverduePaymentList."Due Date" := Rec."Due Date";
+            OverduePaymentList."Payment Status" := Rec."Payment Status";
+            OverduePaymentList.Insert(true);
+        end;
+    end;
+end;
+
+
 
 }
     

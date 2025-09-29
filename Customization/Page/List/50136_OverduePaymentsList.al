@@ -4,7 +4,7 @@ page 50136 "Overdue Payments List" // Use an appropriate page number
     SourceTable = "Payment Mode2"; // Replace with your actual payment table
     ApplicationArea = All;
     Caption = 'Overdue Payments';
-    UsageCategory = Lists;
+    // UsageCategory = Lists;
 
     InsertAllowed = false;
     ModifyAllowed = false;
