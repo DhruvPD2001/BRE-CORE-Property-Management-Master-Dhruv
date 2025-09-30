@@ -349,7 +349,7 @@ page 50946 "Rent Calculation SubCard"
 
 
                             until RevenueStructure.Next() = 0;
-                            Message('Date Create Successfully!');
+                            Message('Data Create Successfully!');
                         end else
                             Error('No records found in the Revenue Structure.');
                     end;
