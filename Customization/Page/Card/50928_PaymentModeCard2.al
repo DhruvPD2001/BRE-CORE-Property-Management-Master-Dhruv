@@ -906,6 +906,7 @@ begin
             OverduePaymentList."Payment Series" := Rec."Payment Series";
             OverduePaymentList."Due Date" := Rec."Due Date";
             OverduePaymentList."Payment Status" := Rec."Payment Status";
+            OverduePaymentList."Tenant Name" := Rec."Tenant Name";
             OverduePaymentList.Insert(true);
         end;
     end;

@@ -58,6 +58,12 @@ page 50972 "OverduePaymentmodelist"
                     Editable = false;
                     ToolTip = 'Payment Status';
                 }
+                field("Tenant Name"; Rec."Tenant Name")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Tenant Name';
+                }
             }
         }
     }
