@@ -204,5 +204,6 @@ permissionset 50101 PagePermissionSet
         page "Request Credit Note List" = X,
         page "Request CreditNote Grid" = X,
         page RequestCreditNoteApprovalList = X,
-        codeunit SendListPendingCreditNoteInv = X;
+        codeunit SendListPendingCreditNoteInv = X,
+        page OverduePaymentmodelist = X;
 }
