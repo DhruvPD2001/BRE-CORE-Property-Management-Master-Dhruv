@@ -92,13 +92,6 @@ page 50912 "Revenue Structure Card"
                     Visible = false;
 
                 }
-                // field("Rent Calculation Type"; Rec."Rent Calculation Type")
-                // {
-                //     ApplicationArea = All;
-                //     Caption = 'Rent Calculation Type';
-                //     ToolTip = 'Enter the Rent Calculation Type.';
-                // }
-
                 field("VAT %"; Rec."VAT %")
                 {
                     ApplicationArea = All;
@@ -106,12 +99,7 @@ page 50912 "Revenue Structure Card"
                     ToolTip = 'Enter the VAT %.';
                     Editable = false;
                 }
-
-
-
-
             }
-
 
             group("Payment Schedule")
             {

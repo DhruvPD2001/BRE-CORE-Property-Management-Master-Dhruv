@@ -458,18 +458,18 @@ page 50315 "Lease Proposal Card"
                             TargetRecord."Amount Including VAT" := LeaseProposal."Rent Amount Including VAT";
 
                             // Handle rent calculation type assignment
-                            if LeaseProposal."Single Rent Calculation" = LeaseProposal."Single Rent Calculation"::"Single Unit with lumpsum square feet rate" then
-                                TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Single Rent Calculation")
-                            else if LeaseProposal."Single Rent Calculation" = LeaseProposal."Single Rent Calculation"::"Single Unit with square feet rate" then
-                                TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Single Rent Calculation")
-                            else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with differential square feet rate" then
-                                TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Merge Rent Calculation")
-                            else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with lumpsum annual amount" then
-                                TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Merge Rent Calculation")
-                            else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with same square feet" then
-                                TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Merge Rent Calculation")
-                            else
-                                Error('No valid Rent Calculation Type found in Lease Proposal.');
+                            // if LeaseProposal."Single Rent Calculation" = LeaseProposal."Single Rent Calculation"::"Single Unit with lumpsum square feet rate" then
+                            //     TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Single Rent Calculation")
+                            // else if LeaseProposal."Single Rent Calculation" = LeaseProposal."Single Rent Calculation"::"Single Unit with square feet rate" then
+                            //     TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Single Rent Calculation")
+                            // else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with differential square feet rate" then
+                            //     TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Merge Rent Calculation")
+                            // else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with lumpsum annual amount" then
+                            //     TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Merge Rent Calculation")
+                            // else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with same square feet" then
+                            //     TargetRecord."Rent Calculation Type" := Format(LeaseProposal."Merge Rent Calculation")
+                            // else
+                            //     Error('No valid Rent Calculation Type found in Lease Proposal.');
 
                             TargetRecord.Insert();
 
