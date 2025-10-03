@@ -88,6 +88,9 @@ report 50117 "Terminated Credit Note"
                 column(AInVAT; "Amount Including VAT")
                 {
                 }
+                column(VAT__; "VAT %")
+                {
+                }
                 trigger OnAfterGetRecord()
                 begin
                     // Increment the Serial No. for each record

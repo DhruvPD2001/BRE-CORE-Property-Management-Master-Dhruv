@@ -326,87 +326,52 @@ page 50966 "Credit Note Card"
                 trigger OnAction()
                 var
                     CreditNotetable: Record "Credit Note";
-                    CreditNote: Report "Terminated Credit Note";
-                    FinalCalculation: Record "Final Calculation";
+                    CreditNoteReport: Report "Terminated Credit Note";
                     azureBlobUploader: Codeunit "Azure AD Blob Storage";
                     fileName: Text;
                     uploadResult: Text;
                     folderName: Text;
-                    azureConfig: Record AzureConfiguration;
                     inStream: InStream;
-                    // AzureBlobUploader: Codeunit "Azure Blob Management";
                     Billingcalculationgrid: Record "Final Billing Calculation Grid";
-                    // InStream: InStream;
-                    // FileName: Text;
-                    // SASUrlBase: Text;
-                    // SASUrlWithFileName: Text;
-                    // UploadResult: Text;
                     TempBlob: Codeunit "Temp Blob";
-                    // ValidFormats: List of [Text];
-                    // FileExtension: Text[10];
-                    // FileSize: Decimal;
-                    // ConfigRecord: Record AzureConfiguration;
-                    ReportID: Integer; // Your report ID
-                    RecRef: RecordRef;
-                    FieldRef1: FieldRef;
-                    FieldRef2: FieldRef;
                     OutStream: OutStream;
-                    documentattachment: Codeunit UploadAttachment;
-                    creditmemo: Record "Credit Note";
                 begin
-                    // 1. Preview report
-                    // CreditNotetable.SetRange("Contract ID", Rec."Contract ID");
-                    //  CreditNote.SetTableView(CreditNotetable);
-                    //CreditNote.RunModal();
+                    // Credit Note table માં filter set કરો
+                    CreditNotetable.Reset();
+                    CreditNotetable.SetRange(ID, Rec.ID);
 
-                    // if not ConfigRecord.FindFirst() then
-                    //     Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
-                    // ValidFormats.Add('.png');
-                    // ValidFormats.Add('.jpg');
-                    // ValidFormats.Add('.jpeg');
+                    if not CreditNotetable.FindFirst() then
+                        Error('Credit Note record not found for ID: %1', Rec.ID);
 
-                    // SASUrlBase := ConfigRecord."SAS URL";
-                    // FileExtension := '.pdf';
-                    ReportID := 50117;
-                    //  RecRef.Open(DATABASE::"Sales Header"); // Open the table reference
-                    // RecRef.GetTable(Rec);
-                    creditmemo.Reset();
-                    creditmemo.SetRange("Contract ID", Rec."Contract ID");
-                    creditmemo.SetRange("FC ID", Rec."FC ID");
-                    // if not Rec.FindFirst() then
-                    //     Error('Sales Credit memo record not found.');
+                    // Report માં table view set કરો
+                    CreditNoteReport.SetTableView(CreditNotetable);
+                    CreditNoteReport.UseRequestPage(false);
 
-                    // Open the correct record in RecRef
-                    RecRef.GetTable(creditmemo);
-                    RecRef.GetTable(Rec);
+                    // PDF generate કરો
                     TempBlob.CreateOutStream(OutStream);
-                    Report.SaveAs(ReportID, '', ReportFormat::Pdf, OutStream, RecRef);
+                    CreditNoteReport.SaveAs('', ReportFormat::Pdf, OutStream);
                     TempBlob.CreateInStream(InStream);
 
-                    FileName := 'CreditNote' + Format(Rec."ID") + '.pdf';
-                    // SASUrlWithFileName := StrSubstNo('%1/%2?%3', CopyStr(SASUrlBase, 1, StrPos(SASUrlBase, '?') - 1), FileName, CopyStr(SASUrlBase, StrPos(SASUrlBase, '?') + 1));
-                    // UploadResult := documentattachment.UploadDocumentToBlobStorage(SASUrlWithFileName, FileName, InStream);
-                    // Rec."Credit Note Document" := FileName;
-                    // Rec."Credit Note URL" := UploadResult;
+                    FileName := 'CreditNote_' + Format(Rec.ID) + '.pdf';
 
                     folderName := 'Payment Receipt';
                     uploadResult := azureBlobUploader.UploadDocumentToBlob(inStream, fileName, folderName);
-                    if fileName <> '' then begin
+
+                    if uploadResult <> '' then begin
                         Rec."Credit Note Document" := fileName;
                         Rec."Credit Note URL" := uploadResult;
                         Rec.Modify();
                         Message('File uploaded successfully: %1', fileName);
-                    end;
-                    Rec.Modify();
+                    end else
+                        Error('File upload failed');
 
+                    // Update Billing Calculation Grid
                     Billingcalculationgrid.SetRange("Contract ID", Rec."Contract ID");
                     if Billingcalculationgrid.FindSet() then begin
                         Billingcalculationgrid."Credit Note Document" := Rec."Credit Note Document";
                         Billingcalculationgrid."Credit Note Document URL" := Rec."Credit Note URL";
                         Billingcalculationgrid.Modify(true);
-                    end else
-                        Error('No Final Calculation record found for Contract ID %1', FinalCalculation."Contract ID");
-
+                    end;
                 end;
             }
         }
