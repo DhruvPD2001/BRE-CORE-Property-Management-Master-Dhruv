@@ -251,6 +251,8 @@ page 50315 "Lease Proposal Card"
                     begin
                         CalculateLeaseDuration();
                         docAttach.SetStartEndDate(Rec."Lease Start Date", Rec."Lease End Date", Rec."Unit Name", Rec."Property Name", Rec."Unit Size", Rec."Tenant Full Name");
+                        Rec."Payment Frequency" := Rec."Payment Frequency"::" ";
+                        Rec."No of Installments" := 0;
                     end;
                     // Trasfer from Table End
                 }
@@ -300,25 +302,25 @@ page 50315 "Lease Proposal Card"
                         TotalMonths: Integer;
                     begin
                         // Calculate total months based on duration
-                        if rec."Lease Duration" <> '' then begin
-                            TotalMonths := GetTotalMonths(rec."Lease Duration");
-                        end else begin
-                            TotalMonths := 0;
-                        end;
+                        // if rec."Lease Duration" <> '' then begin
+                        //     TotalMonths := GetTotalMonths(rec."Lease Duration");
+                        // end else begin
+                        //     TotalMonths := 0;
+                        // end;
 
-                        case rec."Payment Frequency" of
-                            rec."Payment Frequency"::Monthly:
-                                NoOfInstallments := TotalMonths;    
-                            rec."Payment Frequency"::Quarterly:
-                                NoOfInstallments := Round(TotalMonths / 3, 1, '>');
-                            rec."Payment Frequency"::"Half-Yearly":
-                                NoOfInstallments := Round(TotalMonths / 6, 1, '>');
-                            rec."Payment Frequency"::Yearly:
-                                NoOfInstallments := Round(TotalMonths / 12, 1, '>');
-                            else
-                                NoOfInstallments := 0;
-                        end;
-                            rec."No of Installments" := NoOfInstallments;
+                        // case rec."Payment Frequency" of
+                        //     rec."Payment Frequency"::Monthly:
+                        //         NoOfInstallments := TotalMonths;    
+                        //     rec."Payment Frequency"::Quarterly:
+                        //         NoOfInstallments := Round(TotalMonths / 3, 1, '>');
+                        //     rec."Payment Frequency"::"Half-Yearly":
+                        //         NoOfInstallments := Round(TotalMonths / 6, 1, '>');
+                        //     rec."Payment Frequency"::Yearly:
+                        //         NoOfInstallments := Round(TotalMonths / 12, 1, '>');
+                        //     else
+                        //         NoOfInstallments := 0;
+                        // end;
+                            rec."No of Installments" := CalculateInstallments(Rec."Lease Duration", Format(Rec."Payment Frequency"));
                     end;
                 }
                 field("No of Installments"; rec."No of Installments")
@@ -1236,17 +1238,17 @@ procedure CalculateLeaseDuration()
                 DaysDifference := LeaseEndDate - LeaseStartDate + 1;
 
                 // If the difference is exactly 365 or 366 days (accounting for leap year)
-                if (DaysDifference = 365) or (DaysDifference = 366) then begin
-                    Years := 1;
-                    Months := 0;
-                    Days := 0;
-                end else begin
+                // if (DaysDifference = 365) or (DaysDifference = 366) then begin
+                //     Years := 1;
+                //     Months := 0;
+                //     Days := 0;
+                // end else begin
                     TempStartDate := LeaseStartDate;
 
                     // Calculate the years
                     Years := 0;
-                    while (CALCDATE('<+1Y>', TempStartDate) <= LeaseEndDate) or
-                          (CALCDATE('<+1Y-1D>', TempStartDate) = LeaseEndDate) do begin
+                    while (CALCDATE('<+1Y>', TempStartDate) <= LeaseEndDate) or 
+                    (CALCDATE('<+1Y-1D>', TempStartDate) = LeaseEndDate) do begin
                         TempStartDate := CALCDATE('<+1Y>', TempStartDate);
                         Years := Years + 1;
                     end;
@@ -1281,7 +1283,7 @@ procedure CalculateLeaseDuration()
                         Years := Years + (Months div 12);
                         Months := Months mod 12;
                     end;
-                end;
+                // end;
 
                 // Build the duration text
                 DurationText := '';
@@ -1303,6 +1305,24 @@ procedure CalculateLeaseDuration()
     //-------------Calculate Lease Duration--------------//
     // Trasfer from Table End
 
+    procedure CalculateInstallments(DurationText: Text; Frequency: Text): Integer
+    var
+        fetchMonth: Codeunit "Fetch Month";
+        Years, Months, Days: Integer;
+        TotalMonths, MonthsPerInstallment, Installments: Integer;
+    begin
+        fetchMonth.ParseDuration(DurationText, Years, Months, Days);
+
+        TotalMonths := (Years * 12) + Months;
+
+        MonthsPerInstallment := fetchMonth.GetNoofMonthsFromFrequency(Frequency);
+
+        Installments := TotalMonths DIV MonthsPerInstallment;
+        if (TotalMonths MOD MonthsPerInstallment > 0) or (Days > 0) then
+            Installments += 1;
+
+        exit(Installments);
+    end;
 }
 
 
