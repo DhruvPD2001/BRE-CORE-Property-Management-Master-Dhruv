@@ -29,9 +29,9 @@ page 50315 "Lease Proposal Card"
                         CurrPage.Update(true);
                     end;
 
-                   
+
                 }
-                
+
 
                 field("Property Name"; rec."Property Name")
                 {
@@ -74,11 +74,11 @@ page 50315 "Lease Proposal Card"
                     Lookup = true; // Enable lookup for Unit ID
                     Enabled = EnableMergeUnit;
 
-                      trigger OnValidate()
-                       
-                        begin
-                            UpdateVisibility();
-                        end;
+                    trigger OnValidate()
+
+                    begin
+                        UpdateVisibility();
+                    end;
 
                 }
 
@@ -295,7 +295,7 @@ page 50315 "Lease Proposal Card"
                 {
                     ApplicationArea = All;
                     Caption = 'Frequency of payment';
-                    
+
                     trigger OnValidate()
                     var
                         NoOfInstallments: Integer;
@@ -320,7 +320,7 @@ page 50315 "Lease Proposal Card"
                         //     else
                         //         NoOfInstallments := 0;
                         // end;
-                            rec."No of Installments" := CalculateInstallments(Rec."Lease Duration", Format(Rec."Payment Frequency"));
+                        rec."No of Installments" := CalculateInstallments(Rec."Lease Duration", Format(Rec."Payment Frequency"));
                     end;
                 }
                 field("No of Installments"; rec."No of Installments")
@@ -356,11 +356,11 @@ page 50315 "Lease Proposal Card"
                     ApplicationArea = All;
                     MultiLine = true;
                 }
-               
+
 
             }
 
-           
+
 
             group("Responsibilities")
             {
@@ -423,7 +423,7 @@ page 50315 "Lease Proposal Card"
                         UpdateVisibility();
                     end;
                 }
-               
+
 
                 field("Update Data"; Rec."Update Data")
                 {
@@ -450,7 +450,7 @@ page 50315 "Lease Proposal Card"
                         if LeaseProposal.FindFirst() then begin
                             // Initialize and insert new record with data from lease proposal
                             TargetRecord.Init();
-                           // TargetRecord."Proposal ID" := LeaseProposal."Proposal ID";
+                            // TargetRecord."Proposal ID" := LeaseProposal."Proposal ID";
                             TargetRecord."Contract Start Date" := LeaseProposal."Lease Start Date";
                             TargetRecord."Contract End Date" := LeaseProposal."Lease End Date";
                             TargetRecord."Amount" := LeaseProposal."Annual Rent Amount";
@@ -487,7 +487,7 @@ page 50315 "Lease Proposal Card"
                                             RevenueSubpage."Period Start Date" := SU_lumpsum."SL_Start Date";
                                             RevenueSubpage."Period End Date" := SU_lumpsum."SL_End Date";
                                             RevenueSubpage."Number of Days" := SU_lumpsum."SL_Number of Days";
-                                          
+
                                             RevenueSubpage.Insert();
                                             Clear(RevenueSubpage);
 
@@ -511,7 +511,7 @@ page 50315 "Lease Proposal Card"
                                             RevenueSubpage."Period Start Date" := SU_samesquare."Start Date";
                                             RevenueSubpage."Period End Date" := SU_samesquare."End Date";
                                             RevenueSubpage."Number of Days" := SU_samesquare."Number of Days";
-                                            
+
                                             RevenueSubpage.Insert();
                                             Clear(RevenueSubpage);
                                         end else
@@ -521,8 +521,8 @@ page 50315 "Lease Proposal Card"
                                 end else
                                     Error('No data found in Single Unit with square feet rate subpage for Proposal ID %1.', LeaseProposal."Proposal ID");
                             end
-                           
-                           else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with differential square feet rate" then begin
+
+                            else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with differential square feet rate" then begin
                                 // Find the lease proposal record
                                 LeaseProposal.SetRange("Proposal ID", Rec."Proposal ID");
                                 if LeaseProposal.FindFirst() then begin
@@ -562,7 +562,7 @@ page 50315 "Lease Proposal Card"
                                 end else
                                     Error('Lease Proposal not found for Proposal ID: %1.', Rec."Proposal ID");
                             end
-                        
+
 
                             else if LeaseProposal."Merge Rent Calculation" = LeaseProposal."Merge Rent Calculation"::"Merged Unit with lumpsum annual amount" then begin
                                 MU_lumpsum.SetRange("Proposal ID", LeaseProposal."Proposal ID");
@@ -594,7 +594,7 @@ page 50315 "Lease Proposal Card"
                                             RevenueSubpage.Year := MU_samesquare.MS_Year;
                                             RevenueSubpage."Period Start Date" := MU_samesquare."MS_Start Date";
                                             RevenueSubpage."Period End Date" := MU_samesquare."MS_End Date";
-                                           
+
                                             RevenueSubpage."Number of Days" := MU_samesquare."MS_Number of Days";
                                             RevenueSubpage.Insert();
                                             Clear(RevenueSubpage);
@@ -614,8 +614,8 @@ page 50315 "Lease Proposal Card"
 
             }
 
-            
-        
+
+
 
 
             group("Single Unit with lumpsum square feet rate")
@@ -702,7 +702,7 @@ page 50315 "Lease Proposal Card"
 
 
 
-        
+
 
             group("Other Payments")
             {
@@ -724,7 +724,7 @@ page 50315 "Lease Proposal Card"
                 }
             }
 
-              group("WorkflowFrequencys")
+            group("WorkflowFrequencys")
             {
                 Visible = false;
                 part("Workflow Frequency"; "Workflow Frequency PR Card")
@@ -735,14 +735,14 @@ page 50315 "Lease Proposal Card"
                 }
             }
 
-             field("Is any Broker Involved?"; Rec."Is any Broker Involved?")
-                {
-                    ApplicationArea = All;
-                }
+            field("Is any Broker Involved?"; Rec."Is any Broker Involved?")
+            {
+                ApplicationArea = All;
+            }
 
             group("Brokers and Commission Agent Details")
             {
-                 Visible = Rec."Is any Broker Involved?";
+                Visible = Rec."Is any Broker Involved?";
 
                 field("Vendor ID"; Rec."Vendor ID")
                 {
@@ -826,59 +826,59 @@ page 50315 "Lease Proposal Card"
                 field("Vendor Name"; Rec."Vendor Name")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
 
                 field("Start Date"; Rec."Start Date")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
 
                 field("End Date"; Rec."End Date")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
 
                 field("Calculation Method"; Rec."Calculation Method")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
 
                 field("Percentage Type"; Rec."Percentage Type")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
 
                 field("Percentage"; Rec."Percentage")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
 
                 field("Amount"; Rec."Amount")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
                 field("Base Amount Type"; Rec."Base Amount Type")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
                 field("Frequency Of Payment"; Rec."Frequency Of Payment")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
-                
+
                 field("Contract Status"; Rec."Contract Status")
                 {
                     ApplicationArea = All;
-                     Editable = false;
+                    Editable = false;
                 }
             }
 
@@ -1003,7 +1003,7 @@ page 50315 "Lease Proposal Card"
                 EnableSingleUnit := false; // Keep Single Unit enabled by default
                 EnableMergeUnit := false;
         end;
-        CurrPage.Update(); // Refresh the page to apply changes
+        // CurrPage.Update(); // Refresh the page to apply changes
     end;
 
     var
@@ -1039,10 +1039,10 @@ page 50315 "Lease Proposal Card"
         // CalculateTotals();
 
         // Trasfer from Table Start
-        docAttach.SetProposalID(Rec."Proposal ID");        
+        docAttach.SetProposalID(Rec."Proposal ID");
         // Trasfer from Table End
     end;
-  
+
 
 
     var
@@ -1071,7 +1071,7 @@ page 50315 "Lease Proposal Card"
         ShowLegalReasonFields1 := (Rec."Merge Rent Calculation" = Rec."Merge Rent Calculation"::"Merged Unit with differential square feet rate");
         ShowBusinessReasonFields2 := (Rec."Merge Rent Calculation" = Rec."Merge Rent Calculation"::"Merged Unit with lumpsum annual amount");
         ShowLegalReasonFields3 := (Rec."Single Rent Calculation" = Rec."Single Rent Calculation"::"Single Unit with lumpsum square feet rate");
-        ShowLegalReasonFields4 := (Rec."Praposal Type Selected" = Rec."Praposal Type Selected":: "Merge Unit");
+        ShowLegalReasonFields4 := (Rec."Praposal Type Selected" = Rec."Praposal Type Selected"::"Merge Unit");
     end;
 
     var
@@ -1139,7 +1139,7 @@ page 50315 "Lease Proposal Card"
         if CloseAction = ACTION::OK then begin
             if not IsNewUnmodified then  // Only validate if the record has been modified
                 Rec.TestField("Property ID");
-                
+
         end;
 
         exit(true);
@@ -1152,71 +1152,71 @@ page 50315 "Lease Proposal Card"
         YearStr: Text;
     begin
         YearPos := StrPos(Duration, 'year');
-        
+
         if YearPos > 0 then begin
             YearStr := CopyStr(Duration, 1, YearPos - 1);
             Evaluate(Years, DelChr(YearStr, '<>')); // Remove spaces
         end;
-        
+
         // Convert years to months
         exit(Years * 12);
     end;
 
 
     // Add this function to convert duration to months
-// local procedure GetTotalMonths(Duration: Text): Integer
-// var
-//     Years: Integer;
-//     Months: Integer;
-//     Days: Integer;
-//     YearPos: Integer;
-//     MonthPos: Integer;
-//     DayPos: Integer;
-//     TempStr: Text;
-// begin
-//     Years := 0;
-//     Months := 0;
-//     Days := 0;
+    // local procedure GetTotalMonths(Duration: Text): Integer
+    // var
+    //     Years: Integer;
+    //     Months: Integer;
+    //     Days: Integer;
+    //     YearPos: Integer;
+    //     MonthPos: Integer;
+    //     DayPos: Integer;
+    //     TempStr: Text;
+    // begin
+    //     Years := 0;
+    //     Months := 0;
+    //     Days := 0;
 
-//     // Find positions
-//     YearPos := StrPos(Duration, 'year');
-//     MonthPos := StrPos(Duration, 'month');
-//     DayPos := StrPos(Duration, 'day');
-    
-//     // Extract years if exists
-//     if YearPos > 0 then begin
-//         TempStr := CopyStr(Duration, 1, YearPos - 1);
-//         Evaluate(Years, DelChr(TempStr, '<>'));
-//     end;
-    
-//     // Extract months if exists
-//     if MonthPos > 0 then begin
-//         if YearPos > 0 then
-//             TempStr := CopyStr(Duration, YearPos + 8, MonthPos - (YearPos + 8))
-//         else
-//             TempStr := CopyStr(Duration, 1, MonthPos - 1);
-//         Evaluate(Months, DelChr(TempStr, '<>'));
-//     end;
-    
-//     // Extract days if exists
-//     if DayPos > 0 then begin
-//         if MonthPos > 0 then
-//             TempStr := CopyStr(Duration, MonthPos + 9, DayPos - (MonthPos + 9))
-//         else if YearPos > 0 then
-//             TempStr := CopyStr(Duration, YearPos + 8, DayPos - (YearPos + 8))
-//         else
-//             TempStr := CopyStr(Duration, 1, DayPos - 1);
-//         Evaluate(Days, DelChr(TempStr, '<>'));
-//     end;
-    
-//     // Convert all to months and return total
-//     exit((Years * 12) + Months + Round(Days / 30, 1, '<'));
-// end;
-   
+    //     // Find positions
+    //     YearPos := StrPos(Duration, 'year');
+    //     MonthPos := StrPos(Duration, 'month');
+    //     DayPos := StrPos(Duration, 'day');
 
-// Trasfer from Table Start
-//-------------Calculate Lease Duration--------------//
-procedure CalculateLeaseDuration()
+    //     // Extract years if exists
+    //     if YearPos > 0 then begin
+    //         TempStr := CopyStr(Duration, 1, YearPos - 1);
+    //         Evaluate(Years, DelChr(TempStr, '<>'));
+    //     end;
+
+    //     // Extract months if exists
+    //     if MonthPos > 0 then begin
+    //         if YearPos > 0 then
+    //             TempStr := CopyStr(Duration, YearPos + 8, MonthPos - (YearPos + 8))
+    //         else
+    //             TempStr := CopyStr(Duration, 1, MonthPos - 1);
+    //         Evaluate(Months, DelChr(TempStr, '<>'));
+    //     end;
+
+    //     // Extract days if exists
+    //     if DayPos > 0 then begin
+    //         if MonthPos > 0 then
+    //             TempStr := CopyStr(Duration, MonthPos + 9, DayPos - (MonthPos + 9))
+    //         else if YearPos > 0 then
+    //             TempStr := CopyStr(Duration, YearPos + 8, DayPos - (YearPos + 8))
+    //         else
+    //             TempStr := CopyStr(Duration, 1, DayPos - 1);
+    //         Evaluate(Days, DelChr(TempStr, '<>'));
+    //     end;
+
+    //     // Convert all to months and return total
+    //     exit((Years * 12) + Months + Round(Days / 30, 1, '<'));
+    // end;
+
+
+    // Trasfer from Table Start
+    //-------------Calculate Lease Duration--------------//
+    procedure CalculateLeaseDuration()
     var
         FetchMonth: Codeunit "Fetch Month";
         LeaseStartDate: Date;
@@ -1243,46 +1243,46 @@ procedure CalculateLeaseDuration()
                 //     Months := 0;
                 //     Days := 0;
                 // end else begin
-                    TempStartDate := LeaseStartDate;
+                TempStartDate := LeaseStartDate;
 
-                    // Calculate the years
-                    Years := 0;
-                    while (CALCDATE('<+1Y>', TempStartDate) <= LeaseEndDate) or 
-                    (CALCDATE('<+1Y-1D>', TempStartDate) = LeaseEndDate) do begin
-                        TempStartDate := CALCDATE('<+1Y>', TempStartDate);
-                        Years := Years + 1;
-                    end;
+                // Calculate the years
+                Years := 0;
+                while (CALCDATE('<+1Y>', TempStartDate) <= LeaseEndDate) or
+                (CALCDATE('<+1Y-1D>', TempStartDate) = LeaseEndDate) do begin
+                    TempStartDate := CALCDATE('<+1Y>', TempStartDate);
+                    Years := Years + 1;
+                end;
 
-                    // Calculate the months
-                    Months := 0;
-                    while CALCDATE('<+1M>', TempStartDate) <= LeaseEndDate do begin
-                        TempStartDate := CALCDATE('<+1M>', TempStartDate);
+                // Calculate the months
+                Months := 0;
+                while CALCDATE('<+1M>', TempStartDate) <= LeaseEndDate do begin
+                    TempStartDate := CALCDATE('<+1M>', TempStartDate);
+                    Months := Months + 1;
+                end;
+
+                // Calculate the remaining days
+                Days := LeaseEndDate - TempStartDate + 1;
+
+                if Days >= 28 then begin
+                    daysInMonth := FetchMonth.GetNoofDaysInMonth(Date2DMY(TempStartDate, 2), Date2DMY(TempStartDate, 3));
+                    if Days = daysInMonth then begin
                         Months := Months + 1;
-                    end;
-
-                    // Calculate the remaining days
-                    Days := LeaseEndDate - TempStartDate + 1;
-
-                    if Days >= 28 then begin
-                        daysInMonth := FetchMonth.GetNoofDaysInMonth(Date2DMY(TempStartDate, 2), Date2DMY(TempStartDate, 3));
-                        if Days = daysInMonth then begin
-                            Months := Months + 1;
-                            Days := 0;
-                        end
-                        else if Days > daysInMonth then begin
-                            Months := Months + 1;
-                            Days := Days - daysInMonth;
-                        end;
-                    end;
-
-                    if Months = 12 then begin
-                        Years := Years + 1;
-                        Months := 0;
+                        Days := 0;
                     end
-                    else if Months > 12 then begin
-                        Years := Years + (Months div 12);
-                        Months := Months mod 12;
+                    else if Days > daysInMonth then begin
+                        Months := Months + 1;
+                        Days := Days - daysInMonth;
                     end;
+                end;
+
+                if Months = 12 then begin
+                    Years := Years + 1;
+                    Months := 0;
+                end
+                else if Months > 12 then begin
+                    Years := Years + (Months div 12);
+                    Months := Months mod 12;
+                end;
                 // end;
 
                 // Build the duration text
@@ -1326,4 +1326,4 @@ procedure CalculateLeaseDuration()
 }
 
 
- 
+
