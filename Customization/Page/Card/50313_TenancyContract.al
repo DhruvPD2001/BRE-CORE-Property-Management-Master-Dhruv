@@ -1229,8 +1229,6 @@ page 50313 "Tenancy Contract Card"
 
                     trigger OnDrillDown()
                     var
-                        SingleUnitName: Text;
-                        CommaPos: Integer;
                         RentRecord: Record "Rent Calculation";
                         Tenancycontract: Record "Tenancy Contract";
                         SU_samesquare: Record "TC Single Unit Rent SubPage";
@@ -1239,11 +1237,9 @@ page 50313 "Tenancy Contract Card"
                         MU_differentsquare: Record "TC Merge DifferentSq SubPage";
                         MU_lumpsum: Record "TC Merge LumAnnualAmount SP";
                         RentSubpage: Record "Rent Calculation Subpage";
-                        InstallmentAmount: Decimal;
-                        TotalCalculatedAmount: Decimal;
-                        LastInstallmentAmount: Decimal;
+                        SingleUnitName: Text;
+                        CommaPos: Integer;
                         Lastyear: Integer;
-                        InstallmentAmount2: Decimal;
                         Year: Integer;
                         RentRecordid: Integer;
                     begin
@@ -1268,6 +1264,17 @@ page 50313 "Tenancy Contract Card"
                             RentRecord.SetRange("Contract ID", Rec."Contract ID"); // Ensure you're looking for the correct Contract ID
 
                             if RentRecord.FindFirst() then begin
+                                RentRecord."Contract ID" := Tenancycontract."Contract ID";
+                                RentRecord."Property Classification" := Tenancycontract."Property Classification";
+                                RentRecord."Contract Start Date" := Tenancycontract."Contract Start Date";
+                                RentRecord."Contract End Date" := Tenancycontract."Contract End Date";
+                                RentRecord."Amount" := Round(Tenancycontract."Annual Rent Amount");
+                                RentRecord."Tenant ID" := Tenancycontract."Tenant ID";
+                                RentRecord."Secondary Item Type" := 'Rent';
+                                RentRecord."VAT Amount" := Round(Tenancycontract."Contract VAT Amount");
+                                RentRecord."Amount Including VAT" := Round(Tenancycontract."Contract Amount Including VAT");
+                                RentRecord."Number of Installments" := Tenancycontract."No of Installments";
+                                RentRecord."VAT %" := Tenancycontract."Contract VAT %";
                                 // If Rent Calculation exists, modify it
                                 RentRecord.Modify();
                                 Message('Record Modified Successfully');
@@ -1290,16 +1297,20 @@ page 50313 "Tenancy Contract Card"
                                 // Handle Rent Calculation Type assignment
                                 if Tenancycontract."Single Rent Calculation" = Tenancycontract."Single Rent Calculation"::"Single Unit with lumpsum square feet rate" then
                                     RentRecord."Rent Calculation Type" := Format(Tenancycontract."Single Rent Calculation")
-                                else if Tenancycontract."Single Rent Calculation" = Tenancycontract."Single Rent Calculation"::"Single Unit with square feet rate" then
-                                    RentRecord."Rent Calculation Type" := Format(Tenancycontract."Single Rent Calculation")
-                                else if Tenancycontract."Merge Rent Calculation" = Tenancycontract."Merge Rent Calculation"::"Merged Unit with differential square feet rate" then
-                                    RentRecord."Rent Calculation Type" := Format(Tenancycontract."Merge Rent Calculation")
-                                else if Tenancycontract."Merge Rent Calculation" = Tenancycontract."Merge Rent Calculation"::"Merged Unit with lumpsum annual amount" then
-                                    RentRecord."Rent Calculation Type" := Format(Tenancycontract."Merge Rent Calculation")
-                                else if Tenancycontract."Merge Rent Calculation" = Tenancycontract."Merge Rent Calculation"::"Merged Unit with same square feet" then
-                                    RentRecord."Rent Calculation Type" := Format(Tenancycontract."Merge Rent Calculation")
                                 else
-                                    Error('No valid Rent Calculation Type found in Tenancy Contract.');
+                                    if Tenancycontract."Single Rent Calculation" = Tenancycontract."Single Rent Calculation"::"Single Unit with square feet rate" then
+                                        RentRecord."Rent Calculation Type" := Format(Tenancycontract."Single Rent Calculation")
+                                    else
+                                        if Tenancycontract."Merge Rent Calculation" = Tenancycontract."Merge Rent Calculation"::"Merged Unit with differential square feet rate" then
+                                            RentRecord."Rent Calculation Type" := Format(Tenancycontract."Merge Rent Calculation")
+                                        else
+                                            if Tenancycontract."Merge Rent Calculation" = Tenancycontract."Merge Rent Calculation"::"Merged Unit with lumpsum annual amount" then
+                                                RentRecord."Rent Calculation Type" := Format(Tenancycontract."Merge Rent Calculation")
+                                            else
+                                                if Tenancycontract."Merge Rent Calculation" = Tenancycontract."Merge Rent Calculation"::"Merged Unit with same square feet" then
+                                                    RentRecord."Rent Calculation Type" := Format(Tenancycontract."Merge Rent Calculation")
+                                                else
+                                                    Error('No valid Rent Calculation Type found in Tenancy Contract.');
 
                                 // Insert the new Rent Calculation record
                                 RentRecord.Insert();
