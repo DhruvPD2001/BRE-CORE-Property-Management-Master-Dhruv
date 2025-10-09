@@ -429,6 +429,7 @@ page 50710 "Approval Payment Request"
                         PaymentModeTable."Payment Mode" := PaymentChangeReqTable."Payment mode";
                         PaymentModeTable."Payment Series" := NewPaymentCode;
                         PaymentModeTable."Payment Status" := PaymentModeTable."Payment Status"::Scheduled;
+                        PaymentModeTable."Approval Status" := PaymentModeTable."Approval Status"::Approved;
                         PaymentModeTable.Insert(true);
                         // PaymentModeRec.ModifyAll("Payment Mode", ApprovalRec."Payment Mode");
                         Clear(PaymentModeTable);
