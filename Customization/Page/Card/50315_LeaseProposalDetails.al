@@ -403,7 +403,7 @@ page 50315 "Lease Proposal Card"
                     ApplicationArea = All;
                 }
 
-                field("Single Rent Calculation";Rec."Single Rent Calculation")
+                field("Single Rent Calculation"; Rec."Single Rent Calculation")
                 {
                     ApplicationArea = All;
                     Editable = Rec."Praposal Type Selected" = Rec."Praposal Type Selected"::"Single Unit";
@@ -413,7 +413,7 @@ page 50315 "Lease Proposal Card"
                         UpdateVisibility();
                     end;
                 }
-                field("Merge Rent Calculation";Rec."Merge Rent Calculation")
+                field("Merge Rent Calculation"; Rec."Merge Rent Calculation")
                 {
                     ApplicationArea = All;
                     Editable = Rec."Praposal Type Selected" = Rec."Praposal Type Selected"::"Merge Unit";
@@ -933,25 +933,38 @@ page 50315 "Lease Proposal Card"
         }
         area(Reporting)
         {
-            group(Report)
+            action("Lease Proposal Document")
             {
-                Caption = 'Report';
-                action("Run Report")
-                {
-                    ApplicationArea = All;
-                    trigger OnAction()
-                    var
-                        LeasePrposal: Record "Lease Proposal Details";
-                        ReportRequest: Report "Proposal Report";
-                    begin
-                        Commit();
+                ApplicationArea = All;
+                trigger OnAction()
+                var
+                    LeasePrposal: Record "Lease Proposal Details";
+                    ReportRequest: Report "Proposal Report";
+                begin
+                    Commit();
 
-                        LeasePrposal.SetRange("Proposal ID", Rec."Proposal ID");
+                    LeasePrposal.SetRange("Proposal ID", Rec."Proposal ID");
 
-                        ReportRequest.SetTableView(LeasePrposal);
-                        ReportRequest.Run();
-                    end;
-                }
+                    ReportRequest.SetTableView(LeasePrposal);
+                    ReportRequest.Run();
+                end;
+            }
+            action("Other Payment Document")
+            {
+                ApplicationArea = All;
+                trigger OnAction()
+                var
+                    RevenueItemSubpage: Record "Revenue Item Subpage";
+                    ReportRequest: Report "Other Payment Details";
+                begin
+                    Commit();
+
+                    RevenueItemSubpage.Reset();
+                    RevenueItemSubpage.SetRange(ProposalID, Rec."Proposal ID");
+
+                    ReportRequest.SetTableView(RevenueItemSubpage);
+                    ReportRequest.Run();
+                end;
             }
         }
     }
@@ -1053,7 +1066,7 @@ page 50315 "Lease Proposal Card"
         ShowBusinessReasonFields2: Boolean;
         ShowLegalReasonFields3: Boolean;
 
-        ShowLegalReasonFields4:Boolean;
+        ShowLegalReasonFields4: Boolean;
 
         ShowLegalReasonFields5: Boolean;
 
@@ -1308,8 +1321,8 @@ page 50315 "Lease Proposal Card"
     procedure CalculateInstallments(DurationText: Text; Frequency: Text): Integer
     var
         fetchMonth: Codeunit "Fetch Month";
-        Years, Months, Days: Integer;
-        TotalMonths, MonthsPerInstallment, Installments: Integer;
+        Years, Months, Days : Integer;
+        TotalMonths, MonthsPerInstallment, Installments : Integer;
     begin
         fetchMonth.ParseDuration(DurationText, Years, Months, Days);
 
