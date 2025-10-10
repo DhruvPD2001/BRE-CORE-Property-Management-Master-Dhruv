@@ -55,15 +55,16 @@ page 50921 "Payment Schedule Card"
 
             }
 
-            group("Payment Schedule")
+
+            part("PaymentSchedule"; "Payment Schedule Card2")
             {
-                part("PaymentSchedule"; "Payment Schedule Card2")
-                {
-                    SubPageLink = "Contract ID" = FIELD("Contract ID"),
+                SubPageLink = "Contract ID" = FIELD("Contract ID"),
                   "Tenant ID" = FIELD("Tenant ID");
-                    ApplicationArea = All;
-                }
+                ApplicationArea = All;
+                Caption = 'Payment Schedule';
+
             }
+
 
 
             group(TotalAmountCalculation)
@@ -88,6 +89,7 @@ page 50921 "Payment Schedule Card"
 
         }
     }
+
 
 }
 
