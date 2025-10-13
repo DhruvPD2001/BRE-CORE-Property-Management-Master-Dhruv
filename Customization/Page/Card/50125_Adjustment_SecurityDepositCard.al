@@ -183,42 +183,69 @@ page 50125 "Adjustment Security Deposit"
                     SecurityDepositEntry: Record "Security Deposit Entry";
                     terminationcharges: Record "Termination Charges Sub";
                     terminationamount: Decimal;
+                    ExistingEntry: Record "Security Deposit Entry";
+                    ConfirmUpdate: Boolean;
                 begin
                     // Validate required fields
                     if Rec."Contract ID" = 0 then
                         Error('Contract ID must be specified');
 
-                    // if (Rec."Security Amount Status" = Rec."Security Amount Status"::" ") then
-                    //     Error('Please select Security Amount Status');
+                    // Check if entry already exists for this Security Deposit ID
+                    ExistingEntry.SetRange("Security Deposit ID", Rec.ID);
 
-                    // if Rec.Amount = 0 then
-                    //     Error('Amount must be specified');
+                    if ExistingEntry.FindFirst() then begin
+                        // Entry already exists - ask for confirmation
+                        if Confirm('Entry already posted for this Security Deposit. Do you want to update the existing entry?', false) then begin
+                            // Update existing entry
+                            SecurityDepositEntry := ExistingEntry;
+                            SecurityDepositEntry."Contract ID" := Rec."Contract ID";
+                            SecurityDepositEntry."Main Security Deposit" := Rec."Main Security Deposit";
+                            SecurityDepositEntry."Security Deposit" := Rec."Security Deposit";
+                            SecurityDepositEntry."Start Date" := Rec."Contract Start Date";
+                            SecurityDepositEntry."End Date" := Rec."Contract End Date";
+                            SecurityDepositEntry.Status := Rec.Status;
 
-                    // Create new entry
-                    SecurityDepositEntry.Init();
-                    SecurityDepositEntry."Security Deposit ID" := Rec.ID;
-                    SecurityDepositEntry."Contract ID" := Rec."Contract ID";
-                    SecurityDepositEntry."Main Security Deposit" := Rec."Main Security Deposit";
-                    SecurityDepositEntry."Security Deposit" := Rec."Security Deposit";
-                    SecurityDepositEntry."Start Date" := Rec."Contract Start Date";
-                    SecurityDepositEntry."End Date" := Rec."Contract End Date";
-                    SecurityDepositEntry.Status := Rec.Status; // Set initial status as Open
-                    SecurityDepositEntry.Insert(true);
+                            // Clear and recalculate termination charges
+                            terminationcharges.SetRange("Contract ID", Rec."Contract ID");
+                            Clear(terminationamount);
 
-                    terminationcharges.SetRange("Contract ID", Rec."Contract ID");
-                    if terminationcharges.FindSet() then begin
-                        // Modify existing approval record
-                        repeat
-                            terminationamount += terminationcharges."Amount Including VAT";
-                        until terminationcharges.Next() = 0;
+                            if terminationcharges.FindSet() then begin
+                                repeat
+                                    terminationamount += terminationcharges."Amount Including VAT";
+                                until terminationcharges.Next() = 0;
 
-                        SecurityDepositEntry."Total Amount" := terminationamount;
-                        SecurityDepositEntry.Modify();
+                                SecurityDepositEntry."Total Amount" := terminationamount;
+                            end;
+
+                            SecurityDepositEntry.Modify();
+                            Message('Entry updated successfully!');
+                        end else begin
+                            // User clicked No - do nothing, just show message
+                            exit;
+                        end;
+                    end else begin
+                        // Create new entry
+                        SecurityDepositEntry.Init();
+                        SecurityDepositEntry."Security Deposit ID" := Rec.ID;
+                        SecurityDepositEntry."Contract ID" := Rec."Contract ID";
+                        SecurityDepositEntry."Main Security Deposit" := Rec."Main Security Deposit";
+                        SecurityDepositEntry."Security Deposit" := Rec."Security Deposit";
+                        SecurityDepositEntry."Start Date" := Rec."Contract Start Date";
+                        SecurityDepositEntry."End Date" := Rec."Contract End Date";
+                        SecurityDepositEntry.Status := Rec.Status;
+                        SecurityDepositEntry.Insert(true);
+
+                        terminationcharges.SetRange("Contract ID", Rec."Contract ID");
+                        if terminationcharges.FindSet() then begin
+                            repeat
+                                terminationamount += terminationcharges."Amount Including VAT";
+                            until terminationcharges.Next() = 0;
+
+                            SecurityDepositEntry."Total Amount" := terminationamount;
+                            SecurityDepositEntry.Modify();
+                        end;
+                        Message('Entry posted successfully!');
                     end;
-                    Message('Entry posted successfully!');
-
-                    // Open the entries list
-                    // Page.Run(Page::"Security Deposit Entries");
                 end;
             }
         }
