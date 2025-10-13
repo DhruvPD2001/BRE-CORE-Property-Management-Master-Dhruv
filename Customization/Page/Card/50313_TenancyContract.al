@@ -384,13 +384,13 @@ page 50313 "Tenancy Contract Card"
                 field("Security Deposit Amount"; Rec."Security Deposit Amount")
                 {
                     ApplicationArea = All;
-                    Editable = true;
+                    Editable = false;
                 }
 
                 field("Balance Amount"; Rec."Security Deposit Amt. Received")
                 {
                     ApplicationArea = All;
-                    Editable = true;
+                    Editable = false;
                     Caption = 'Security Deposit Amount Received';
 
                     trigger OnValidate()
@@ -401,7 +401,7 @@ page 50313 "Tenancy Contract Card"
                 field("Security Amount Received"; Rec."Security Amount Pending")
                 {
                     ApplicationArea = All;
-                    Editable = true;
+                    Editable = false;
                     Caption = 'Security Deposit Amount Pending';
 
                     trigger OnValidate()
@@ -413,7 +413,7 @@ page 50313 "Tenancy Contract Card"
                 field("Security Balanced Amount"; Rec."Security Balanced Amount")
                 {
                     ApplicationArea = All;
-                    Editable = true;
+                    Editable = false;
                     Caption = 'Security Deposit Amount Balance';
                 }
             }
@@ -1243,6 +1243,12 @@ page 50313 "Tenancy Contract Card"
                         Year: Integer;
                         RentRecordid: Integer;
                     begin
+
+                        if Rec."Payment Frequency" = Rec."Payment Frequency"::" " then begin
+                            Message('Please select a Payment Frequency before proceeding.');
+                            exit;
+                        end;
+
                         // Find the Tenancy Contract record
                         Tenancycontract.SetRange("Contract ID", Rec."Contract ID");
                         Tenancycontract.SetRange("Tenant ID", Rec."Tenant ID");
