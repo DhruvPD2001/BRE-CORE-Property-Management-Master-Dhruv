@@ -199,7 +199,7 @@ page 50946 "Rent Calculation SubCard"
                         TotalInstallments: Integer;
 
 
-
+                        isMonthEnd: Boolean;
                         PeriodEndDate: Date;
                         IntMonthsPerInstallment: Integer;
                         OffsetMonths: Integer;
@@ -212,13 +212,13 @@ page 50946 "Rent Calculation SubCard"
                         DaysInPeriod: Integer;
                         counter: Integer;
                     begin
-                        //  tenancyContract.Get(Rec."Contract ID");
+                        tenancyContract.Get(Rec."Contract ID");
                         InstallmentStructure.SetRange("RC ID", Rec."RC ID");
                         if InstallmentStructure.FindSet() then begin
                             InstallmentStructure.DeleteAll();
                         end;
-                        // InstallmentStartDate := GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date");
-                        // OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
+                        InstallmentStartDate := GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd);
+                        OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
                         // Set filters to fetch related records
                         // RevenueStructure.SetRange("Proposal ID", Rec."Proposal ID");
                         RevenueStructure.SetRange("Tenant ID", Rec."Tenant ID");
@@ -323,61 +323,61 @@ page 50946 "Rent Calculation SubCard"
                                         if TotalInstallments <= 0 then
                                             Error('Yearly number of installments must be greater than zero.');
 
-                                        BaseDay := Date2DMY(PeriodStartDate, 1);
+                                        // BaseDay := Date2DMY(PeriodStartDate, 1);
 
-                                        // --- CASE A: Installments divide 12 exactly (monthly/quarterly/half-yearly/yearly)
-                                        if (12 MOD TotalInstallments) = 0 then begin
-                                            IntMonthsPerInstallment := 12 / TotalInstallments; // integer (1,2,3,6,12)
+                                        // // --- CASE A: Installments divide 12 exactly (monthly/quarterly/half-yearly/yearly)
+                                        // if (12 MOD TotalInstallments) = 0 then begin
+                                        //     IntMonthsPerInstallment := 12 / TotalInstallments; // integer (1,2,3,6,12)
 
-                                            // how many months to add to base for this installment's start
-                                            OffsetMonths := (InstallmentNumber - 1) * IntMonthsPerInstallment;
-                                            // calc provisional start date by adding months (safe because OffsetMonths is integer)
-                                            InstallmentStartDate := CalcDate('+' + Format(OffsetMonths) + 'M', PeriodStartDate);
+                                        //     // how many months to add to base for this installment's start
+                                        //     OffsetMonths := (InstallmentNumber - 1) * IntMonthsPerInstallment;
+                                        //     // calc provisional start date by adding months (safe because OffsetMonths is integer)
+                                        //     InstallmentStartDate := CalcDate('+' + Format(OffsetMonths) + 'M', PeriodStartDate);
 
-                                            // ensure start day is same as BaseDay, except when that day doesn't exist in target month
-                                            StartMonth := Date2DMY(InstallmentStartDate, 2);
-                                            StartYear := Date2DMY(InstallmentStartDate, 3);
+                                        //     // ensure start day is same as BaseDay, except when that day doesn't exist in target month
+                                        //     StartMonth := Date2DMY(InstallmentStartDate, 2);
+                                        //     StartYear := Date2DMY(InstallmentStartDate, 3);
 
-                                            // get days in StartMonth (normalize NextMonth/NextMonthYear safely)
-                                            NextMonth := StartMonth + 1;
-                                            NextMonthYear := StartYear;
-                                            if NextMonth > 12 then begin
-                                                NextMonth -= 12;
-                                                NextMonthYear += 1;
-                                            end;
-                                            DaysInTargetMonth := Date2DMY(DMY2Date(1, NextMonth, NextMonthYear) - 1, 1);
+                                        //     // get days in StartMonth (normalize NextMonth/NextMonthYear safely)
+                                        //     NextMonth := StartMonth + 1;
+                                        //     NextMonthYear := StartYear;
+                                        //     if NextMonth > 12 then begin
+                                        //         NextMonth -= 12;
+                                        //         NextMonthYear += 1;
+                                        //     end;
+                                        //     DaysInTargetMonth := Date2DMY(DMY2Date(1, NextMonth, NextMonthYear) - 1, 1);
 
-                                            if BaseDay > DaysInTargetMonth then
-                                                InstallmentStartDate := DMY2Date(DaysInTargetMonth, StartMonth, StartYear)
-                                            else
-                                                InstallmentStartDate := DMY2Date(BaseDay, StartMonth, StartYear);
+                                        //     if BaseDay > DaysInTargetMonth then
+                                        //         InstallmentStartDate := DMY2Date(DaysInTargetMonth, StartMonth, StartYear)
+                                        //     else
+                                        //         InstallmentStartDate := DMY2Date(BaseDay, StartMonth, StartYear);
 
-                                            // Calculate end date = start + IntMonthsPerInstallment months - 1 day
-                                            InstallmentEndDate := CalcDate('+' + Format(IntMonthsPerInstallment) + 'M', InstallmentStartDate) - 1;
+                                        //     // Calculate end date = start + IntMonthsPerInstallment months - 1 day
+                                        //     InstallmentEndDate := CalcDate('+' + Format(IntMonthsPerInstallment) + 'M', InstallmentStartDate) - 1;
 
-                                            // Make sure final installment does not exceed contract period
-                                            if InstallmentEndDate > PeriodEndDate then
-                                                InstallmentEndDate := PeriodEndDate;
-                                        end
-                                        // --- CASE B: Installments DO NOT divide 12 exactly -> fallback to days-based equal split
-                                        else begin
-                                            DaysInPeriod := PeriodEndDate - PeriodStartDate + 1;
-                                            DaysPerInstallment := ROUND(DaysInPeriod / TotalInstallments, 1, '<'); // floor-like
+                                        //     // Make sure final installment does not exceed contract period
+                                        //     if InstallmentEndDate > PeriodEndDate then
+                                        //         InstallmentEndDate := PeriodEndDate;
+                                        // end
+                                        // // --- CASE B: Installments DO NOT divide 12 exactly -> fallback to days-based equal split
+                                        // else begin
+                                        //     DaysInPeriod := PeriodEndDate - PeriodStartDate + 1;
+                                        //     DaysPerInstallment := ROUND(DaysInPeriod / TotalInstallments, 1, '<'); // floor-like
 
-                                            if InstallmentNumber = 1 then
-                                                InstallmentStartDate := PeriodStartDate
-                                            else
-                                                InstallmentStartDate := PeriodStartDate + (InstallmentNumber - 1) * DaysPerInstallment;
+                                        //     if InstallmentNumber = 1 then
+                                        //         InstallmentStartDate := PeriodStartDate
+                                        //     else
+                                        //         InstallmentStartDate := PeriodStartDate + (InstallmentNumber - 1) * DaysPerInstallment;
 
-                                            InstallmentEndDate := PeriodStartDate + InstallmentNumber * DaysPerInstallment - 1;
+                                        //     InstallmentEndDate := PeriodStartDate + InstallmentNumber * DaysPerInstallment - 1;
 
-                                            if InstallmentEndDate > PeriodEndDate then
-                                                InstallmentEndDate := PeriodEndDate;
-                                        end;
+                                        //     if InstallmentEndDate > PeriodEndDate then
+                                        //         InstallmentEndDate := PeriodEndDate;
+                                        // end;
 
                                         // Assign results back
-                                        InstallmentStructure."Installment Start Date" := InstallmentStartDate;
-                                        InstallmentStructure."Installment End Date" := InstallmentEndDate;
+                                        // InstallmentStructure."Installment Start Date" := InstallmentStartDate;
+                                        // InstallmentStructure."Installment End Date" := InstallmentEndDate;
 
 
                                         // PeriodStartDate := RevenueStructure."Period Start Date";
@@ -389,17 +389,29 @@ page 50946 "Rent Calculation SubCard"
 
                                         // BaseDay := Date2DMY(PeriodStartDate, 1);
 
+                                        if InstallmentEndDate > tenancyContract."Contract Start Date" then begin
+                                            InstallmentStartDate := CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate);
+                                            if isMonthEnd then begin
+                                                InstallmentStartDate := CalcDate('<CM>', InstallmentStartDate);
+                                                // fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
+                                                InstallmentEndDate := CalcDate('<-1D>', CalcDate('<CM>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate)));
+                                            end
+                                            else
+                                                InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+                                        end
+                                        else
+                                            InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+
 
                                         // if InstallmentStartDate <> tenancyContract."Contract Start Date" then begin
-                                        //     InstallmentStartDate := CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate);
-                                        //     InstallmentEndDate := CalcDate('<-1D>', InstallmentStartDate);
                                         // end
-                                        // else
-                                        //     InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+                                        // else begin
+                                        // end;
 
 
-                                        // if InstallmentEndDate > tenancyContract."Contract End Date" then
-                                        //     InstallmentEndDate := tenancyContract."Contract End Date";
+
+                                        if InstallmentEndDate > tenancyContract."Contract End Date" then
+                                            InstallmentEndDate := tenancyContract."Contract End Date";
 
 
                                         // --- CASE A: Installments divide 12 exactly (monthly/quarterly/half-yearly/yearly)
@@ -453,8 +465,8 @@ page 50946 "Rent Calculation SubCard"
                                         // end;
 
                                         // Assign results back
-                                        // InstallmentStructure."Installment Start Date" := InstallmentStartDate;
-                                        // InstallmentStructure."Installment End Date" := InstallmentEndDate;
+                                        InstallmentStructure."Installment Start Date" := InstallmentStartDate;
+                                        InstallmentStructure."Installment End Date" := InstallmentEndDate;
 
                                         // PeriodStartDate := RevenueStructure."Period Start Date";
                                         // TotalInstallments := RevenueStructure."Yearly No. of Installment";
@@ -612,15 +624,18 @@ page 50946 "Rent Calculation SubCard"
 
 
 
-    procedure GetStartDate(pContractStartDate: Date; pContractEndDate: Date): Date
+    procedure GetStartDate(pContractStartDate: Date; pContractEndDate: Date; var isMonthEnd: Boolean): Date
     var
         StartDate: Date;
     begin
+        isMonthEnd := false;
         if pContractStartDate = CalcDate('<-CM>', pContractStartDate) then
             StartDate := CalcDate('<-CM>', pContractStartDate)
         else
-            if pContractStartDate = CalcDate('<CM>', pContractStartDate) then
-                StartDate := CalcDate('<CM>', pContractStartDate)
+            if pContractStartDate = CalcDate('<CM>', pContractStartDate) then begin
+                StartDate := CalcDate('<CM>', pContractStartDate);
+                isMonthEnd := true;
+            end
             else
                 StartDate := pContractStartDate;
 

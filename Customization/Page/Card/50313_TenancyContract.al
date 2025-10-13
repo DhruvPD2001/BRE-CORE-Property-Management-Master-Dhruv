@@ -1237,6 +1237,8 @@ page 50313 "Tenancy Contract Card"
                         MU_differentsquare: Record "TC Merge DifferentSq SubPage";
                         MU_lumpsum: Record "TC Merge LumAnnualAmount SP";
                         RentSubpage: Record "Rent Calculation Subpage";
+                        fetchMonth: Codeunit "Fetch Month";
+                        yearlyInstallment: Integer;
                         SingleUnitName: Text;
                         CommaPos: Integer;
                         Lastyear: Integer;
@@ -1486,8 +1488,20 @@ page 50313 "Tenancy Contract Card"
                                 RentSubpage.SetRange("Contract ID", RentRecord."Contract ID");
                                 if RentSubpage.FindSet() then
                                     repeat
-                                        Year := RentSubpage.Year;
-                                        RentSubpage."Yearly No. of Installment" := RentRecord."Number of Installments" / Lastyear;
+                                        // Year := RentSubpage.Year;
+                                        yearlyInstallment := 12 / fetchMonth.GetNoofMonthsFromFrequency(Format(Rec."Payment Frequency"));
+
+                                        if Rec."No of Installments" > yearlyInstallment then begin
+                                            if RentSubpage.Year = Lastyear then
+                                                RentSubpage."Yearly No. of Installment" := Rec."No of Installments" - (yearlyInstallment * (Lastyear - 1))
+                                            else
+                                                RentSubpage."Yearly No. of Installment" := yearlyInstallment;
+                                        end
+                                        else
+                                            RentSubpage."Yearly No. of Installment" := yearlyInstallment;
+
+
+                                        // RentSubpage."Yearly No. of Installment" := RentRecord."Number of Installments" / Lastyear;
                                         //InstallmentAmount := Round(RentRecord.Amount / Lastyear);
                                         // TotalCalculatedAmount := InstallmentAmount * Lastyear;  // 1666.67*3 = 5000.01
                                         // LastInstallmentAmount := TotalCalculatedAmount - RentRecord.Amount; // 5000.01 - 5000 = 0.01
