@@ -77,22 +77,22 @@ page 50941 "Contract Renewal SubPage Card"
                     Lookup = true;
                 }
 
-                field("Payment Type"; Rec."Payment Type")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Payment Type';
-                    ToolTip = 'Enter the Payment Type.';
+                // field("Payment Type"; Rec."Payment Type")
+                // {
+                //     ApplicationArea = All;
+                //     Caption = 'Payment Type';
+                //     ToolTip = 'Enter the Payment Type.';
 
-                    // trigger OnValidate()
-                    // begin
-                    //     if Rec."Payment Type" = Rec."Payment Type"::Installment then
-                    //         isvisible := true
-                    //     else
-                    //         isvisible := false
-                    // end;
+                //     // trigger OnValidate()
+                //     // begin
+                //     //     if Rec."Payment Type" = Rec."Payment Type"::Installment then
+                //     //         isvisible := true
+                //     //     else
+                //     //         isvisible := false
+                //     // end;
 
 
-                }
+                // }
 
 
                 // field("No. of Installments"; Rec."No. of Installments")
