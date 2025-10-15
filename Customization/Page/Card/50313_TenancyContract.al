@@ -1498,7 +1498,10 @@ page 50313 "Tenancy Contract Card"
                                                 RentSubpage."Yearly No. of Installment" := yearlyInstallment;
                                         end
                                         else
-                                            RentSubpage."Yearly No. of Installment" := yearlyInstallment;
+                                            if Rec."No of Installments" < yearlyInstallment then
+                                                RentSubpage."Yearly No. of Installment" := Rec."No of Installments"
+                                            else
+                                                RentSubpage."Yearly No. of Installment" := yearlyInstallment;
 
 
                                         // RentSubpage."Yearly No. of Installment" := RentRecord."Number of Installments" / Lastyear;
