@@ -262,24 +262,43 @@ page 50946 "Rent Calculation SubCard"
                                 InstallmentAmount2 := InstallmentAmount - LastInstallmentAmount;   // 1666.67 - 0.01 = 1666.66
 
                                 for InstallmentNumber := 1 to RevenueStructure."Yearly No. of Installment" do begin
+
+                                    if InstallmentEndDate > tenancyContract."Contract Start Date" then begin
+                                        InstallmentStartDate := CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate);
+                                        if isMonthEnd then begin
+                                            InstallmentStartDate := CalcDate('<CM>', InstallmentStartDate);
+                                            // fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
+                                            InstallmentEndDate := CalcDate('<-1D>', CalcDate('<CM>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate)));
+                                        end
+                                        else
+                                            InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+                                    end
+                                    else
+                                        InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+
+
+                                    if InstallmentEndDate > tenancyContract."Contract End Date" then
+                                        InstallmentEndDate := tenancyContract."Contract End Date";
+
                                     InstallmentStructure.SetRange("RC ID", TargetPageID);
                                     InstallmentStructure.SetRange("Year", TotalYears);
                                     InstallmentStructure.SetRange("Installment No.", InstallmentNumber);
                                     InstallmentStructure.SetRange("Revenue Str. Subpage Entry No.", RevenueStructure."Entry No.");
-
                                     if InstallmentStructure.FindFirst() then begin
                                         // Update existing record
 
-                                        if InstallmentNumber = 1 then begin
-                                            InstallmentStructure.Amount := InstallmentAmount2;
-                                            InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date";
-                                            InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
-                                        end else begin
+                                        if InstallmentNumber = 1 then
+                                            InstallmentStructure.Amount := InstallmentAmount2
+                                        // InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date";
+                                        // InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
+                                        else
                                             InstallmentStructure.Amount := InstallmentAmount;
-                                            InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date" + (InstallmentNumber - 1) * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
+                                        // InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date" + (InstallmentNumber - 1) * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
 
-                                            InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + InstallmentNumber * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
-                                        end;
+                                        // InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + InstallmentNumber * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
+
+                                        InstallmentStructure."Installment Start Date" := InstallmentStartDate;
+                                        InstallmentStructure."Installment End Date" := InstallmentEndDate;
 
                                         InstallmentStructure.Modify();
                                         //  Message('Date Update Successfully!');
@@ -314,27 +333,7 @@ page 50946 "Rent Calculation SubCard"
 
                                         PeriodStartDate := RevenueStructure."Period Start Date";
                                         PeriodEndDate := RevenueStructure."Period End Date";
-                                        TotalInstallments := RevenueStructure."Yearly No. of Installment";
 
-                                        if TotalInstallments <= 0 then
-                                            Error('Yearly number of installments must be greater than zero.');
-
-                                        if InstallmentEndDate > tenancyContract."Contract Start Date" then begin
-                                            InstallmentStartDate := CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate);
-                                            if isMonthEnd then begin
-                                                InstallmentStartDate := CalcDate('<CM>', InstallmentStartDate);
-                                                // fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
-                                                InstallmentEndDate := CalcDate('<-1D>', CalcDate('<CM>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate)));
-                                            end
-                                            else
-                                                InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
-                                        end
-                                        else
-                                            InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
-
-
-                                        if InstallmentEndDate > tenancyContract."Contract End Date" then
-                                            InstallmentEndDate := tenancyContract."Contract End Date";
 
                                         // Assign results back
                                         InstallmentStructure."Installment Start Date" := InstallmentStartDate;
