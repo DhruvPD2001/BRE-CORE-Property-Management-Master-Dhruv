@@ -106,6 +106,7 @@ page 50951 "Final Billing Calculation"
                             Editable = false;
                         }
 
+
                     }
                     // group("Difference & Summary")
                     // {
@@ -147,6 +148,27 @@ page 50951 "Final Billing Calculation"
                         {
                             ApplicationArea = All;
                             Caption = 'Creditnote';
+                            Editable = false;
+                            Visible = false;
+                        }
+                        field("Total Differnece Amount"; Rec."Total Differnece Amount")
+                        {
+                            ApplicationArea = All;
+                            Caption = 'Total Differnece Amount';
+                            Editable = false;
+                            Visible = false;
+                        }
+                        field("Total Difference VAT"; Rec."Total Difference VAT")
+                        {
+                            ApplicationArea = All;
+                            Caption = 'Total Difference VAT';
+                            Editable = false;
+                            Visible = false;
+                        }
+                        field("Total DifferenceAmountIncl.VAT"; Rec."Total DifferenceAmountIncl.VAT")
+                        {
+                            ApplicationArea = All;
+                            Caption = 'Total Difference Amount Incl. VAT';
                             Editable = false;
                             Visible = false;
                         }
