@@ -136,6 +136,7 @@ page 50939 "Tenancy Contract SubPage Card"
                                 TargetRecord."VAT Amount" := Rec."VAT Amount";
                                 TargetRecord."Amount Including VAT" := Rec."Amount Including VAT";
                                 TargetRecord."VAT %" := Rec."VAT %";
+                                TargetRecord."Entry No" := Rec."Entry No.";
                                 TargetRecord.Modify();
                             end else begin
                                 TargetRecord.Init();
@@ -149,6 +150,7 @@ page 50939 "Tenancy Contract SubPage Card"
                                 TargetRecord."VAT Amount" := Rec."VAT Amount";
                                 TargetRecord."Amount Including VAT" := Rec."Amount Including VAT";
                                 TargetRecord."VAT %" := Rec."VAT %";
+                                TargetRecord."Entry No" := Rec."Entry No.";
                                 TargetRecord.Insert();
 
 
@@ -290,6 +292,14 @@ page 50939 "Tenancy Contract SubPage Card"
         }
     }
 
+    trigger OnAfterGetRecord()
+    var
+        revenueStructure: Record "Revenue Structure";
+    begin
+        revenueStructure.SetRange("RS ID", Rec.Link);
+        if revenueStructure.IsEmpty() then
+            Rec.Link := 0;
+    end;
 
 
     local procedure IsLeapYear(Year: Integer): Boolean
