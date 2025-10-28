@@ -270,6 +270,7 @@ page 50906 "Additional Charges Sub Card"
         saleline.Type := saleline.Type::Item;
         saleline."Sell-to Customer No." := salesheader1."Sell-to Customer No.";
         item.SetRange(Description, additionalchargessub."Secondary Item Type");
+        item.SetFilter("Charges Status", '<>%1', item."Charges Status"::" ");
         if item.FindSet() then begin
 
             saleline.Validate("No.", item."No.");
