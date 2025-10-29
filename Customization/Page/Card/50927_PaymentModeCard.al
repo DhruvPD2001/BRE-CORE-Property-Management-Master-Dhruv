@@ -76,45 +76,48 @@ page 50927 "Payment Mode Card"
 
                         if not PaymentModeRec.FindSet() then
                             Error(
-                              'Cannot approve: No payment mode details found for Contract %1.',
+                              'Cannot change Approval Status to Approved. No payment mode details found for Contract %1.',
                               Rec."Contract ID");
 
                         AnyMissing := false;
                         MissingFields := '';
 
                         repeat
+                            if PaymentModeRec."Payment Mode" = 'Pending' then
+                                Error('Cannot change Approval Status to Approved. Payment Mode is still Pending for Series %1.',
+                                  PaymentModeRec."Payment Series");
                             case PaymentModeRec."Payment Mode" of
                                 'Cheque':
                                     begin
-                                        if PaymentModeRec."Cheque Number" = '' then begin
+                                        if PaymentModeRec."Cheque Number" = '-' then begin
                                             AnyMissing := true;
                                             MissingFields +=
-                                              StrSubstNo('Series %1: Cheque Number is missing.\n',
+                                              StrSubstNo('Series %1: Cheque Number is missing.',
                                                 PaymentModeRec."Payment Series");
                                         end;
                                         if PaymentModeRec."Deposit Bank" = '' then begin
                                             AnyMissing := true;
                                             MissingFields +=
-                                              StrSubstNo('Series %1: Deposit Bank is missing.\n',
+                                              StrSubstNo('Series %1: Deposit Bank is missing.',
                                                 PaymentModeRec."Payment Series");
                                         end;
-                                        if PaymentModeRec."Upload Cheque" = '' then begin
+                                        if PaymentModeRec."Upload Cheque" = 'Upload Cheque' then begin
                                             AnyMissing := true;
                                             MissingFields +=
-                                              StrSubstNo('Series %1: Upload Cheque is missing.\n',
+                                              StrSubstNo('Series %1: Upload Cheque is missing.',
                                                 PaymentModeRec."Payment Series");
                                         end;
                                     end;
 
                                 'Bank Transfer', 'Credit Card', 'Mobile Wallet':
-                                    begin
-                                        if PaymentModeRec."Deposit Bank" = '' then begin
-                                            AnyMissing := true;
-                                            MissingFields +=
-                                              StrSubstNo('Series %1 (%2): Deposit Bank is missing.\n',
-                                                PaymentModeRec."Payment Series",
-                                                PaymentModeRec."Payment Mode");
-                                        end;
+                                    // begin
+                                    if PaymentModeRec."Deposit Bank" = '' then begin
+                                        AnyMissing := true;
+                                        MissingFields +=
+                                          StrSubstNo('Series %1 (%2): Deposit Bank is missing.',
+                                            PaymentModeRec."Payment Series",
+                                            PaymentModeRec."Payment Mode");
+                                        // end;
                                     end;
                             end;
                         until PaymentModeRec.Next() = 0;
@@ -122,7 +125,7 @@ page 50927 "Payment Mode Card"
                         // ✅ Block approval if any required field is missing
                         if AnyMissing then
                             Error(
-                              'Cannot change Approval Status to Approved.\nThe following required details are missing for Contract %1:\n%2',
+                              'Cannot change Approval Status to Approved. The following required details are missing for Contract %1: %2',
                               Rec."Contract ID",
                               MissingFields);
                     end;
