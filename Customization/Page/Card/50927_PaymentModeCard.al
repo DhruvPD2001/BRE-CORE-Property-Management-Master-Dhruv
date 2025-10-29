@@ -59,7 +59,75 @@ page 50927 "Payment Mode Card"
                 field("Approval Status"; Rec."Approval Status")
                 {
                     ApplicationArea = All;
-                    Editable = IsFinanceManager AND IsFieldEditable;
+
+                    trigger OnValidate()
+                    var
+                        PaymentModeRec: Record "Payment Mode2";
+                        MissingFields: Text;
+                        AnyMissing: Boolean;
+                    begin
+                        // ✅ Only validate when user is trying to approve
+                        if Rec."Approval Status" <> Rec."Approval Status"::Approved then
+                            exit;
+
+                        // ✅ Filter all payment mode records for this Contract ID
+                        PaymentModeRec.Reset();
+                        PaymentModeRec.SetRange("Contract ID", Rec."Contract ID");
+
+                        if not PaymentModeRec.FindSet() then
+                            Error(
+                              'Cannot approve: No payment mode details found for Contract %1.',
+                              Rec."Contract ID");
+
+                        AnyMissing := false;
+                        MissingFields := '';
+
+                        repeat
+                            case PaymentModeRec."Payment Mode" of
+                                'Cheque':
+                                    begin
+                                        if PaymentModeRec."Cheque Number" = '' then begin
+                                            AnyMissing := true;
+                                            MissingFields +=
+                                              StrSubstNo('Series %1: Cheque Number is missing.\n',
+                                                PaymentModeRec."Payment Series");
+                                        end;
+                                        if PaymentModeRec."Deposit Bank" = '' then begin
+                                            AnyMissing := true;
+                                            MissingFields +=
+                                              StrSubstNo('Series %1: Deposit Bank is missing.\n',
+                                                PaymentModeRec."Payment Series");
+                                        end;
+                                        if PaymentModeRec."Upload Cheque" = '' then begin
+                                            AnyMissing := true;
+                                            MissingFields +=
+                                              StrSubstNo('Series %1: Upload Cheque is missing.\n',
+                                                PaymentModeRec."Payment Series");
+                                        end;
+                                    end;
+
+                                'Bank Transfer', 'Credit Card', 'Mobile Wallet':
+                                    begin
+                                        if PaymentModeRec."Deposit Bank" = '' then begin
+                                            AnyMissing := true;
+                                            MissingFields +=
+                                              StrSubstNo('Series %1 (%2): Deposit Bank is missing.\n',
+                                                PaymentModeRec."Payment Series",
+                                                PaymentModeRec."Payment Mode");
+                                        end;
+                                    end;
+                            end;
+                        until PaymentModeRec.Next() = 0;
+
+                        // ✅ Block approval if any required field is missing
+                        if AnyMissing then
+                            Error(
+                              'Cannot change Approval Status to Approved.\nThe following required details are missing for Contract %1:\n%2',
+                              Rec."Contract ID",
+                              MissingFields);
+                    end;
+
+                    // Editable = IsFinanceManager AND IsFieldEditable;
                     // trigger OnValidate()
                     // begin
                     //     // Scenario 1: Update all payment grid records to "Approved" when card status changes
