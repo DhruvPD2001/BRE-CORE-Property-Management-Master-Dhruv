@@ -283,7 +283,7 @@ page 50928 "Payment Mode Card2"
                     begin
                         case Rec."Payment Mode" of
                             'Cheque':
-                                if (Rec."Cheque Number" = '') or (Rec."Deposit Bank" = '') or (Rec."Upload Cheque" = '') then begin
+                                if (Rec."Cheque Number" = '-') or (Rec."Deposit Bank" = '') or (Rec."Upload Cheque" = 'Upload Cheque') then begin
                                     Error('Cheque details are incomplete. Please fill Cheque Number, Deposit Bank, and upload the Cheque.');
                                     Rec.Modify(true);
                                     exit;
