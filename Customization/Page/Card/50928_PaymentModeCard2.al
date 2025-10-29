@@ -278,6 +278,26 @@ page 50928 "Payment Mode Card2"
                 {
                     ApplicationArea = All;
                     Editable = IsApproved AND IsFinanceManager;
+
+                    trigger OnValidate()
+                    begin
+                        case Rec."Payment Mode" of
+                            'Cheque':
+                                if (Rec."Cheque Number" = '') or (Rec."Deposit Bank" = '') or (Rec."Upload Cheque" = '') then begin
+                                    Error('Cheque details are incomplete. Please fill Cheque Number, Deposit Bank, and upload the Cheque.');
+                                    Rec.Modify(true);
+                                    exit;
+                                end;
+
+
+                            'Bank Transfer', 'Credit Card', 'Mobile Wallet':
+                                if Rec."Deposit Bank" = '' then begin
+                                    Error('Deposit Bank must be entered for %1 payments.', Rec."Payment Mode");
+                                    Rec.Modify(true);
+                                    exit;
+                                end;
+                        end;
+                    end;
                 }
                 field(Reason; Rec.Reason)
                 {
