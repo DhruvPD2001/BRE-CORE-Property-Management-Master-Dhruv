@@ -675,13 +675,14 @@ page 50928 "Payment Mode Card2"
             until paymentschedul2grid.Next() = 0;
 
         Rec."Final Rent Amount" := Rec."Amount" - Rec."Credit Note Amount";
-        Rec.FinalRentAmountIncludingVAT := 0;
-        paymentschedulegrid1.SetRange("Contract ID", Rec."Contract ID");
-        paymentschedulegrid1.SetRange("Payment Series", Rec."Payment Series");
-        if paymentschedulegrid1.FindSet() then
-            repeat
-                Rec.FinalRentAmountIncludingVAT += paymentschedulegrid1."Final RentAmountIncludingVAT";
-            until paymentschedulegrid1.Next() = 0;
+        Rec.FinalRentAmountIncludingVAT := Rec."Final Rent Amount" + Rec."VAT Amount";
+        // Rec.FinalRentAmountIncludingVAT := 0;
+        // paymentschedulegrid1.SetRange("Contract ID", Rec."Contract ID");
+        // paymentschedulegrid1.SetRange("Payment Series", Rec."Payment Series");
+        // if paymentschedulegrid1.FindSet() then
+        //     repeat
+        //         Rec.FinalRentAmountIncludingVAT += paymentschedulegrid1."Final RentAmountIncludingVAT";
+        //     until paymentschedulegrid1.Next() = 0;
         Rec.Modify();
     end;
 
