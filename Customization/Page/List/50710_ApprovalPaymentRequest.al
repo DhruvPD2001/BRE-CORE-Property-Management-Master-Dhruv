@@ -386,8 +386,8 @@ page 50710 "Approval Payment Request"
 
 
                     Clear(paymentSeriesNos);
-                    if PaymentChangeReqTable."Payment Series".Contains(', ') then begin
-                        foreach paymentSeries in PaymentChangeReqTable."Payment Series".Split(', ') do
+                    if PaymentChangeReqTable."Payment Series".Contains(',') then begin
+                        foreach paymentSeries in PaymentChangeReqTable."Payment Series".Split(',') do
                             paymentSeriesNos.Add(DelChr(paymentSeries, '=', ' '));
                     end else begin
                         paymentSeriesNos.Add(PaymentChangeReqTable."Payment Series");
