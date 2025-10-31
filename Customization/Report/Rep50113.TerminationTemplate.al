@@ -120,6 +120,9 @@ report 50113 "Termination Template"
             column(Total_AdC; GetTotalAdditionalCharges("Contract ID"))
             {
             }
+            column(Settlement_Status; GetSettlementStatus())
+            {
+            }
             dataitem(Customer; Customer)
             {
                 DataItemLink = "No." = field("Tenant ID");
@@ -241,7 +244,20 @@ report 50113 "Termination Template"
         end;
     end;
 
+    // NEW PROCEDURE: Returns "Claim" or "Refund" based on Final Calculation fields
+    procedure GetSettlementStatus(): Text
+    begin
+        // Check Total Receivable field
+        if FinalCalculation."Net Receivable From The Tenant" > 0 then
+            exit('Claim');
 
+        // Check Total Refundable field
+        if FinalCalculation."Amount Refundable" > 0 then
+            exit('Refund');
+
+        // If both are zero
+        exit(' ');
+    end;
 
     // ---------------------- For total receipt amount --------------------------//
     procedure GetTotalReceiptsAmount(ContractID: Integer): Decimal
