@@ -296,39 +296,39 @@ pageextension 50504 SalesInvoice extends "Sales Invoice"
             begin
                 if Rec."Approval Status" <> Rec."Approval Status"::Approved then
                     Error('The Sales Invoice cannot be posted because the approval status is not "Approved".');
-                if not ConfigRecord.FindFirst() then
-                    Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
-                ValidFormats.Add('.png');
-                ValidFormats.Add('.jpg');
-                ValidFormats.Add('.jpeg');
+                // if not ConfigRecord.FindFirst() then
+                //     Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
+                // ValidFormats.Add('.png');
+                // ValidFormats.Add('.jpg');
+                // ValidFormats.Add('.jpeg');
 
-                SASUrlBase := ConfigRecord."SAS URL";
-                FileExtension := '.pdf';
-                ReportID := 50104;
-                //  RecRef.Open(DATABASE::"Sales Header"); // Open the table reference
-                // RecRef.GetTable(Rec);
-                SalesHeader1.Reset();
-                SalesHeader1.SetRange("No.", Rec."No.");
-                if not SalesHeader1.FindFirst() then
-                    Error('Sales Invoice record not found.');
+                // SASUrlBase := ConfigRecord."SAS URL";
+                // FileExtension := '.pdf';
+                // ReportID := 50104;
+                // //  RecRef.Open(DATABASE::"Sales Header"); // Open the table reference
+                // // RecRef.GetTable(Rec);
+                // SalesHeader1.Reset();
+                // SalesHeader1.SetRange("No.", Rec."No.");
+                // if not SalesHeader1.FindFirst() then
+                //     Error('Sales Invoice record not found.');
 
-                // Open the correct record in RecRef
-                RecRef.GetTable(SalesHeader1);
-                // RecRef.GetTable(Rec);
-                TempBlob.CreateOutStream(OutStream);
-                Report.SaveAs(ReportID, '', ReportFormat::Pdf, OutStream, RecRef);
+                // // Open the correct record in RecRef
+                // RecRef.GetTable(SalesHeader1);
+                // // RecRef.GetTable(Rec);
+                // TempBlob.CreateOutStream(OutStream);
+                // Report.SaveAs(ReportID, '', ReportFormat::Pdf, OutStream, RecRef);
 
 
 
-                TempBlob.CreateInStream(InStream);
-                FileName := 'Invoice_' + Rec."No." + FileExtension;
-                // SASUrlWithFileName := StrSubstNo('%1/%2?%3', CopyStr(SASUrlBase, 1, StrPos(SASUrlBase, '?') - 1), FileName, CopyStr(SASUrlBase, StrPos(SASUrlBase, '?') + 1));
-                folderName := 'SalesInvoiceDocuments';
-                UploadResult := azureBlobUploader.UploadDocumentToBlob(InStream, FileName, folderName);
-                // UploadResult := documentattachment.UploadDocumentToBlobStorage(SASUrlWithFileName, FileName, InStream);
-                Rec."View Invoice" := FileName;
-                Rec."View Document URL" := UploadResult;
-                Rec.Modify();
+                // TempBlob.CreateInStream(InStream);
+                // FileName := 'Invoice_' + Rec."No." + FileExtension;
+                // // SASUrlWithFileName := StrSubstNo('%1/%2?%3', CopyStr(SASUrlBase, 1, StrPos(SASUrlBase, '?') - 1), FileName, CopyStr(SASUrlBase, StrPos(SASUrlBase, '?') + 1));
+                // folderName := 'SalesInvoiceDocuments';
+                // UploadResult := azureBlobUploader.UploadDocumentToBlob(InStream, FileName, folderName);
+                // // UploadResult := documentattachment.UploadDocumentToBlobStorage(SASUrlWithFileName, FileName, InStream);
+                // Rec."View Invoice" := FileName;
+                // Rec."View Document URL" := UploadResult;
+                // Rec.Modify();
 
             end;
         }

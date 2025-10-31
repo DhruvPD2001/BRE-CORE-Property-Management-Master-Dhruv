@@ -2,6 +2,7 @@ namespace PropertyManagement.PropertyManagement;
 using Microsoft.Foundation.Company;
 
 using Microsoft.Sales.Document;
+using Microsoft.Sales.History;
 using System.Text;
 using Microsoft.Bank.Check;
 
@@ -42,7 +43,7 @@ report 50104 InvoiceTemplate
             column(CompanyTRN; CompanyInfo."VAT Registration No.")
             {
             }
-            column(No_; "No.")
+            column(No_; InvoiceNo)
             {
             }
             column(Posting_Date; Format("Posting Date", 0, '<Day,2>/<Month,2>/<Year4>'))
@@ -193,6 +194,16 @@ report 50104 InvoiceTemplate
                 end;
 
             }
+            trigger OnAfterGetRecord()
+            var
+                salesInvHeader: Record "Sales Invoice Header";
+            begin
+                salesInvHeader.SetRange("Pre-Assigned No.", SalesHeader."No.");
+                if salesInvHeader.FindFirst() then
+                    InvoiceNo := salesInvHeader."No."
+                else
+                    InvoiceNo := SalesHeader."No.";
+            end;
         }
 
 
@@ -255,6 +266,7 @@ report 50104 InvoiceTemplate
         TotalPaymentDiscOnVAT: Decimal;
         SerialNo: Integer;
         AmountInWordsText: Text;
+        InvoiceNo: Code[20];
     // SalesLine: Record "Sales Line";
 
 

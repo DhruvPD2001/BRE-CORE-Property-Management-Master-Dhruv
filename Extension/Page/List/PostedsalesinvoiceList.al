@@ -8,6 +8,10 @@ pageextension 50512 "PostedsalesinvoiceList" extends "Posted Sales Invoices"
             {
                 ApplicationArea = All;
             }
+            field("Contract ID"; Rec."Contract ID")
+            {
+                ApplicationArea = All;
+            }
         }
     }
 }
