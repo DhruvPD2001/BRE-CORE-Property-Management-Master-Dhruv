@@ -18,6 +18,9 @@ report 50112 PaymentReceipt
             column(CompanyPicture; CompanyInfo.Picture)
             {
             }
+            column(Receipt__; "Receipt #")
+            {
+            }
             column(CompanyName; CompanyInfo.Name)
             {
             }
