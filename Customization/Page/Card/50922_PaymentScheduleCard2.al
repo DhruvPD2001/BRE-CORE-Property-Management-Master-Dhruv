@@ -117,6 +117,12 @@ page 50922 "Payment Schedule Card2"
                     Caption = 'Invoice ID';
                     Editable = InvoicedField;
                 }
+                field("Invoice Approval Status"; Rec."Invoice Approval Status")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Invoice Approval Status';
+                    Editable = false;
+                }
                 field("Contract Status"; Rec."Contract Status")
                 {
                     ApplicationArea = All;
@@ -454,6 +460,7 @@ page 50922 "Payment Schedule Card2"
         //    Round("Final Rent Amount" + ("Final Rent Amount" * "VAT%") / 100, 0.01);
         Rec.Modify();
     end;
+
 
 
 

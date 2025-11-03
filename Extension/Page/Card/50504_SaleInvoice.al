@@ -143,6 +143,7 @@ pageextension 50504 SalesInvoice extends "Sales Invoice"
                                 ShowDialogBox.DialogboxForRejection(Rec);
                                 // Rejectionmail.SendInvoiceToLeaseManager(Rec);
                             end;
+                        UpdateInvoiceApprovalStatus();
                     end;
                 }
                 field("Overdue Invoice"; Rec."Overdue Invoice")
@@ -269,67 +270,9 @@ pageextension 50504 SalesInvoice extends "Sales Invoice"
         modify(Post)
         {
             trigger OnBeforeAction()
-            var
-                // AzureBlobUploader: Codeunit "Azure Blob Management";
-                InStream: InStream;
-                FileName: Text;
-                SASUrlBase: Text;
-                SASUrlWithFileName: Text;
-                UploadResult: Text;
-                TempBlob: Codeunit "Temp Blob";
-                ValidFormats: List of [Text];
-                FileExtension: Text[10];
-                FileSize: Decimal;
-                ConfigRecord: Record AzureConfiguration;
-                ReportID: Integer; // Your report ID
-                RecRef: RecordRef;
-                FieldRef1: FieldRef;
-                FieldRef2: FieldRef;
-                OutStream: OutStream;
-                documentattachment: Codeunit UploadAttachment;
-                SalesHeader1: Record "Sales Header";
-                customercard: Record Customer;
-                azureBlobUploader: Codeunit "Azure AD Blob Storage";
-
-                folderName: Text;
-
             begin
                 if Rec."Approval Status" <> Rec."Approval Status"::Approved then
                     Error('The Sales Invoice cannot be posted because the approval status is not "Approved".');
-                // if not ConfigRecord.FindFirst() then
-                //     Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
-                // ValidFormats.Add('.png');
-                // ValidFormats.Add('.jpg');
-                // ValidFormats.Add('.jpeg');
-
-                // SASUrlBase := ConfigRecord."SAS URL";
-                // FileExtension := '.pdf';
-                // ReportID := 50104;
-                // //  RecRef.Open(DATABASE::"Sales Header"); // Open the table reference
-                // // RecRef.GetTable(Rec);
-                // SalesHeader1.Reset();
-                // SalesHeader1.SetRange("No.", Rec."No.");
-                // if not SalesHeader1.FindFirst() then
-                //     Error('Sales Invoice record not found.');
-
-                // // Open the correct record in RecRef
-                // RecRef.GetTable(SalesHeader1);
-                // // RecRef.GetTable(Rec);
-                // TempBlob.CreateOutStream(OutStream);
-                // Report.SaveAs(ReportID, '', ReportFormat::Pdf, OutStream, RecRef);
-
-
-
-                // TempBlob.CreateInStream(InStream);
-                // FileName := 'Invoice_' + Rec."No." + FileExtension;
-                // // SASUrlWithFileName := StrSubstNo('%1/%2?%3', CopyStr(SASUrlBase, 1, StrPos(SASUrlBase, '?') - 1), FileName, CopyStr(SASUrlBase, StrPos(SASUrlBase, '?') + 1));
-                // folderName := 'SalesInvoiceDocuments';
-                // UploadResult := azureBlobUploader.UploadDocumentToBlob(InStream, FileName, folderName);
-                // // UploadResult := documentattachment.UploadDocumentToBlobStorage(SASUrlWithFileName, FileName, InStream);
-                // Rec."View Invoice" := FileName;
-                // Rec."View Document URL" := UploadResult;
-                // Rec.Modify();
-
             end;
         }
 
@@ -410,16 +353,6 @@ pageextension 50504 SalesInvoice extends "Sales Invoice"
 
         end;
 
-        // salesline.SetRange("Document No.", Rec."No.");
-        // if salesline.FindSet() then
-        //     repeat
-
-        //         salesline."Gen. Bus. Posting Group" := Rec."Gen. Bus. Posting Group";
-        //         salesline."Customer Price Group" := Rec."Customer Price Group";
-        //         salesline."VAT Bus. Posting Group" := Rec."VAT Bus. Posting Group";
-
-        //         salesline.Modify();
-        //     until salesline.Next() = 0;
 
         tenancyContract.SetRange("Contract ID", Rec."Contract ID");
         if tenancyContract.FindFirst() then begin
@@ -438,11 +371,20 @@ pageextension 50504 SalesInvoice extends "Sales Invoice"
             Rec."Contract Period" := '';
 
         end;
-
-
-
     end;
 
+    procedure UpdateInvoiceApprovalStatus()
+    var
+        PaymentSchedule2: Record "Payment Schedule2";
+    begin
+        PaymentSchedule2.SetRange("Invoice ID", Rec."No.");
+        if PaymentSchedule2.FindSet() then begin
+            repeat
+                PaymentSchedule2.Validate("Invoice Approval Status", Rec."Approval Status");
+                PaymentSchedule2.Modify();
+            until PaymentSchedule2.Next() = 0;
+        end;
+    end;
 
     var
         approvaleditable: Boolean;
