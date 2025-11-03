@@ -149,15 +149,20 @@ report 50104 InvoiceTemplate
                 column(Amount; Amount)
                 {
                 }
+                column(VAT_Amount; VATAmount)
+                {
+                }
                 trigger OnAfterGetRecord()
                 begin
                     LineAmountText := Format("Line Amount");
                     TransHeaderAmount += PrevLineAmount;
                     PrevLineAmount := "Line Amount";
+                    VATAmount := "Amount Including VAT" - Amount;
                     TotalDue += "Amount Including VAT";
                     TotalSubTotal += "Amount Including VAT";
                     TotalInvDiscAmount -= "Inv. Discount Amount";
                     TotalAmount += Amount;
+                    TotalVATBaseAmount += "VAT Base Amount";
                     TotalAmountVAT += "Amount Including VAT" - Amount;
                     TotalAmountInclVAT += "Amount Including VAT";
                     TotalPaymentDiscOnVAT += -("Line Amount" - "Inv. Discount Amount" - "Amount Including VAT");
@@ -176,6 +181,8 @@ report 50104 InvoiceTemplate
                 column(TotalSubTotal; Format(TotalSubTotal, 0, AutoFormat.ResolveAutoFormat("Auto Format"::AmountFormat, SalesHeader."Currency Code")))
                 { }
                 column(TotalInvDiscAmount; Format(TotalInvDiscAmount, 0, AutoFormat.ResolveAutoFormat("Auto Format"::AmountFormat, SalesHeader."Currency Code")))
+                { }
+                column(TotalAmount; Format(TotalAmount, 0, AutoFormat.ResolveAutoFormat("Auto Format"::AmountFormat, SalesHeader."Currency Code")))
                 { }
                 column(TotalAmountVAT; Format(TotalAmountVAT, 0, AutoFormat.ResolveAutoFormat("Auto Format"::AmountFormat, SalesHeader."Currency Code")))
                 { }
@@ -261,12 +268,14 @@ report 50104 InvoiceTemplate
         TotalSubTotal: Decimal;
         TotalInvDiscAmount: Decimal;
         TotalAmount: Decimal;
+        TotalVATBaseAmount: Decimal;
         TotalAmountVAT: Decimal;
         TotalAmountInclVAT: Decimal;
         TotalPaymentDiscOnVAT: Decimal;
         SerialNo: Integer;
         AmountInWordsText: Text;
         InvoiceNo: Code[20];
+        VATAmount: Decimal;
     // SalesLine: Record "Sales Line";
 
 
