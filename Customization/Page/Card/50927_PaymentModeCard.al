@@ -202,7 +202,7 @@ page 50927 "Payment Mode Card"
                       "Tenant ID" = FIELD("Tenant ID"); // Link to filter attachments for this owner only
                                                         // "Contract ID" = FIELD("Contract ID")
                     ApplicationArea = All;
-                    Editable = IsFieldEditable;
+                    // Editable = IsFieldEditable;
                     // Visible = isVisible;
                 }
             }
