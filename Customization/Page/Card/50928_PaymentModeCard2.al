@@ -95,9 +95,9 @@ page 50928 "Payment Mode Card2"
                           (Rec."Payment Status" = Rec."Payment Status"::Received) then begin
                             IsReceivedCancelled := true;
 
-                            if (Rec."Payment Status" = Rec."Payment Status"::Received) and
-                               (Rec."Receipt #" = '-') then
-                                GenerateReceiptNumber();
+                            // if (Rec."Payment Status" = Rec."Payment Status"::Received) and
+                            //    (Rec."Receipt #" = '-') then
+                            //     GenerateReceiptNumber();
                         end else
                             IsReceivedCancelled := false;
                     end;
@@ -600,17 +600,17 @@ page 50928 "Payment Mode Card2"
         }
     }
 
-    // ✅ Receipt Number Generate કરવા માટે નવો Function
-    local procedure GenerateReceiptNumber()
-    var
-        noSeriesSetup: Record "No. Series Setup";
-        noseries: Codeunit "No. Series";
-    begin
-        if noSeriesSetup.Get() then
-            Rec."Receipt #" := noseries.GetNextNo(noSeriesSetup."Payment Receipt ID Nos.")
-        else
-            Error('No. Series Setup not found for Construction Project Nos.');
-    end;
+    // // ✅ Receipt Number Generate કરવા માટે નવો Function
+    // local procedure GenerateReceiptNumber()
+    // var
+    //     noSeriesSetup: Record "No. Series Setup";
+    //     noseries: Codeunit "No. Series";
+    // begin
+    //     if noSeriesSetup.Get() then
+    //         Rec."Receipt #" := noseries.GetNextNo(noSeriesSetup."Payment Receipt ID Nos.")
+    //     else
+    //         Error('No. Series Setup not found for Construction Project Nos.');
+    // end;
 
     trigger OnAfterGetRecord()
     var
