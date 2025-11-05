@@ -358,6 +358,7 @@ page 50922 "Payment Schedule Card2"
         saleline.Type := saleline.Type::Item;
         saleline."Sell-to Customer No." := salesheader1."Sell-to Customer No.";
         item.SetRange(Description, PaymentscheduleGridLine."Secondary Item Type");
+        item.SetFilter("Charges Status", '<>%1', item."Charges Status"::" ");
         if item.FindSet() then begin
 
             saleline.Validate("No.", item."No.");

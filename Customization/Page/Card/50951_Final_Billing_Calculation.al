@@ -436,6 +436,7 @@ page 50951 "Final Billing Calculation"
         saleline.Type := saleline.Type::Item;
         saleline."Sell-to Customer No." := salesheader1."Sell-to Customer No.";
         item.SetRange(Description, Billingcalculation.RevenueDescription);
+        item.SetFilter("Charges Status", '<>%1', item."Charges Status"::" ");
         if item.FindSet() then begin
 
             saleline.Validate("No.", item."No.");
