@@ -60,6 +60,24 @@ page 50710 "Approval Payment Request"
                     Editable = false;
                 }
 
+                field("Payment mode ID"; Rec."Payment mode ID")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    DrillDown = true;
+
+                    trigger OnDrillDown()
+                    var
+                        paymentmode: Record "Payment Mode";
+                    begin
+                        paymentmode.SetRange("Contract ID", Rec."Contract ID");
+                        if paymentmode.FindSet() then
+                            PAGE.RunModal(PAGE::"Payment Mode Card", paymentmode)
+                        else
+                            Message('No payment mode found using FindFirst either.');
+                    end;
+                }
+
                 field("Contract ID"; Rec."Contract ID")
                 {
                     ApplicationArea = All;
