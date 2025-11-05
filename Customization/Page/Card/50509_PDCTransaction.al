@@ -187,7 +187,8 @@ page 50509 "PDC Transaction"
                             PaymentSeriesRec.SetRange("Contract ID", Rec."Contract ID");
                             if PaymentSeriesRec.FindSet() then begin
                                 // Update the Payment Status field in the Payment Series record
-                                PaymentSeriesRec."Payment Status" := PaymentSeriesRec."Payment Status"::Received; // Update to your specific value
+                                PaymentSeriesRec.Validate("Payment Status", PaymentSeriesRec."Payment Status"::Received);
+                                // PaymentSeriesRec."Payment Status" := PaymentSeriesRec."Payment Status"::Received; // Update to your specific value
                                 PaymentSeriesRec."Cheque Status" := PaymentSeriesRec."Cheque Status"::Cleared;
                                 PaymentSeriesRec."Deposit Status" := PaymentSeriesRec."Deposit Status"::Y;
                                 PaymentSeriesRec.Modify(); // Save the changes
