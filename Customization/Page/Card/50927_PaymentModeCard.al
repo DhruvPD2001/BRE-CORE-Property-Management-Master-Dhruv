@@ -543,6 +543,7 @@ page 50927 "Payment Mode Card"
                         Approvalpayment."Amount" := Rec."Combine Amount";
                         Approvalpayment."VAT Amount" := Rec."Combine VAT Amount";
                         Approvalpayment."Change Amount" := Rec."Combine Amount Including VAT";
+                        Approvalpayment."Payment mode ID" := Rec."Contract ID";
                         Approvalpayment.Insert();
                     end
                     else if IsSplitVisible then begin
@@ -572,6 +573,7 @@ page 50927 "Payment Mode Card"
                                     Approvalpayment."Amount" := SplitPayChange."Split Amount";
                                     Approvalpayment."VAT Amount" := SplitPayChange."Split VAT Amount";
                                     Approvalpayment."Change Amount" := SplitPayChange."Split Amount Including VAT";
+                                    Approvalpayment."Payment mode ID" := Rec."Contract ID";
 
                                     Approvalpayment.Insert(); // Insert inside the loop
                                 end;
@@ -590,6 +592,7 @@ page 50927 "Payment Mode Card"
                         Approvalpayment."Manual/Auto Status" := Format(Status);
                         Approvalpayment."Payment Series" := Rec."Change Payment Series";
                         Approvalpayment."Payment Mode" := Rec."Change Payment Mode";
+                        Approvalpayment."Payment mode ID" := Rec."Contract ID";
                         Approvalpayment.Insert();
                     end;
 
