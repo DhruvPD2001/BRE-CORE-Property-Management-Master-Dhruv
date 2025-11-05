@@ -318,6 +318,7 @@ page 50942 "Vendor Profile Card"
             group("Calculation Details")
             {
                 Caption = 'Calculation Details';
+                Visible = IsVisibleCommission;
                 part("Calculation Detail"; "Vendor Calculation Details Sub")
                 {
                     SubPageLink = "Vendor ID" = FIELD("Vendor ID"); // Link to filter attachments for this owner only
@@ -377,6 +378,7 @@ page 50942 "Vendor Profile Card"
             // Message('Vendor is NOT a Brokers and Commission Agent - Section remains Closed');
         end;
         UpdateFieldEditability();
+        UpdateVisibility();
     end;
 
     trigger OnModifyRecord(): Boolean
@@ -402,6 +404,13 @@ page 50942 "Vendor Profile Card"
         IsPercentageEditable: Boolean;
         IsPercentageTypeEditable: Boolean;
         IsBaseamount: Boolean;
+        IsVisibleCommission: Boolean;
+
+
+    local procedure UpdateVisibility()
+    begin
+        IsVisibleCommission := (UpperCase(Rec."Vendor Category") <> 'BROKERS AND COMMISSION AGENT');
+    end;
 
 
     procedure UpdateFieldEditability()
