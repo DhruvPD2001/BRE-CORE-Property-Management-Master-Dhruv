@@ -54,11 +54,6 @@ page 50710 "Approval Payment Request"
                             Message('No Customer found using FindFirst either.');
                     end;
                 }
-                field("Proposal ID"; Rec."Proposal ID")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                }
 
                 field("Payment mode ID"; Rec."Payment mode ID")
                 {
