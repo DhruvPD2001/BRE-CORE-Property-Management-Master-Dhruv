@@ -311,6 +311,25 @@ page 50927 "Payment Mode Card"
                     Editable = false;
                 }
             }
+            label(note)
+            {
+                Caption = 'Note: Cheque details are required only if Payment Mode is Cheque.';
+                ApplicationArea = All;
+                Style = Strong;
+                Visible = IsCombineVisible;
+            }
+            group("ChequeDetails")
+            {
+                ShowCaption = false;
+                field("cheque No"; Rec."C_Cheque_Number")
+                {
+                    ApplicationArea = All;
+                }
+                field("Deposit Bank"; Rec."C_Deposit_Bank")
+                {
+                    ApplicationArea = All;
+                }
+            }
 
 
             group("SplitPaymentLog")
