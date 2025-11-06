@@ -349,13 +349,11 @@ page 50335 "Contract Renewal Card"
                 {
                     ApplicationArea = All;
                     Caption = 'Frequency of payment';
-                    Editable = false;
                 }
                 field("Payment Method"; rec."Payment Method")
                 {
                     ApplicationArea = All;
                     Caption = 'Payment Mode';
-                    Editable = false;
                 }
 
                 field("No of Installments"; rec."No of Installments")

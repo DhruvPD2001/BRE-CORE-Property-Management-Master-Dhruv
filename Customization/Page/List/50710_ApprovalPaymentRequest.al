@@ -121,6 +121,14 @@ page 50710 "Approval Payment Request"
                     Editable = false;
                 }
 
+                field("cheque No"; Rec."C_Cheque_Number")
+                {
+                    ApplicationArea = All;
+                }
+                field("Deposit Bank"; Rec."C_Deposit_Bank")
+                {
+                    ApplicationArea = All;
+                }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
@@ -440,15 +448,20 @@ page 50710 "Approval Payment Request"
                         PaymentModeTable."VAT Amount" := PaymentChangeReqTable."Vat Amount";
                         PaymentModeTable."Due Date" := PaymentChangeReqTable."Due Date";
                         PaymentModeTable."Payment Mode" := PaymentChangeReqTable."Payment mode";
+                        PaymentModeTable."Deposit Bank" := PaymentChangeReqTable."C_Deposit_Bank";
+                        PaymentModeTable."Cheque Number" := PaymentChangeReqTable."C_Cheque_Number";
                         PaymentModeTable."Payment Series" := NewPaymentCode;
                         PaymentModeTable."Payment Status" := PaymentModeTable."Payment Status"::Scheduled;
                         PaymentModeTable."Approval Status" := PaymentModeTable."Approval Status"::Approved;
+
                         PaymentModeTable.Insert(true);
                         // PaymentModeRec.ModifyAll("Payment Mode", ApprovalRec."Payment Mode");
                         Clear(PaymentModeTable);
                         // Message('Inserted new payment record with Payment Series: %1', NewPaymentCode);
                     end else begin
                         // Modify existing record
+                        PaymentModeRec."Deposit Bank" := PaymentChangeReqTable."C_Deposit_Bank";
+                        PaymentModeRec."Cheque Number" := PaymentChangeReqTable."C_Cheque_Number";
                         PaymentModeTable."Amount Including VAT" := PaymentChangeReqTable."Change Amount";
                         PaymentModeTable.Amount := PaymentChangeReqTable.Amount;
                         PaymentModeTable."VAT Amount" := PaymentChangeReqTable."Vat Amount";

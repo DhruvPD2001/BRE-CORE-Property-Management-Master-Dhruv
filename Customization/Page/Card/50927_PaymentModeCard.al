@@ -311,16 +311,21 @@ page 50927 "Payment Mode Card"
                     Editable = false;
                 }
             }
-            label(note)
+            group(Notes)
             {
-                Caption = 'Note: Cheque details are required only if Payment Mode is Cheque.';
-                ApplicationArea = All;
-                Style = Strong;
                 Visible = IsCombineVisible;
+                label(note)
+                {
+                    Caption = 'Note: Cheque details are required only if Payment Mode is Cheque.';
+                    ApplicationArea = All;
+                    Style = Strong;
+                }
             }
             group("ChequeDetails")
             {
                 ShowCaption = false;
+                Visible = IsCombineVisible;
+
                 field("cheque No"; Rec."C_Cheque_Number")
                 {
                     ApplicationArea = All;
@@ -563,6 +568,8 @@ page 50927 "Payment Mode Card"
                         Approvalpayment."VAT Amount" := Rec."Combine VAT Amount";
                         Approvalpayment."Change Amount" := Rec."Combine Amount Including VAT";
                         Approvalpayment."Payment mode ID" := Rec."Contract ID";
+                        Approvalpayment.C_Cheque_Number := Rec.C_Cheque_Number;
+                        Approvalpayment.C_Deposit_Bank := Rec.C_Deposit_Bank;
                         Approvalpayment.Insert();
                     end
                     else if IsSplitVisible then begin
@@ -632,6 +639,8 @@ page 50927 "Payment Mode Card"
                     Clear(Rec."Combine Amount");
                     Clear(Rec."Combine VAT Amount");
                     Clear(Rec."Combine Amount Including VAT");
+                    Clear(Rec.C_Cheque_Number);
+                    Clear(Rec.C_Deposit_Bank);
 
                     Clear(Rec."Change Payment Series");
                     Clear(Rec."Change Payment Mode");
@@ -803,6 +812,8 @@ page 50927 "Payment Mode Card"
                 CombinePaymentLogsub."Payment mode" := ApprovalPaymentRequest."Payment mode";
                 CombinePaymentLogsub."Payment Series" := ApprovalPaymentRequest."Payment Series";
                 CombinePaymentLogsub."Due Date" := ApprovalPaymentRequest."Due Date";
+                CombinePaymentLogsub."C_Deposit_Bank" := ApprovalPaymentRequest."C_Deposit_Bank";
+                CombinePaymentLogsub."C_Cheque_Number" := ApprovalPaymentRequest."C_Cheque_Number";
                 CombinePaymentLogsub.Insert();
                 Clear(CombinePaymentLogsub);
             until ApprovalPaymentRequest.Next() = 0;
