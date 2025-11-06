@@ -63,6 +63,14 @@ page 50932 "CombinePaymentLogCard"
                     ApplicationArea = All;
                     Editable = false;
                 }
+                field("cheque No"; Rec."C_Cheque_Number")
+                {
+                    ApplicationArea = All;
+                }
+                field("Deposit Bank"; Rec."C_Deposit_Bank")
+                {
+                    ApplicationArea = All;
+                }
                 field("Contract ID"; Rec."Contract ID")
                 {
                     ApplicationArea = All;
