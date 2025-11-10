@@ -1,8 +1,8 @@
-codeunit 50111 "Attach Invoice Report"
+codeunit 50112 "Attach Credit Memo Report"
 {
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", OnAfterSalesInvHeaderInsert, '', false, false)]
-    local procedure OnAfterSalesInvHeaderInsert(var SalesInvHeader: Record "Sales Invoice Header"; SalesHeader: Record "Sales Header"; CommitIsSuppressed: Boolean; WhseShip: Boolean; WhseReceive: Boolean; var TempWhseShptHeader: Record "Warehouse Shipment Header"; var TempWhseRcptHeader: Record "Warehouse Receipt Header"; PreviewMode: Boolean)
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", OnAfterSalesCrMemoHeaderInsert, '', false, false)]
+    local procedure OnAfterSalesCrMemoHeaderInsert(var SalesCrMemoHeader: Record "Sales Cr.Memo Header"; SalesHeader: Record "Sales Header"; CommitIsSuppressed: Boolean; WhseShip: Boolean; WhseReceive: Boolean; var TempWhseShptHeader: Record "Warehouse Shipment Header"; var TempWhseRcptHeader: Record "Warehouse Receipt Header")
     var
         SalesHeader1: Record "Sales Header";
         ConfigRecord: Record AzureConfiguration;
@@ -27,22 +27,22 @@ codeunit 50111 "Attach Invoice Report"
 
         SASUrlBase := ConfigRecord."SAS URL";
         FileExtension := '.pdf';
-        ReportID := 50104;
+        ReportID := 50116;
         SalesHeader1.Reset();
         SalesHeader1.SetRange("No.", SalesHeader."No.");
-        SalesHeader1.SetRange("Document Type", SalesHeader."Document Type"::Invoice);
+        SalesHeader1.SetRange("Document Type", SalesHeader."Document Type"::"Credit Memo");
         if not SalesHeader1.FindFirst() then
-            Error('Sales Invoice record not found.');
+            Error('Sales Credit Memo record not found.');
 
         RecRef.GetTable(SalesHeader1);
         TempBlob.CreateOutStream(OutStream);
         Report.SaveAs(ReportID, '', ReportFormat::Pdf, OutStream, RecRef);
 
         TempBlob.CreateInStream(InStream);
-        FileName := 'Invoice_' + SalesInvHeader."No." + FileExtension;
-        folderName := 'SalesInvoiceDocuments';
+        FileName := 'CreditMemo_' + SalesCrMemoHeader."No." + FileExtension;
+        folderName := 'SalesCreditMemoDocuments';
         UploadResult := azureBlobUploader.UploadDocumentToBlob(InStream, FileName, folderName);
-        SalesInvHeader."View Invoice" := CopyStr(FileName, 1, StrLen(FileName));
-        SalesInvHeader."View Document URL" := CopyStr(UploadResult, 1, StrLen(UploadResult));
+        SalesCrMemoHeader."Credit Memo Document" := CopyStr(FileName, 1, StrLen(FileName));
+        SalesCrMemoHeader."Credit Memo URL" := CopyStr(UploadResult, 1, StrLen(UploadResult));
     end;
 }
