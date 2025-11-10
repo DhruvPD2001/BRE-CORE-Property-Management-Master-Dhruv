@@ -225,114 +225,125 @@ page 50927 "Payment Mode Card"
             {
                 Visible = IsCombineVisible;
                 Caption = 'Combine Payment';
-                field("Combine Payment Series"; Rec."Combine Payment Series")
+                group(labels)
                 {
-                    ApplicationArea = All;
+                    ShowCaption = false;
 
-                    // Trasfer from Table Start
-                    trigger OnLookup(var Text: Text): Boolean
-                    var
-                        PaymentMode2Rec: Record "Payment Mode2";
-                        Selection: Page "Payment Mode2 List";
-                        SelectedPaymentSeries: Text[250];
-                        TotalAmount: Decimal;
-                        TotalVATAmount: Decimal;
-                        TotalAmountInclVAT: Decimal;
-                    begin
-                        // First check if Contract ID is selected
-                        if Rec."Contract ID" = 0 then
-                            Error('Please select a Contract ID first');
+                    field("Combine Payment Series"; Rec."Combine Payment Series")
+                    {
+                        ApplicationArea = All;
 
-                        // Filter Payment Mode2 records based on Contract ID
-                        PaymentMode2Rec.Reset();
-                        PaymentMode2Rec.SetRange("Contract ID", Rec."Contract ID");
-                        PaymentMode2Rec.SetFilter("Payment Status", '<> %1 & <> %2', PaymentMode2Rec."Payment Status"::Cancelled, PaymentMode2Rec."Payment Status"::Received);
+                        // Trasfer from Table Start
+                        trigger OnLookup(var Text: Text): Boolean
+                        var
+                            PaymentMode2Rec: Record "Payment Mode2";
+                            Selection: Page "Payment Mode2 List";
+                            SelectedPaymentSeries: Text[250];
+                            TotalAmount: Decimal;
+                            TotalVATAmount: Decimal;
+                            TotalAmountInclVAT: Decimal;
+                        begin
+                            // First check if Contract ID is selected
+                            if Rec."Contract ID" = 0 then
+                                Error('Please select a Contract ID first');
 
-                        Selection.LookupMode(true);
-                        Selection.SetTableView(PaymentMode2Rec);
+                            // Filter Payment Mode2 records based on Contract ID
+                            PaymentMode2Rec.Reset();
+                            PaymentMode2Rec.SetRange("Contract ID", Rec."Contract ID");
+                            PaymentMode2Rec.SetFilter("Payment Status", '<> %1 & <> %2', PaymentMode2Rec."Payment Status"::Cancelled, PaymentMode2Rec."Payment Status"::Received);
 
-                        if Selection.RunModal() = ACTION::LookupOK then begin
-                            // Clear totals
-                            Clear(TotalAmount);
-                            Clear(TotalVATAmount);
-                            Clear(TotalAmountInclVAT);
-                            Clear(SelectedPaymentSeries);
+                            Selection.LookupMode(true);
+                            Selection.SetTableView(PaymentMode2Rec);
 
-                            Selection.SetSelectionFilter(PaymentMode2Rec);
-                            if PaymentMode2Rec.FindSet() then begin
-                                repeat
-                                    // Add to payment series string
-                                    if SelectedPaymentSeries <> '' then
-                                        SelectedPaymentSeries := SelectedPaymentSeries + ',';
-                                    SelectedPaymentSeries := SelectedPaymentSeries + PaymentMode2Rec."Payment Series";
+                            if Selection.RunModal() = ACTION::LookupOK then begin
+                                // Clear totals
+                                Clear(TotalAmount);
+                                Clear(TotalVATAmount);
+                                Clear(TotalAmountInclVAT);
+                                Clear(SelectedPaymentSeries);
 
-                                    // Sum up amounts
-                                    TotalAmount += PaymentMode2Rec.Amount;
-                                    TotalVATAmount += PaymentMode2Rec."VAT Amount";
-                                    TotalAmountInclVAT += PaymentMode2Rec."Amount Including VAT";
-                                until PaymentMode2Rec.Next() = 0;
+                                Selection.SetSelectionFilter(PaymentMode2Rec);
+                                if PaymentMode2Rec.FindSet() then begin
+                                    repeat
+                                        // Add to payment series string
+                                        if SelectedPaymentSeries <> '' then
+                                            SelectedPaymentSeries := SelectedPaymentSeries + ',';
+                                        SelectedPaymentSeries := SelectedPaymentSeries + PaymentMode2Rec."Payment Series";
 
-                                // Set all values to the record
-                                Rec."Combine Payment Series" := SelectedPaymentSeries;
-                                Rec."Combine Amount" := TotalAmount;
-                                Rec."Combine VAT Amount" := TotalVATAmount;
-                                Rec."Combine Amount Including VAT" := TotalAmountInclVAT;
+                                        // Sum up amounts
+                                        TotalAmount += PaymentMode2Rec.Amount;
+                                        TotalVATAmount += PaymentMode2Rec."VAT Amount";
+                                        TotalAmountInclVAT += PaymentMode2Rec."Amount Including VAT";
+                                    until PaymentMode2Rec.Next() = 0;
+
+                                    // Set all values to the record
+                                    Rec."Combine Payment Series" := SelectedPaymentSeries;
+                                    Rec."Combine Amount" := TotalAmount;
+                                    Rec."Combine VAT Amount" := TotalVATAmount;
+                                    Rec."Combine Amount Including VAT" := TotalAmountInclVAT;
+                                end;
                             end;
                         end;
-                    end;
-                    // Trasfer from Table End
-                }
+                        // Trasfer from Table End
+                    }
 
-                field("Combine Due Date"; Rec."Combine Due Date")
-                {
-                    ApplicationArea = All;
-                }
+                    field("Combine Due Date"; Rec."Combine Due Date")
+                    {
+                        ApplicationArea = All;
+                    }
 
-                field("Combine Payment Mode"; Rec."Combine Payment Mode")
-                {
-                    ApplicationArea = All;
-                }
+                    field("Combine Payment Mode"; Rec."Combine Payment Mode")
+                    {
+                        ApplicationArea = All;
+                    }
 
-                field("Combine Amount"; Rec."Combine Amount")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                }
+                    field("Combine Amount"; Rec."Combine Amount")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                    }
 
-                field("Combine VAT Amount"; Rec."Combine VAT Amount")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                }
+                    field("Combine VAT Amount"; Rec."Combine VAT Amount")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                    }
 
-                field("Combine Amount Including VAT"; Rec."Combine Amount Including VAT")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
+                    field("Combine Amount Including VAT"; Rec."Combine Amount Including VAT")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                    }
                 }
-            }
-            group(Notes)
-            {
-                Visible = IsCombineVisible;
-                label(note)
+                // }
+                // group(Notes)
+                // {
+                //     ShowCaption = false;
+                //     Visible = IsCombineVisible;
+                group(label)
                 {
-                    Caption = 'Note: Cheque details are required only if Payment Mode is Cheque.';
-                    ApplicationArea = All;
-                    Style = Strong;
+                    ShowCaption = false;
+                    label(note)
+                    {
+                        Caption = 'Note: Cheque details are required only if Payment Mode is Cheque.';
+                        ApplicationArea = All;
+                        Style = Strong;
+                    }
                 }
-            }
-            group("ChequeDetails")
-            {
-                ShowCaption = false;
-                Visible = IsCombineVisible;
+                // }
+                group("ChequeDetails")
+                {
+                    ShowCaption = false;
+                    // Visible = IsCombineVisible;
 
-                field("cheque No"; Rec."C_Cheque_Number")
-                {
-                    ApplicationArea = All;
-                }
-                field("Deposit Bank"; Rec."C_Deposit_Bank")
-                {
-                    ApplicationArea = All;
+                    field("cheque No"; Rec."C_Cheque_Number")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Deposit Bank"; Rec."C_Deposit_Bank")
+                    {
+                        ApplicationArea = All;
+                    }
                 }
             }
 
