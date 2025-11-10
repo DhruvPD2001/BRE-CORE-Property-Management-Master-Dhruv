@@ -330,6 +330,7 @@ page 50922 "Payment Schedule Card2"
         salesHeader."Posting Date" := Today;
         salesHeader."Due Date" := Today;
         salesHeader."Property Classification" := pUnitType;
+        salesHeader."Posting No. Series" := salesReciveable."Posted Invoice Nos.";
         salesHeader.Insert();
         exit(salesHeader);
     end;

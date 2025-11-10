@@ -329,7 +329,7 @@ page 50951 "Final Billing Calculation"
                     userConfirmed: Boolean;
 
                 begin
-                    if Rec.DifferenceAmountInclVAT < 0 then begin
+                    if Rec."Invoice To Be Raised" > 0 then begin
                         if Rec.Invoiced = false then begin
                             userConfirmed := Confirm('Do you want to create the invoice?', false);
                             if not userConfirmed then
@@ -407,6 +407,7 @@ page 50951 "Final Billing Calculation"
         salesHeader."Posting Date" := Today;
         salesHeader."Due Date" := Today;
         salesHeader."Property Classification" := pUnitType;
+        salesHeader."Posting No. Series" := salesReciveable."Posted Invoice Nos.";
         salesHeader.Insert();
         exit(salesHeader);
     end;
