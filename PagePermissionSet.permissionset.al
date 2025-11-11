@@ -205,5 +205,7 @@ permissionset 50101 PagePermissionSet
         page "Request CreditNote Grid" = X,
         page RequestCreditNoteApprovalList = X,
         codeunit SendListPendingCreditNoteInv = X,
-        page OverduePaymentmodelist = X;
+        page OverduePaymentmodelist = X,
+        codeunit "Attach Credit Memo Report" = X,
+        codeunit "Attach Invoice Report" = X;
 }
