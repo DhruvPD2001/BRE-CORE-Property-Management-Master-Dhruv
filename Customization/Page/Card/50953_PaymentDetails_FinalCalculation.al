@@ -70,7 +70,7 @@ page 50953 "Payment Details"
     }
     trigger OnAfterGetRecord()
     begin
-        if Rec."Payment Date" > Rec."Termination Date" then begin
+        if (Rec."Payment Date" > Rec."Termination Date") AND (Rec."Payment Status" <> 'Received') then begin
             Rec."Payment Status" := 'Due';
             StyleExprTxt := 'Unfavorable';
             Rec.Modify();
