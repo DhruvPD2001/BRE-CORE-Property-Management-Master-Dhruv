@@ -153,7 +153,7 @@ page 50952 "Pending Recevieable Grid"
         Totalamount := 0;
         PaymentScheduleRec.Reset();
         PaymentScheduleRec.SetRange("Contract ID", Rec."Contract ID");
-        PaymentScheduleRec.SetFilter("Due Date", '<%1', Rec."Termination Date");
+        PaymentScheduleRec.SetFilter("Due Date", '<=%1', Rec."Termination Date");
         PaymentScheduleRec.SetRange("Payment Status", 'Received');
         PaymentScheduleRec.SetRange("Secondary Item Type", Rec.RevenueDescription);
         if PaymentScheduleRec.FindSet() then begin

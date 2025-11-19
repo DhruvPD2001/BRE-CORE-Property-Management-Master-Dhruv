@@ -74,16 +74,16 @@ report 50112 PaymentReceipt
                 DataItemLink = "Contract ID" = field("Contract ID");
                 DataItemTableView = SORTING("Payment Series");
 
-                column(Pay_S; "Payment Series")
+                column(Pay_S; "Payment Mode2"."Payment Series")
                 {
                 }
-                column(I_ID; "Invoice ID")  // Add this if it exists
+                column(I_ID; "Payment Mode2"."Invoice #")  // Add this if it exists
                 {
                 }
-                column(Pay_M; "Payment Mode")  // Add this if it exists
+                column(Pay_M; "Payment Mode2"."Payment Mode")  // Add this if it exists
                 {
                 }
-                column(Che_N; "Cheque Number")  // Add this if it exists
+                column(Che_N; "Payment Mode2"."Cheque Number")  // Add this if it exists
                 {
                 }
                 column(Secondary_Item_Type; "Secondary Item Type")  // Changed from "Secondary Item Type"
