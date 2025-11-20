@@ -59,6 +59,7 @@ page 50927 "Payment Mode Card"
                 field("Approval Status"; Rec."Approval Status")
                 {
                     ApplicationArea = All;
+                    Editable = IsFinanceManager AND IsFieldEditable;
 
                     trigger OnValidate()
                     var
@@ -130,7 +131,6 @@ page 50927 "Payment Mode Card"
                               MissingFields);
                     end;
 
-                    // Editable = IsFinanceManager AND IsFieldEditable;
                     // trigger OnValidate()
                     // begin
                     //     // Scenario 1: Update all payment grid records to "Approved" when card status changes
