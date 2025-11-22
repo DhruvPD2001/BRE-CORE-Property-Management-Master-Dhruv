@@ -44,5 +44,40 @@ codeunit 50111 "Attach Invoice Report"
         UploadResult := azureBlobUploader.UploadDocumentToBlob(InStream, FileName, folderName);
         SalesInvHeader."View Invoice" := CopyStr(FileName, 1, StrLen(FileName));
         SalesInvHeader."View Document URL" := CopyStr(UploadResult, 1, StrLen(UploadResult));
+        AdddocumentInBillingCalculations(SalesInvHeader);
+        AddDocumentInAdditionalCharges(SalesInvHeader);
+
+    end;
+
+    procedure AddDocumentInAdditionalCharges(salesInvHeaderRec: Record "Sales Invoice Header")
+
+    var
+        additionalcharges: Record "Additional Charges Sub";
+
+    begin
+        additionalcharges.SetRange("Contract ID", salesInvHeaderRec."Contract ID");
+        additionalcharges.SetRange("Invoiced ID", salesInvHeaderRec."No.");
+        if additionalcharges.FindSet() then
+            repeat
+                additionalcharges."Invoice Document" := salesInvHeaderRec."View Invoice";
+                additionalcharges."Invoice Document URL" := salesInvHeaderRec."View Document URL";
+                additionalcharges.Modify();
+            until additionalcharges.Next() = 0;
+
+    end;
+
+    procedure AdddocumentInBillingCalculations(salesInvHeaderRec: Record "Sales Invoice Header")
+    var
+        billingcalculationgrid: Record "Final Billing Calculation Grid";
+    begin
+        billingcalculationgrid.SetRange("Contract ID", salesInvHeaderRec."Contract ID");
+        billingcalculationgrid.SetRange("Invoice ID", salesInvHeaderRec."No.");
+        if billingcalculationgrid.FindSet() then
+            repeat
+                billingcalculationgrid."Invoice Document" := salesInvHeaderRec."View Invoice";
+                billingcalculationgrid."Invoice Document URL" := salesInvHeaderRec."View Document URL";
+                billingcalculationgrid.Modify();
+            until billingcalculationgrid.Next() = 0;
     end;
 }
+
