@@ -123,6 +123,7 @@ page 50732 "final payment approval"
                                 if Finalsettlement.FindSet() then begin
                                     // Update the status of OnlinePaymentApproval record
                                     Finalsettlement."Receivable Payment Status" := PaymentStatus::Received;
+                                    Finalsettlement.receivablePaymentStatuss := 'Received';
                                     Finalsettlement.Modify(true);
                                 end;
                                 ApproveCount += 1;
@@ -146,6 +147,8 @@ page 50732 "final payment approval"
                     SelectedRecs: Record "finalPaymentApproval";
                     RejectCount: Integer;
                     ErrorCount: Integer;
+                    Finalsettlement1: Record "FinalSettlement";
+                    PaymentStatus1: Enum "Payment Status";
                 begin
                     // Store selected records
                     CurrPage.SetSelectionFilter(SelectedRecs);
@@ -163,6 +166,15 @@ page 50732 "final payment approval"
                             if SelectedRecs.Status = 'Pending' then begin
                                 SelectedRecs.Status := 'Not Received'; // Set status to "Declined"
                                 SelectedRecs.Modify();
+
+
+                                Finalsettlement1.SetRange("Contract ID", SelectedRecs."Contract ID");
+                                if Finalsettlement1.FindSet() then begin
+                                    // Update the status of OnlinePaymentApproval record
+                                    Finalsettlement1."Receivable Payment Status" := PaymentStatus1::Cancelled;
+                                    Finalsettlement1.receivablePaymentStatuss := 'Not Received';
+                                    Finalsettlement1.Modify(true);
+                                end;
                                 RejectCount += 1;
                             end else
                                 ErrorCount += 1; // Count records that are not in "Pending" status
