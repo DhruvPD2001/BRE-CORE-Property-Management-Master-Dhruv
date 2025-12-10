@@ -122,6 +122,19 @@ page 50928 "Payment Mode Card2"
                 {
                     ApplicationArea = All;
                     Editable = IsApproved AND (Rec."Payment Status" <> Rec."Payment Status"::Cancelled); // Makes the field editable unless Payment Status is "Cancelled"
+
+                    trigger OnDrillDown()
+                    var
+                        SalesHeader: Record "Sales Header";
+                        postedsalesinvoice: Record "Sales Invoice Header";
+                    begin
+                        if SalesHeader.Get(Enum::"Sales Document Type"::Invoice, Rec."Invoice #") then
+                            PAGE.Run(PAGE::"Sales Invoice", SalesHeader)
+                        else
+                            if postedsalesinvoice.Get(Rec."Invoice #") then
+                                PAGE.Run(PAGE::"Posted Sales Invoice", postedsalesinvoice);
+
+                    end;
                 }
 
                 field("Receipt #"; Rec."Receipt #")
@@ -129,6 +142,11 @@ page 50928 "Payment Mode Card2"
                     ApplicationArea = All;
                     Editable = false;
                     StyleExpr = Rec."Receipt #" <> '-';
+                }
+                field("Receipt Date"; Rec."Receipt Date")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
                 }
 
                 field("Old Cheque #"; Rec."Old Cheque #")
