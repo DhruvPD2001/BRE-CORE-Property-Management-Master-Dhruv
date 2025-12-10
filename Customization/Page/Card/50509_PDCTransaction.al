@@ -182,7 +182,6 @@ page 50509 "PDC Transaction"
                         // Check if the Cheque Status is set to 'Cleared'
                         if Rec."Cheque Status" = Rec."Cheque Status"::Cleared then begin
                             // Ensure the related Payment Series record exists
-
                             PaymentSeriesRec.SetRange("Payment Series", Rec."payment Series");
                             PaymentSeriesRec.SetRange("Contract ID", Rec."Contract ID");
                             if PaymentSeriesRec.FindSet() then begin
@@ -193,7 +192,7 @@ page 50509 "PDC Transaction"
                                 PaymentSeriesRec."Deposit Status" := PaymentSeriesRec."Deposit Status"::Y;
                                 PaymentSeriesRec.Modify(); // Save the changes
 
-                                CashReceiptJournalCodeunit.CreateCashReceiptJournal(PaymentSeriesRec);
+                                // CashReceiptJournalCodeunit.CreateCashReceiptJournal(PaymentSeriesRec, PaymentSeriesRec."Receipt Date");
                             end else
                                 Error('The related Payment Series record was not found.');
                         end
@@ -283,6 +282,11 @@ page 50509 "PDC Transaction"
                             end else
                                 Error('The related Payment Series record was not found.');
                         end;
+                        // After processing all status branches, refresh the page once if needed
+                        // if NeedsRefresh then begin
+                        if Rec.Get(Rec."PDC ID") then
+                            CurrPage.UPDATE();
+                        // end;
                     end;
 
 

@@ -726,13 +726,15 @@ page 50903 "Final Calculation Card"
         RentCalculation1.SetRange("Year", Rec."ContractYear(Termination Date)");
 
         if RentCalculation1.FindSet() then
-            repeat
-                Rec."Per Day Rent" := RentCalculation1."Per Day Rent";
-                DifferenceDays := Rec."Termination Date" - RentCalculation1."Period Start Date";
-                Rec."Total No. Of Days" := DifferenceDays + 1;
-                Rec."Annual Rent Amount TermiYear" := RentCalculation1."Final Annual Amount";
-                Rec.Modify();
-            until RentCalculation1.Next() = 0;
+            Rec."Per Day Rent" := 0;
+        Rec."Annual Rent Amount TermiYear" := 0;
+        repeat
+            Rec."Per Day Rent" += RentCalculation1."Per Day Rent";
+            DifferenceDays := Rec."Termination Date" - RentCalculation1."Period Start Date";
+            Rec."Total No. Of Days" := DifferenceDays + 1;
+            Rec."Annual Rent Amount TermiYear" += RentCalculation1."Final Annual Amount";
+            Rec.Modify();
+        until RentCalculation1.Next() = 0;
     end;
 
     procedure RentCalculate()

@@ -241,20 +241,19 @@ page 50950 "Final Revenue Calculation Grid"
     /// 1 : Only populate Annual Rent Amount for "Rent" item type from Rent calculation subpage in Annual Rent calculation field in the grid //
     procedure GetAnnualRentAmountOfTerminationDateFromRentCalculation()
     var
-
         RentCalculation2: Record "Rent Calculation Subpage";
     begin
         RentCalculation2.SetRange("Contract ID", Rec."Contract ID");
         RentCalculation2.SetRange("Year", Rec."ContractYear(Termination Date)");
         RentCalculation2.SetRange("Secondary Item Type", Rec."Revenue Description");
-
         if RentCalculation2.FindSet() then
-            repeat
-
-                Rec."Annual Rent Amount TermiYear" := RentCalculation2."Final Annual Amount";
-                Rec."Per Day Rent" := RentCalculation2."Per Day Rent";
-                Rec.Modify();
-            until RentCalculation2.Next() = 0;
+            Rec."Annual Rent Amount TermiYear" := 0;
+        Rec."Per Day Rent" := 0;
+        repeat
+            Rec."Annual Rent Amount TermiYear" += RentCalculation2."Final Annual Amount";
+            Rec."Per Day Rent" += RentCalculation2."Per Day Rent";
+            Rec.Modify();
+        until RentCalculation2.Next() = 0;
     end;
     ///////////// END 1 ////////////////////////////////////
 

@@ -116,6 +116,19 @@ page 50922 "Payment Schedule Card2"
                     ApplicationArea = All;
                     Caption = 'Invoice ID';
                     Editable = InvoicedField;
+
+                    trigger OnDrillDown()
+                    var
+                        SalesHeader: Record "Sales Header";
+                        postedsalesinvoice: Record "Sales Invoice Header";
+                    begin
+                        if SalesHeader.Get(Enum::"Sales Document Type"::Invoice, Rec."Invoice ID") then
+                            PAGE.Run(PAGE::"Sales Invoice", SalesHeader)
+                        else
+                            if postedsalesinvoice.Get(Rec."Invoice ID") then
+                                PAGE.Run(PAGE::"Posted Sales Invoice", postedsalesinvoice);
+
+                    end;
                 }
                 field("Invoice Approval Status"; Rec."Invoice Approval Status")
                 {
