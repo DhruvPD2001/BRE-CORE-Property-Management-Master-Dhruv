@@ -182,7 +182,9 @@ page 50952 "Pending Recevieable Grid"
         pendingReceivableRec: Record "Pending Receviable Grid";
 
     begin
-        if Rec.GeneratedCRMemoSD = 'Created' then
+        pendingReceivableRec.SetRange("Contract ID", Rec."Contract ID");
+        pendingReceivableRec.SetRange(GeneratedCRMemoSD, true);
+        if pendingReceivableRec.FindFirst() then
             Message('Credit Memo for Security Deposit has already been generated for this contract.')
         else begin
 
@@ -215,11 +217,12 @@ page 50952 "Pending Recevieable Grid"
                 end;
                 createSalesLine(SalesHeader1, PaymentScheduleRec.Amount, PaymentScheduleRec."VAT Amount", PaymentScheduleRec);
 
+                pendingReceivableRec.Reset();
                 pendingReceivableRec.SetRange("Contract ID", Rec."Contract ID");
                 pendingReceivableRec.SetRange(RevenueDescription, 'Security Deposit Amount');
                 if pendingReceivableRec.FindFirst() then begin
                     pendingReceivableRec."CrditNoteID Security Deposit" := SalesHeader1."No.";
-                    pendingReceivableRec.GeneratedCRMemoSD := 'Created';
+                    pendingReceivableRec.GeneratedCRMemoSD := true;
                     pendingReceivableRec.Modify();
                 end;
 
