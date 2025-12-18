@@ -922,6 +922,7 @@ page 50928 "Payment Mode Card2"
                 GenJournalLine."Account Type" := GenJournalAccountType::Customer;
                 GenJournalLine."Account No." := Rec."Tenant Id";
                 GenJournalLine."Description" := Rec."Tenant Name";
+                GenJournalLine."Contract ID" := Rec."Contract ID";
                 GenJournalLine.Amount := -Rec."Amount Including VAT";
                 GenJournalLine."Amount (LCY)" := GenJournalLine.Amount;
                 GenJournalLine."Bal. Account Type" := GenJournalAccountType::"G/L Account";
