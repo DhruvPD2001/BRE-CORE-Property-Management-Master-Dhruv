@@ -377,6 +377,7 @@ page 50129 "Security Deposit Entries"
         JournalTemplateName: Code[10];
         JournalBatchName: Code[10];
         HasApplicableCharges: Boolean;
+        ContractID: Integer;
     begin
         JournalTemplateName := 'CASH RECE';
         JournalBatchName := 'DEFAULT';
@@ -404,6 +405,8 @@ page 50129 "Security Deposit Entries"
         // Get values from Final Calculation
         Tenantid := finalcalculation."Tenant ID";
         Tenantname := finalcalculation."Tenant Name";
+        ContractID := finalcalculation."Contract ID";
+
         securitydeposit := Round(finalcalculation."Net Balance");
         chillerdeposit := Round(finalcalculation."Chiller Deposit");
         otherdeposit := Round(finalcalculation."Other Deposit");
@@ -473,6 +476,7 @@ page 50129 "Security Deposit Entries"
                 GenJnlLine.Description := Tenantname + ' - Security Deposit';
                 GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
                 GenJnlLine."Account No." := Tenantid;
+                GenJnlLine."Contract ID" := ContractID;
                 GenJnlLine.Amount := Round(-AppliedAmount);
                 GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
                 GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
@@ -500,6 +504,7 @@ page 50129 "Security Deposit Entries"
                 GenJnlLine.Description := Tenantname + ' - Security Deposit';
                 GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
                 GenJnlLine."Account No." := Tenantid;
+                GenJnlLine."Contract ID" := ContractID;
                 GenJnlLine.Amount := Round(-AppliedAmount);
                 GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
                 GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
@@ -533,6 +538,7 @@ page 50129 "Security Deposit Entries"
                 GenJnlLine.Description := Tenantname + ' - Chiller Deposit';
                 GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
                 GenJnlLine."Account No." := Tenantid;
+                GenJnlLine."Contract ID" := ContractID;
                 GenJnlLine.Amount := Round(-AppliedAmount);
                 GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
                 GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
@@ -559,6 +565,7 @@ page 50129 "Security Deposit Entries"
                 GenJnlLine.Description := Tenantname + ' - Chiller Deposit';
                 GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
                 GenJnlLine."Account No." := Tenantid;
+                GenJnlLine."Contract ID" := ContractID;
                 GenJnlLine.Amount := Round(-AppliedAmount);
                 GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
                 GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
@@ -592,6 +599,7 @@ page 50129 "Security Deposit Entries"
                 GenJnlLine.Description := Tenantname + ' - Other Deposit';
                 GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
                 GenJnlLine."Account No." := Tenantid;
+                GenJnlLine."Contract ID" := ContractID;
                 GenJnlLine.Amount := Round(-AppliedAmount);
                 GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
                 GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
@@ -618,6 +626,7 @@ page 50129 "Security Deposit Entries"
                 GenJnlLine.Description := Tenantname + ' - Other Deposit';
                 GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
                 GenJnlLine."Account No." := Tenantid;
+                GenJnlLine."Contract ID" := ContractID;
                 GenJnlLine.Amount := Round(-AppliedAmount);
                 GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
                 GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
@@ -658,6 +667,7 @@ page 50129 "Security Deposit Entries"
             GenJnlLine."Account No." := '4502';  // Security Deposit Account
             GenJnlLine.Amount := Round(-securitydeposit);  // Credit G/L (reduce liability)
             GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
+            GenJnlLine."Contract ID" := ContractID;
             GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::Customer;
             GenJnlLine."Bal. Account No." := Tenantid;  // Debit Customer (refund to tenant)
             GenJnlLine.Insert(true);
@@ -678,6 +688,7 @@ page 50129 "Security Deposit Entries"
             GenJnlLine."Account No." := '4508';  // Chiller Deposit Account
             GenJnlLine.Amount := Round(-chillerdeposit);
             GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
+            GenJnlLine."Contract ID" := ContractID;
             GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::Customer;
             GenJnlLine."Bal. Account No." := Tenantid;
             GenJnlLine.Insert(true);
@@ -697,6 +708,7 @@ page 50129 "Security Deposit Entries"
             GenJnlLine."Account Type" := GenJnlLine."Account Type"::"G/L Account";
             GenJnlLine."Account No." := '4508';  // Other Deposit Account
             GenJnlLine.Amount := Round(-otherdeposit);
+            GenJnlLine."Contract ID" := ContractID;
             GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
             GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::Customer;
             GenJnlLine."Bal. Account No." := Tenantid;
