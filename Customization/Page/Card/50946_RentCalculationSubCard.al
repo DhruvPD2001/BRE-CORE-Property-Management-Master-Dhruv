@@ -217,6 +217,12 @@ page 50946 "Rent Calculation SubCard"
                         if InstallmentStructure.FindSet() then begin
                             InstallmentStructure.DeleteAll();
                         end;
+
+                        InstallmentStartDate := GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd);
+                        OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
+                        InstallmentEndDate := 0D;
+                        NumInstallments := RevenueStructure."Yearly No. of Installment";
+
                         // Set filters to fetch related records
                         // RevenueStructure.SetRange("Proposal ID", Rec."Proposal ID");
                         RevenueStructure.SetRange("Tenant ID", Rec."Tenant ID");
@@ -231,12 +237,6 @@ page 50946 "Rent Calculation SubCard"
                         if RevenueStructure.FindSet() then begin
                             // Loop through Revenue Structure to calculate and populate or update Installment Structure
                             repeat
-
-                                InstallmentStartDate := GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd);
-                                OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
-                                InstallmentEndDate := 0D;
-                                NumInstallments := RevenueStructure."Yearly No. of Installment";
-
                                 AnnualAmount := RevenueStructure."Final Annual Amount";
                                 StartDate := RevenueStructure."Period Start Date";
                                 EndDate := RevenueStructure."Period End Date";
