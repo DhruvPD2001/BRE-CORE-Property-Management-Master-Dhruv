@@ -189,9 +189,12 @@ page 50351 "TC Single Unit Rent SubPage"
                         Rec."Final Annual Amount" := Rec."Annual Amount";
 
                         // Recalculate Per Day Rent
-                        RecalculatePerDayRent();
+                        // RecalculatePerDayRent();
 
                         // Update totals
+
+                        RecalculateFinalAnnualAmount();
+                        RecalculatePerDayRent();
                         RecalculateTotals();
 
                         // Save changes
@@ -280,7 +283,7 @@ page 50351 "TC Single Unit Rent SubPage"
 
                             // Update Final Annual Amount to match Annual Amount
                             Rec."Final Annual Amount" := Rec."Annual Amount";
-
+                            RecalculateFinalAnnualAmount();
                             // Recalculate Per Day Rent
                             RecalculatePerDayRent();
                         end else
@@ -667,39 +670,38 @@ page 50351 "TC Single Unit Rent SubPage"
 
     local procedure RecalculateTotals()
     var
-
         LeaseProposalRec: Record "Contract Renewal";
-        TotalAnnualAmount: Decimal;
-        TotalRoundOff: Decimal;
-        TotalFinalAmount: Decimal;
+        CRSubRec: Record "CR Single Unit Rent SubPage";
+        lTotalAnnualAmount: Decimal;
+        lTotalRoundOff: Decimal;
+        lTotalFinalAmount: Decimal;
         FirstYearAnnualAmount: Decimal; // Variable for the first year's annual amount
-        TempRecord: Record "CR Single Unit Rent SubPage";
         vatPer: Integer;
     begin
-        TotalAnnualAmount := 0;
-        TotalRoundOff := 0;
-        TotalFinalAmount := 0;
+        lTotalAnnualAmount := 0;
+        lTotalRoundOff := 0;
+        lTotalFinalAmount := 0;
         FirstYearAnnualAmount := 0; // Initialize to 0
 
         // Filter records based on the current Proposal ID
-        TempRecord.SetRange("ID", Rec."ID");
+        CRSubRec.SetRange("ID", Rec."ID");
 
         // Iterate over the filtered records
-        if TempRecord.FindSet() then
+        if CRSubRec.FindSet() then
             repeat
-                TotalAnnualAmount += TempRecord."Annual Amount";
-                TotalRoundOff += TempRecord."Round off";
-                TotalFinalAmount += TempRecord."Final Annual Amount";
+                lTotalAnnualAmount += CRSubRec."Annual Amount";
+                lTotalRoundOff += CRSubRec."Round off";
+                lTotalFinalAmount += CRSubRec."Final Annual Amount";
 
                 // Check for the first year and assign its Annual Amount
-                if TempRecord."Year" = 1 then
-                    FirstYearAnnualAmount := TempRecord."Final Annual Amount";
-            until TempRecord.Next() = 0;
+                if CRSubRec."Year" = 1 then
+                    FirstYearAnnualAmount := CRSubRec."Final Annual Amount";
+            until CRSubRec.Next() = 0;
 
         // Assign calculated totals to the fields
-        Rec.TotalAnnualAmount := TotalAnnualAmount;
-        Rec.TotalRoundOff := TotalRoundOff;
-        Rec.TotalFinalAmount := TotalFinalAmount;
+        Rec.TotalAnnualAmount := lTotalAnnualAmount;
+        Rec.TotalRoundOff := lTotalRoundOff;
+        Rec.TotalFinalAmount := lTotalFinalAmount;
         Rec.TotalFirstAnnualAmount := FirstYearAnnualAmount; // Assign the first year's annual amount
 
 
@@ -707,7 +709,7 @@ page 50351 "TC Single Unit Rent SubPage"
         LeaseProposalRec.SetRange("ID", Rec."ID");
         if LeaseProposalRec.FindSet() then begin
             LeaseProposalRec."Rent Amount" := FirstYearAnnualAmount; // Update Rent Amount with the first year's Final Annual Amount
-            LeaseProposalRec."Annual Rent Amount" := TotalFinalAmount; // Update Annual Rent Amount with the Total Final Amount
+            LeaseProposalRec."Annual Rent Amount" := lTotalFinalAmount; // Update Annual Rent Amount with the Total Final Amount
 
 
             if LeaseProposalRec."Rent Amount VAT %" = LeaseProposalRec."Rent Amount VAT %"::"5%" then
@@ -770,9 +772,9 @@ page 50351 "TC Single Unit Rent SubPage"
         Rec.Modify();
     end;
 
-    local procedure IsLeapYear(Year: Integer): Boolean
+    local procedure IsLeapYear(aYear: Integer): Boolean
     begin
-        if (Year mod 4 = 0) and ((Year mod 100 <> 0) or (Year mod 400 = 0)) then
+        if (aYear mod 4 = 0) and ((aYear mod 100 <> 0) or (aYear mod 400 = 0)) then
             exit(true);
         exit(false);
     end;
@@ -797,11 +799,60 @@ page 50351 "TC Single Unit Rent SubPage"
     end;
 
     local procedure RecalculateFinalAnnualAmount()
+    var
+        YearStart: Integer;
+        YearEnd: Integer;
+        CurrYear: Integer;
+        YearStartDate: Date;
+        YearEndDate: Date;
+        OverlapStart: Date;
+        OverlapEnd: Date;
+        DaysInYear: Integer;
+        DaysInPeriod: Integer;
+        ProratedAmount: Decimal;
     begin
-        if Rec."Round off" = 0 then
-            Rec."Final Annual Amount" := Rec."Annual Amount"
-        else
+        ProratedAmount := 0;
+
+        // If dates are not set, set Final Annual Amount to Annual Amount + Round off
+        if (Rec."Start Date" = 0D) or (Rec."End Date" = 0D) then begin
             Rec."Final Annual Amount" := Rec."Annual Amount" + Rec."Round off";
+            Rec.Modify();
+            CurrPage.Update();
+            exit;
+        end;
+
+        if Rec."End Date" < Rec."Start Date" then
+            Error('End Date cannot be earlier than Start Date.');
+
+        YearStart := Date2DMY(Rec."Start Date", 3);
+        YearEnd := Date2DMY(Rec."End Date", 3);
+
+        // Loop through each calendar year overlapping the period
+        for CurrYear := YearStart to YearEnd do begin
+            YearStartDate := DMY2Date(1, 1, CurrYear);
+            YearEndDate := DMY2Date(31, 12, CurrYear);
+
+            OverlapStart := Rec."Start Date";
+            if OverlapStart < YearStartDate then
+                OverlapStart := YearStartDate;
+
+            OverlapEnd := Rec."End Date";
+            if OverlapEnd > YearEndDate then
+                OverlapEnd := YearEndDate;
+
+            if OverlapEnd >= OverlapStart then begin
+                DaysInPeriod := OverlapEnd - OverlapStart + 1;
+                if IsLeapYear(CurrYear) then
+                    DaysInYear := 366
+                else
+                    DaysInYear := 365;
+
+                ProratedAmount += (Rec."Annual Amount" * DaysInPeriod) / DaysInYear;
+            end;
+        end;
+
+        // Apply round off on top of the prorated sum
+        Rec."Final Annual Amount" := ProratedAmount + Rec."Round off";
 
         Rec.Modify();
         CurrPage.Update();
