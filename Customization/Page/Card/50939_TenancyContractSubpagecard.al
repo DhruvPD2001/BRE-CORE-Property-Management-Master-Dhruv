@@ -59,7 +59,16 @@ page 50939 "Tenancy Contract SubPage Card"
                     Caption = 'End Date';
                     Lookup = true;
                 }
-
+                field(Invoiced; Rec.Invoiced)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Invoiced';
+                }
+                field("Invoiced and Paid"; Rec."Invoiced and Paid")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Invoiced and Paid';
+                }
                 field("Payment Type"; Rec."Payment Type")
                 {
                     ApplicationArea = All;

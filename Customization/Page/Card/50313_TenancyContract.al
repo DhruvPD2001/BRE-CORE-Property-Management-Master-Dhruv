@@ -387,7 +387,7 @@ page 50313 "Tenancy Contract Card"
                     Editable = false;
                 }
 
-                field("Balance Amount"; Rec."Security Deposit Amt. Received")
+                field("Security Deposit Amt. Received"; Rec."Security Deposit Amt. Received")
                 {
                     ApplicationArea = All;
                     Editable = false;
@@ -398,7 +398,7 @@ page 50313 "Tenancy Contract Card"
                         UpdateSecurityAmountReceived();
                     end;
                 }
-                field("Security Amount Received"; Rec."Security Amount Pending")
+                field("Security Amount Pending"; Rec."Security Amount Pending")
                 {
                     ApplicationArea = All;
                     Editable = false;
@@ -415,6 +415,26 @@ page 50313 "Tenancy Contract Card"
                     ApplicationArea = All;
                     Editable = false;
                     Caption = 'Security Deposit Amount Balance';
+                }
+                field("Carry Forward In"; Rec."Carry Forward In")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Carry Forward Out"; Rec."Carry Forward Out")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field(Adjustments; Rec.Adjustments)
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field(Refund; Rec.Refund)
+                {
+                    ApplicationArea = All;
+                    Editable = false;
                 }
             }
             field(IsCarryForwarded; Rec.IsCarryForwarded)
