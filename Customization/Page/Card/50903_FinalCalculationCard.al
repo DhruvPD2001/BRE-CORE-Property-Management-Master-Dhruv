@@ -97,7 +97,7 @@ page 50903 "Final Calculation Card"
                         RevenueCalculateOneTime();
                         RevenueCalculate();
                         PaymentDetailsFromPaymentSchedule2();
-
+                        CalculateFinalSummary();
                     end;
                 }
                 field("ContractYear(Termination Date)"; Rec."ContractYear(Termination Date)")
@@ -1151,6 +1151,38 @@ page 50903 "Final Calculation Card"
             IsReceivable := false;
             IsRefundable := false;
         end;
+    end;
+
+    procedure CalculateFinalSummary()
+    var
+        PendingReceivableGrid: Record "Pending Receviable Grid";
+        TerminationAddCharges: Record "Additional Charges Sub";
+        TotalRefundableAmount: Decimal;
+        TotalReceivableAmount: Decimal;
+    begin
+        PendingReceivableGrid.SetRange("Contract ID", Rec."Contract ID");
+        if PendingReceivableGrid.FindFirst() then begin
+            PendingReceivableGrid.CalcSums("Total Refundable", "Total Receivable");
+            TotalRefundableAmount := PendingReceivableGrid."Total Refundable";
+            TotalReceivableAmount := PendingReceivableGrid."Total Receivable";
+        end;
+
+        TerminationAddCharges.Reset();
+        TerminationAddCharges.SetRange("Contract ID", Rec."Contract ID");
+        TerminationAddCharges.CalcSums(Amount);
+        TotalReceivableAmount += TerminationAddCharges.Amount;
+
+        TotalRefundableAmount += Rec."Total Refundable Deposit";
+
+        Rec."Total Claim" := TotalReceivableAmount;
+        Rec."Total Refund" := TotalRefundableAmount;
+
+        Rec."Summery Net Balance" := Rec."Total Claim" - Rec."Total Refund";
+
+        if Rec."Summery Net Balance" < 0 then
+            Rec."Amount Refundable" := Abs(Rec."Summery Net Balance")
+        else
+            Rec."Net Receivable From The Tenant" := Rec."Summery Net Balance";
     end;
 
     var

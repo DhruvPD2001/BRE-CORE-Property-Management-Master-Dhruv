@@ -801,6 +801,7 @@ page 50329 "Single Unit Rent SubPage"
         DaysInYear: Integer;
         DaysInPeriod: Integer;
         ProratedAmount: Decimal;
+        LeapDay: Date; // date of Feb 29 for the current year (if applicable)
     begin
         ProratedAmount := 0;
 
@@ -833,9 +834,14 @@ page 50329 "Single Unit Rent SubPage"
 
             if OverlapEnd >= OverlapStart then begin
                 DaysInPeriod := OverlapEnd - OverlapStart + 1;
-                if IsLeapYear(CurrYear) then
-                    DaysInYear := 366
-                else
+                // Use 366 only if the overlap for this calendar year actually includes Feb 29.
+                if IsLeapYear(CurrYear) then begin
+                    LeapDay := DMY2Date(29, 2, CurrYear);
+                    if (OverlapStart <= LeapDay) and (OverlapEnd >= LeapDay) then
+                        DaysInYear := 366
+                    else
+                        DaysInYear := 365;
+                end else
                     DaysInYear := 365;
 
                 ProratedAmount += (Rec."Annual Amount" * DaysInPeriod) / DaysInYear;

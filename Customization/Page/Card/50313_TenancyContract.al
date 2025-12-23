@@ -416,6 +416,7 @@ page 50313 "Tenancy Contract Card"
                     Editable = false;
                     Caption = 'Security Deposit Amount Balance';
                 }
+
                 field("Carry Forward In"; Rec."Carry Forward In")
                 {
                     ApplicationArea = All;
@@ -436,6 +437,7 @@ page 50313 "Tenancy Contract Card"
                     ApplicationArea = All;
                     Editable = false;
                 }
+
             }
             field(IsCarryForwarded; Rec.IsCarryForwarded)
             {
@@ -1364,6 +1366,7 @@ page 50313 "Tenancy Contract Card"
                                             RentSubpage."Number of Days" := SU_lumpsum."SL_Number of Days";
                                             RentSubpage."Per Day Rent" := SU_lumpsum."SL_Per Day Rent";
                                             RentSubpage."Final Annual Amount" := SU_lumpsum."SL_Final Annual Amount";
+                                            RentSubpage."Unit ID" := SU_lumpsum."SL_Unit ID";
                                             RentSubpage.Insert();
                                             Clear(RentSubpage);
                                         end
@@ -1391,6 +1394,7 @@ page 50313 "Tenancy Contract Card"
                                             RentSubpage."Number of Days" := SU_samesquare."Number of Days";
                                             RentSubpage."Per Day Rent" := SU_samesquare."Per Day Rent";
                                             RentSubpage."Final Annual Amount" := SU_samesquare."Final Annual Amount";
+                                            RentSubpage."Unit ID" := SU_samesquare."Unit ID";
                                             RentSubpage.Insert();
                                             Clear(RentSubpage);
                                         end
@@ -1434,6 +1438,7 @@ page 50313 "Tenancy Contract Card"
                                                     RentSubpage."Number of Days" := MU_differentsquare."MD_Number of Days";
                                                     RentSubpage."Per Day Rent" := MU_differentsquare."MD_Per Day Rent";
                                                     RentSubpage."Final Annual Amount" := MU_differentsquare."MD_Final Annual Amount";
+                                                    RentSubpage."Unit ID" := MU_differentsquare."MD_Unit ID";
                                                     RentSubpage.Insert();
                                                     Clear(RentSubpage);
                                                 end
@@ -1464,6 +1469,7 @@ page 50313 "Tenancy Contract Card"
                                             RentSubpage."Number of Days" := MU_lumpsum."ML_Number of Days";
                                             RentSubpage."Per Day Rent" := MU_lumpsum."ML_Per Day Rent";
                                             RentSubpage."Final Annual Amount" := MU_lumpsum."ML_Final Annual Amount";
+                                            RentSubpage."Unit ID" := MU_lumpsum."ML_Unit ID";
                                             RentSubpage.Insert();
                                             Clear(RentSubpage);
                                         end
@@ -1491,6 +1497,7 @@ page 50313 "Tenancy Contract Card"
                                             RentSubpage."Number of Days" := MU_samesquare."MS_Number of Days";
                                             RentSubpage."Per Day Rent" := MU_samesquare."MS_Per Day Rent";
                                             RentSubpage."Final Annual Amount" := MU_samesquare."MS_Final Annual Amount";
+                                            RentSubpage."Unit ID" := MU_samesquare."MS_Unit ID";
                                             RentSubpage.Insert();
                                             Clear(RentSubpage);
                                         end
@@ -1654,6 +1661,7 @@ page 50313 "Tenancy Contract Card"
                         trigger OnDrillDown()
                         var
                             TenancyRecord: Record "Tenancy Contract"; // Replace with the actual table name
+                            TenancyContractSubpage: Record "Tenancy Contract SubPage";
                             FinalCalculation: Record "Final Calculation";
                             InstallmentStructure: Record "Revenue Structure Subpage1";
                             FinalSettlementRefund: Record FinalSettlementRefund;
@@ -1671,14 +1679,29 @@ page 50313 "Tenancy Contract Card"
                             FinalCalculation.SetRange("Tenant ID", Rec."Tenant ID");
 
                             if FinalCalculation.FindSet() then begin
-                                FinalCalculation."Contract ID" := Rec."Contract ID";
-                                FinalCalculation."Tenant ID" := Rec."Tenant ID";
-                                FinalCalculation."Contract Start Date" := Rec."Contract Start Date";
-                                FinalCalculation."Contract End Date" := Rec."Contract End Date";
-                                FinalCalculation."Unit Type" := Rec."Usage Type";
-                                FinalCalculation."Contract Amount" := Rec."Annual Rent Amount";
-                                FinalCalculation."Tenant Email" := Rec."Email Address";
-                                FinalCalculation."Tenant Name" := Rec."Customer Name";
+                                PopulateFinalCalculationFromTenancyContract(FinalCalculation);
+                                // FinalCalculation."Contract ID" := Rec."Contract ID";
+                                // FinalCalculation."Tenant ID" := Rec."Tenant ID";
+                                // FinalCalculation."Contract Start Date" := Rec."Contract Start Date";
+                                // FinalCalculation."Contract End Date" := Rec."Contract End Date";
+                                // FinalCalculation."Unit Type" := Rec."Usage Type";
+                                // FinalCalculation."Contract Amount" := Rec."Annual Rent Amount";
+                                // FinalCalculation."Tenant Email" := Rec."Email Address";
+                                // FinalCalculation."Tenant Name" := Rec."Customer Name";
+                                // FinalCalculation."Security Deposit" := Rec."Security Deposit Amount";
+                                // FinalCalculation."Adjustment Security Deposit" := Rec."Carry Forward Out";
+                                // FinalCalculation."Net Balance" := FinalCalculation."Security Deposit" - FinalCalculation."Adjustment Security Deposit";
+                                // TenancyContractSubpage.Reset();
+                                // TenancyContractSubpage.SetRange(ContractID, Rec."Contract ID");
+                                // TenancyContractSubpage.SetRange("Secondary Item Type", 'Chiller Deposit Amount');
+                                // if TenancyContractSubpage.FindFirst() then
+                                //     FinalCalculation."Chiller Deposit" := TenancyContractSubpage.Amount;
+
+                                // TenancyContractSubpage.Reset();
+                                // TenancyContractSubpage.SetRange(ContractID, Rec."Contract ID");
+                                // TenancyContractSubpage.SetRange("Secondary Item Type", 'Other Deposit');
+                                // if TenancyContractSubpage.FindFirst() then
+                                //     FinalCalculation."Other Deposit" := TenancyContractSubpage.Amount;
                                 // Add security deposit information
                                 // FinalCalculation."Security Deposit" := Rec."Security Deposit Amount";
                                 // FinalCalculation."Adjustment Security Deposit" := Rec."Security Balanced Amount";
@@ -1687,14 +1710,15 @@ page 50313 "Tenancy Contract Card"
                                 Message('Record Modifyed Successfully');
                             end else begin
                                 FinalCalculation.Init();
-                                FinalCalculation."Contract ID" := Rec."Contract ID";
-                                FinalCalculation."Tenant ID" := Rec."Tenant ID";
-                                FinalCalculation."Unit Type" := Rec."Usage Type";
-                                FinalCalculation."Contract Start Date" := Rec."Contract Start Date";
-                                FinalCalculation."Contract End Date" := Rec."Contract End Date";
-                                FinalCalculation."Contract Amount" := Rec."Annual Rent Amount";
-                                FinalCalculation."Tenant Email" := Rec."Email Address";
-                                FinalCalculation."Tenant Name" := Rec."Customer Name";
+                                PopulateFinalCalculationFromTenancyContract(FinalCalculation);
+                                // FinalCalculation."Contract ID" := Rec."Contract ID";
+                                // FinalCalculation."Tenant ID" := Rec."Tenant ID";
+                                // FinalCalculation."Unit Type" := Rec."Usage Type";
+                                // FinalCalculation."Contract Start Date" := Rec."Contract Start Date";
+                                // FinalCalculation."Contract End Date" := Rec."Contract End Date";
+                                // FinalCalculation."Contract Amount" := Rec."Annual Rent Amount";
+                                // FinalCalculation."Tenant Email" := Rec."Email Address";
+                                // FinalCalculation."Tenant Name" := Rec."Customer Name";
                                 // Add security deposit information
                                 // FinalCalculation."Security Deposit" := Rec."Security Deposit Amount";
                                 // FinalCalculation."Adjustment Security Deposit" := Rec."Security Balanced Amount";
@@ -2203,5 +2227,37 @@ page 50313 "Tenancy Contract Card"
         end;
     end;
 
+    procedure PopulateFinalCalculationFromTenancyContract(var aFinalCalculation: Record "Final Calculation")
+    var
+        TenancyContractSubpage: Record "Tenancy Contract SubPage";
+    begin
+        aFinalCalculation."Contract ID" := Rec."Contract ID";
+        aFinalCalculation."Tenant ID" := Rec."Tenant ID";
+        aFinalCalculation."Contract Start Date" := Rec."Contract Start Date";
+        aFinalCalculation."Contract End Date" := Rec."Contract End Date";
+        aFinalCalculation."Unit Type" := Rec."Usage Type";
+        aFinalCalculation."Contract Amount" := Rec."Annual Rent Amount";
+        aFinalCalculation."Tenant Email" := Rec."Email Address";
+        aFinalCalculation."Tenant Name" := Rec."Customer Name";
+        aFinalCalculation."Security Deposit" := Rec."Security Deposit Amount";
+        aFinalCalculation."Adjustment Security Deposit" := Rec."Carry Forward Out";
+        aFinalCalculation."Net Balance" := aFinalCalculation."Security Deposit" - aFinalCalculation."Adjustment Security Deposit";
+
+        // Add Chiller Deposit
+        TenancyContractSubpage.Reset();
+        TenancyContractSubpage.SetRange(ContractID, Rec."Contract ID");
+        TenancyContractSubpage.SetRange("Secondary Item Type", 'Chiller Deposit Amount');
+        if TenancyContractSubpage.FindFirst() then
+            aFinalCalculation."Chiller Deposit" := TenancyContractSubpage.Amount;
+
+        // Add Other Deposit
+        TenancyContractSubpage.Reset();
+        TenancyContractSubpage.SetRange(ContractID, Rec."Contract ID");
+        TenancyContractSubpage.SetRange("Secondary Item Type", 'Other Deposit');
+        if TenancyContractSubpage.FindFirst() then
+            aFinalCalculation."Other Deposit" := TenancyContractSubpage.Amount;
+
+        aFinalCalculation."Total Refundable Deposit" := aFinalCalculation."Net Balance" + aFinalCalculation."Chiller Deposit" + aFinalCalculation."Other Deposit";
+    end;
 
 }

@@ -687,6 +687,7 @@ page 50118 "Merge SameSqure SubPage"
         DaysInYear: Integer;
         DaysInPeriod: Integer;
         ProratedAmount: Decimal;
+        LeapDay: Date;
     begin
         ProratedAmount := 0;
 
@@ -718,9 +719,13 @@ page 50118 "Merge SameSqure SubPage"
 
             if OverlapEnd >= OverlapStart then begin
                 DaysInPeriod := OverlapEnd - OverlapStart + 1;
-                if IsLeapYear(CurrYear) then
-                    DaysInYear := 366
-                else
+                if IsLeapYear(CurrYear) then begin
+                    LeapDay := DMY2Date(29, 2, CurrYear);
+                    if (OverlapStart <= LeapDay) and (OverlapEnd >= LeapDay) then
+                        DaysInYear := 366
+                    else
+                        DaysInYear := 365;
+                end else
                     DaysInYear := 365;
 
                 ProratedAmount += (Rec."MS_Annual Amount" * DaysInPeriod) / DaysInYear;

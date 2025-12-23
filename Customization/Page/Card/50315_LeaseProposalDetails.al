@@ -340,7 +340,7 @@ page 50315 "Lease Proposal Card"
                 // }
             }
 
-            group("Deposit and Fees")
+            group("Security Deposit")
             {
                 field("Security Deposit Amount"; rec."Security Deposit Amount")
                 {
