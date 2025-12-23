@@ -211,6 +211,9 @@ page 50946 "Rent Calculation SubCard"
                         DaysInTargetMonth: Integer;
                         DaysInPeriod: Integer;
                         counter: Integer;
+                        OriginalStartDate: Date;
+                        YearNo: Integer;
+                        UnitId: Code[20];
                     begin
                         tenancyContract.Get(Rec."Contract ID");
                         InstallmentStructure.SetRange("RC ID", Rec."RC ID");
@@ -219,6 +222,7 @@ page 50946 "Rent Calculation SubCard"
                         end;
 
                         InstallmentStartDate := GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd);
+                        OriginalStartDate := InstallmentStartDate;
                         OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
                         InstallmentEndDate := 0D;
                         NumInstallments := RevenueStructure."Yearly No. of Installment";
@@ -237,6 +241,15 @@ page 50946 "Rent Calculation SubCard"
                         if RevenueStructure.FindSet() then begin
                             // Loop through Revenue Structure to calculate and populate or update Installment Structure
                             repeat
+                                if RevenueStructure.Year < YearNo then begin
+                                    InstallmentStartDate := OriginalStartDate;
+                                    InstallmentEndDate := 0D;
+                                end;
+                                if RevenueStructure."Unit ID" <> UnitId then begin
+                                    InstallmentStartDate := OriginalStartDate;
+                                    InstallmentEndDate := 0D;
+                                end;
+
                                 AnnualAmount := RevenueStructure."Final Annual Amount";
                                 StartDate := RevenueStructure."Period Start Date";
                                 EndDate := RevenueStructure."Period End Date";
@@ -381,8 +394,8 @@ page 50946 "Rent Calculation SubCard"
 
 
                                 end;
-
-
+                                UnitId := RevenueStructure."Unit ID";
+                                YearNo := RevenueStructure.Year;
                             until RevenueStructure.Next() = 0;
                             Message('Data Create Successfully!');
                         end else
