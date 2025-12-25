@@ -88,16 +88,22 @@ page 50903 "Final Calculation Card"
                         Fetchperdayrent();
                         PopulateRevenueCalculationGrid();
                         GetDataTenancyContract();
+                        PopulateRevisedCalculationGrid();
                         BillingCalcGridRentCalc();
                         BillingCalcridTenancyContractSubpge();
+                        PopulateBillingCalculationGrid();
                         ReciveableCalcGridRentCalc();
                         ReciveableCalcridTenancyContractSubpge();
+                        PopulatePendingReceivableGrid();
+                        RecevieablePositiveamount();
                         RentCalculate();
                         OtherPaymentCalculate();
                         RevenueCalculateOneTime();
                         RevenueCalculate();
                         PaymentDetailsFromPaymentSchedule2();
-                        CalculateFinalSummary();
+
+
+                        Rec.CalculateFinalSummary(Rec);
                     end;
                 }
                 field("ContractYear(Termination Date)"; Rec."ContractYear(Termination Date)")
@@ -697,6 +703,209 @@ page 50903 "Final Calculation Card"
                 Clear(FinalRevCalcGrid1);
             until TenancyContractLine1.Next() = 0;
     end;
+    /////////////////////////////// Revised Calculation /////////////////
+
+    procedure PopulateRevisedCalculationGrid()
+    var
+        FinalRevCalcGridRec2: Record "Final Revenue Calculation Grid";
+    begin
+        FinalRevCalcGridRec2.SetRange("Contract ID", Rec."Contract ID");
+        if FinalRevCalcGridRec2.FindSet() then
+            repeat
+                GetAnnualRentAmountOfTerminationDateFromRentCalculation(FinalRevCalcGridRec2);
+                GetAnnualAmountFromRevenueStructure(FinalRevCalcGridRec2);
+                OneTimePaymentTypeRevisedRecalculatedAmount(FinalRevCalcGridRec2);
+                GetRentAmountFromRentCalculation(FinalRevCalcGridRec2);
+                GetRevisedAmountcalculatrefromRevenueStructuresubpage(FinalRevCalcGridRec2);
+                DifferenceAmountCalculation(FinalRevCalcGridRec2);
+
+            until FinalRevCalcGridRec2.Next() = 0;
+    end;
+
+    procedure GetAnnualRentAmountOfTerminationDateFromRentCalculation(var FinalRevenueCalculationGridRec: Record "Final Revenue Calculation Grid")
+    var
+        RentCalculation2: Record "Rent Calculation Subpage";
+    // FinalRevenueCalculationGridRec: Record "Final Revenue Calculation Grid";
+    begin
+        RentCalculation2.SetRange("Contract ID", FinalRevenueCalculationGridRec."Contract ID");
+        RentCalculation2.SetRange("Year", FinalRevenueCalculationGridRec."ContractYear(Termination Date)");
+        RentCalculation2.SetRange("Secondary Item Type", FinalRevenueCalculationGridRec."Revenue Description");
+        if RentCalculation2.FindSet() then
+            FinalRevenueCalculationGridRec."Annual Rent Amount TermiYear" := 0;
+        FinalRevenueCalculationGridRec."Per Day Rent" := 0;
+        repeat
+            FinalRevenueCalculationGridRec."Annual Rent Amount TermiYear" += RentCalculation2."Final Annual Amount";
+            FinalRevenueCalculationGridRec."Per Day Rent" += RentCalculation2."Per Day Rent";
+            FinalRevenueCalculationGridRec.Modify();
+        until RentCalculation2.Next() = 0;
+    end;
+
+    procedure GetAnnualAmountFromRevenueStructure(var FinalRevenueCalculationGridRec1: Record "Final Revenue Calculation Grid")
+    var
+        RevenueStructureSubpage: Record "Revenue Structure Subpage";
+
+    begin
+        RevenueStructureSubpage.SetRange("Contract ID", FinalRevenueCalculationGridRec1."Contract ID");
+        RevenueStructureSubpage.SetRange("Year", FinalRevenueCalculationGridRec1."ContractYear(Termination Date)");
+        RevenueStructureSubpage.SetRange("Secondary Item Type", FinalRevenueCalculationGridRec1."Revenue Description");
+
+        if RevenueStructureSubpage.FindSet() then
+            repeat
+
+                FinalRevenueCalculationGridRec1."Annual Rent Amount TermiYear" := RevenueStructureSubpage."Final Annual Amount";
+                FinalRevenueCalculationGridRec1."Per Day Rent" := RevenueStructureSubpage."Final Annual Amount" / RevenueStructureSubpage."Number of Days";
+                FinalRevenueCalculationGridRec1.Modify();
+            until RevenueStructureSubpage.Next() = 0;
+
+    end;
+
+    procedure OneTimePaymentTypeRevisedRecalculatedAmount(var FinalRevenueCalculationGridRec2: Record "Final Revenue Calculation Grid")
+    var
+        TenancyContractsubpage: Record "Tenancy Contract Subpage";
+    begin
+        TenancyContractsubpage.SetRange(ContractID, FinalRevenueCalculationGridRec2."Contract ID");
+        TenancyContractsubpage.SetRange("Payment Type", 1);
+        TenancyContractsubpage.SetRange("Secondary Item Type", FinalRevenueCalculationGridRec2."Revenue Description");
+        if TenancyContractsubpage.FindSet() then
+            repeat
+                FinalRevenueCalculationGridRec2."Revised Amount" := TenancyContractsubpage.Amount;
+                FinalRevenueCalculationGridRec2."Revised VAT %" := TenancyContractsubpage."VAT %";
+                if FinalRevenueCalculationGridRec2."Revised VAT %" = 1 then
+                    FinalRevenueCalculationGridRec2."Revised VAT %" := 5
+                else
+                    FinalRevenueCalculationGridRec2."Revised VAT %" := 0;
+                FinalRevenueCalculationGridRec2."Revised VAT" := TenancyContractsubpage."VAT Amount";
+                FinalRevenueCalculationGridRec2."Revised Amount Incl." := TenancyContractsubpage."Amount Including VAT";
+                FinalRevenueCalculationGridRec2.Modify();
+            //  Clear(FinalRevenueCalculation);
+            until TenancyContractsubpage.Next() = 0;
+
+    end;
+
+
+    procedure GetRentAmountFromRentCalculation(var FinalRevenueCalculationGridRec3: Record "Final Revenue Calculation Grid")
+    var
+        RentCalculation: Record "Rent Calculation Subpage";
+        Totalamount: Decimal;
+        RentCalculation1: Record "Rent Calculation Subpage";
+        TotalVATAmount: Decimal;
+        calculateteminationamount: Decimal;
+        FinalReviseAmount: Decimal;
+
+    begin
+        Totalamount := 0;
+        RentCalculation.Reset();
+        RentCalculation.SetRange("Contract ID", FinalRevenueCalculationGridRec3."Contract ID");
+        RentCalculation.SetFilter(Year, '1..%1', FinalRevenueCalculationGridRec3."ContractYear(Termination Date)");
+
+        if RentCalculation.FindSet() then begin
+            repeat
+                // Sum up Final Annual Amount values
+                TotalAmount += RentCalculation."Final Annual Amount";
+                TotalVATAmount += RentCalculation."VAT Amount"
+            until RentCalculation.Next() = 0;
+        end;
+        RentCalculation1.SetRange("Contract ID", FinalRevenueCalculationGridRec3."Contract ID");
+        RentCalculation1.SetRange("Secondary Item Type", FinalRevenueCalculationGridRec3."Revenue Description");
+        if RentCalculation1.FindSet() then
+            repeat
+                FinalReviseAmount := Totalamount - FinalRevenueCalculationGridRec3."Annual Rent Amount TermiYear";
+                calculateteminationamount := FinalRevenueCalculationGridRec3."Per Day Rent" * FinalRevenueCalculationGridRec3."Total No. Of Days"; // 3rd year 365 days - termination 71 days = 294 so calculate 294 * per day rent 122.67 = FinalReviseAmount variable 
+                FinalRevenueCalculationGridRec3."Revised Amount" := FinalReviseAmount + calculateteminationamount;
+                FinalRevenueCalculationGridRec3."Revised VAT %" := RentCalculation1."VAT %";
+
+                if FinalRevenueCalculationGridRec3."Revised VAT %" = 1 then
+                    FinalRevenueCalculationGridRec3."Revised VAT %" := 5
+                else
+                    FinalRevenueCalculationGridRec3."Revised VAT %" := 0;
+                // TotalVATAmount := FinalRevenueCalculationGridRec3."Revised Amount" - (FinalRevenueCalculationGridRec3."Revised Amount" / (1 + (FinalRevenueCalculationGridRec3."Revised VAT %" / 100)));
+                // TotalVATAmount := Round(TotalVATAmount, 0.01);
+                TotalVATAmount := (FinalRevenueCalculationGridRec3."Revised Amount" * FinalRevenueCalculationGridRec3."Revised VAT %") / 100;
+
+                FinalRevenueCalculationGridRec3."Revised VAT" := TotalVATAmount;
+                FinalRevenueCalculationGridRec3."Revised Amount Incl." := FinalRevenueCalculationGridRec3."Revised Amount" + FinalRevenueCalculationGridRec3."Revised VAT";
+                FinalRevenueCalculationGridRec3.Modify();
+            until RentCalculation1.Next() = 0;
+    end;
+
+    procedure GetRevisedAmountcalculatrefromRevenueStructuresubpage(var FinalRevenueCalculationGridRec4: Record "Final Revenue Calculation Grid")
+    var
+        RevenueStructureSubpage1: Record "Revenue Structure Subpage";
+        ChargesItemTotalamount: Decimal;
+        RevenueStructureSubpage2: Record "Revenue Structure Subpage";
+        ChargesItemTotalVATAmount: Decimal;
+        calculateteminationamount1: Decimal;
+        FinalReviseAmount: Decimal;
+
+
+    begin
+        ChargesItemTotalamount := 0;
+        RevenueStructureSubpage1.Reset();
+        RevenueStructureSubpage1.SetRange("Contract ID", FinalRevenueCalculationGridRec4."Contract ID");
+        RevenueStructureSubpage1.SetRange("Secondary Item Type", FinalRevenueCalculationGridRec4."Revenue Description");
+        RevenueStructureSubpage1.SetFilter(Year, '1..%1', FinalRevenueCalculationGridRec4."ContractYear(Termination Date)");
+
+
+        if RevenueStructureSubpage1.FindSet() then begin
+            repeat
+                // Sum up Final Annual Amount values
+                ChargesItemTotalamount += RevenueStructureSubpage1."Final Annual Amount";
+                ChargesItemTotalVATAmount += RevenueStructureSubpage1."VAT Amount"
+            until RevenueStructureSubpage1.Next() = 0;
+        end;
+        RevenueStructureSubpage2.SetRange("Contract ID", FinalRevenueCalculationGridRec4."Contract ID");
+        RevenueStructureSubpage2.SetRange("Secondary Item Type", FinalRevenueCalculationGridRec4."Revenue Description");
+        if RevenueStructureSubpage2.FindSet() then
+            repeat
+                FinalReviseAmount := ChargesItemTotalamount - FinalRevenueCalculationGridRec4."Annual Rent Amount TermiYear";
+                calculateteminationamount1 := FinalRevenueCalculationGridRec4."Per Day Rent" * FinalRevenueCalculationGridRec4."Total No. Of Days"; // 3rd year 365 days - termination 71 days = 294 so calculate 294 * per day rent 122.67 = FinalReviseAmount variable 
+                FinalRevenueCalculationGridRec4."Revised Amount" := FinalReviseAmount + calculateteminationamount1;
+                FinalRevenueCalculationGridRec4."Revised VAT %" := RevenueStructureSubpage2."VAT %";
+                if FinalRevenueCalculationGridRec4."Revised VAT %" = 1 then
+                    FinalRevenueCalculationGridRec4."Revised VAT %" := 5
+                else
+                    FinalRevenueCalculationGridRec4."Revised VAT %" := 0;
+
+                // ChargesItemTotalVATAmount := FinalRevenueCalculationGridRec4."Revised Amount" - (FinalRevenueCalculationGridRec4."Revised Amount" / (1 + (FinalRevenueCalculationGridRec4."Revised VAT %" / 100)));
+                // ChargesItemTotalVATAmount := Round(ChargesItemTotalVATAmount, 0.01);
+                ChargesItemTotalVATAmount := (FinalRevenueCalculationGridRec4."Revised Amount" * FinalRevenueCalculationGridRec4."Revised VAT %") / 100;
+
+                FinalRevenueCalculationGridRec4."Revised VAT" := ChargesItemTotalVATAmount;
+                FinalRevenueCalculationGridRec4."Revised Amount Incl." := FinalRevenueCalculationGridRec4."Revised Amount" + FinalRevenueCalculationGridRec4."Revised VAT";
+                FinalRevenueCalculationGridRec4.Modify();
+
+            until RevenueStructureSubpage2.Next() = 0;
+    end;
+
+    procedure DifferenceAmountCalculation(var FinalRevenueCalculationGridRec5: Record "Final Revenue Calculation Grid")
+    var
+
+    begin
+
+
+        FinalRevenueCalculationGridRec5."Difference Amount" := FinalRevenueCalculationGridRec5."Original Amount" - FinalRevenueCalculationGridRec5."Revised Amount";
+        FinalRevenueCalculationGridRec5."Difference VAT" := FinalRevenueCalculationGridRec5."Original VAT" - FinalRevenueCalculationGridRec5."Revised VAT";
+        FinalRevenueCalculationGridRec5."Difference Amount Incl." := FinalRevenueCalculationGridRec5."Original Amount Incl." - FinalRevenueCalculationGridRec5."Revised Amount Incl.";
+        FinalRevenueCalculationGridRec5.Modify();
+
+
+    end;
+
+
+    ////////////////////// END REVISED CALCULATION ////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     procedure GetContractTerminationYear()
     var
@@ -1042,6 +1251,154 @@ page 50903 "Final Calculation Card"
     end;
 
 
+    ////////////////// END /////////////////////////
+
+
+    ///////////////////////// Billing Invoiced Calculation //////////////////////
+
+
+    procedure PopulateBillingCalculationGrid()
+    var
+        FinalBillingGridRec: Record "Final Billing Calculation Grid";
+    begin
+        FinalBillingGridRec.SetRange("Contract ID", Rec."Contract ID");
+        if FinalBillingGridRec.FindSet() then
+            repeat
+                FetchDataFromRevenueCalcGrid(FinalBillingGridRec);
+                Invoiceamountfrompaymentscheule(FinalBillingGridRec);
+                DifferenceAmountCalculationBilling(FinalBillingGridRec);
+                CreditNoteTotalAmount(FinalBillingGridRec);
+                InvoiceTotalAmount(FinalBillingGridRec);
+            until FinalBillingGridRec.Next() = 0;
+    end;
+
+    procedure FetchDataFromRevenueCalcGrid(var BillingCalcGrid: Record "Final Billing Calculation Grid")
+    var
+        RevenueGrid: Record "Final Revenue Calculation Grid";
+    begin
+        RevenueGrid.SetRange("Contract ID", BillingCalcGrid."Contract ID");
+        RevenueGrid.SetRange("Revenue Description", BillingCalcGrid.RevenueDescription);
+        if RevenueGrid.FindSet() then
+            repeat
+                BillingCalcGrid.RevisedAmount := RevenueGrid."Revised Amount";
+                BillingCalcGrid.RevisedVAT := RevenueGrid."Revised VAT";
+                BillingCalcGrid.RevisedAmountInclVAT := RevenueGrid."Revised Amount Incl.";
+                BillingCalcGrid.Modify();
+            until RevenueGrid.Next() = 0;
+
+    end;
+
+
+    procedure Invoiceamountfrompaymentscheule(var BillingCalcGrid: Record "Final Billing Calculation Grid")
+    var
+        PaymentScheduleRec: Record "Payment Schedule2";
+        Totalamount: Decimal;
+        VATAmount: Decimal;
+        AmountIncVAT: Decimal;
+    begin
+        Totalamount := 0;
+        PaymentScheduleRec.Reset();
+        PaymentScheduleRec.SetRange("Contract ID", BillingCalcGrid."Contract ID");
+        //PaymentScheduleRec.SetFilter("Due Date", '<%1', Rec."Termination Date");
+        PaymentScheduleRec.SetFilter("Workflow frequency date", '<=%1', BillingCalcGrid."Termination Date");
+        PaymentScheduleRec.SetRange(Invoiced, true);
+        PaymentScheduleRec.SetFilter("Invoice Approval Status", 'Approved');
+        PaymentScheduleRec.SetRange("Secondary Item Type", BillingCalcGrid.RevenueDescription);
+
+        if PaymentScheduleRec.FindSet() then begin
+            repeat
+                Totalamount += PaymentScheduleRec.Amount;
+                VATAmount += PaymentScheduleRec."VAT Amount";
+                AmountIncVAT += PaymentScheduleRec."Amount Including VAT";
+
+            until PaymentScheduleRec.Next() = 0;
+        end;
+        PaymentScheduleRec.SetRange("Contract ID", BillingCalcGrid."Contract ID");
+        PaymentScheduleRec.SetRange("Secondary Item Type", BillingCalcGrid.RevenueDescription);
+
+        if PaymentScheduleRec.FindSet() then
+            repeat
+                BillingCalcGrid.InvoicedAmount := Totalamount;
+                BillingCalcGrid.InvoicedVAT := VATAmount;
+                BillingCalcGrid.InvoicedAmountInclVAT := AmountIncVAT;
+                BillingCalcGrid.Modify();
+            until PaymentScheduleRec.Next() = 0;
+    end;
+
+
+
+
+    procedure CreditNoteTotalAmount(var BillingCalcGrid: Record "Final Billing Calculation Grid")
+    var
+        TotalPositiveAmount: Decimal;
+        billingcalculationgird1: Record "Final Billing Calculation Grid";
+        billingcalculationgird2: Record "Final Billing Calculation Grid";
+    begin
+        // Calculate total positive difference for the whole contract
+        TotalPositiveAmount := 0;
+        billingcalculationgird1.SetRange("Contract ID", BillingCalcGrid."Contract ID");
+        billingcalculationgird1.SetFilter("DifferenceAmountInclVAT", '>%1', 0);
+        if billingcalculationgird1.FindSet() then
+            repeat
+                TotalPositiveAmount += billingcalculationgird1."DifferenceAmountInclVAT";
+            until billingcalculationgird1.Next() = 0;
+
+        // Write the same (absolute) total to every grid record for this contract
+        billingcalculationgird2.SetRange("Contract ID", BillingCalcGrid."Contract ID");
+        if billingcalculationgird2.FindSet() then
+            repeat
+                billingcalculationgird2."Credit Note To Be Raised" := Abs(TotalPositiveAmount);
+                billingcalculationgird2."Credit Note Amount" := Abs(TotalPositiveAmount);
+                billingcalculationgird2.Modify();
+            until billingcalculationgird2.Next() = 0;
+    end;
+
+
+    procedure InvoiceTotalAmount(var BillingCalcGrid: Record "Final Billing Calculation Grid")
+    var
+        TotalNegativeDifference: Decimal;
+        billingcalculationgird1: Record "Final Billing Calculation Grid";
+        billingcalculationgird2: Record "Final Billing Calculation Grid";
+    begin
+        // Calculate total negative difference for the whole contract
+        TotalNegativeDifference := 0;
+        billingcalculationgird1.SetRange("Contract ID", BillingCalcGrid."Contract ID");
+        billingcalculationgird1.SetFilter("DifferenceAmountInclVAT", '<%1', 0);
+        if billingcalculationgird1.FindSet() then
+            repeat
+                TotalNegativeDifference += billingcalculationgird1."DifferenceAmountInclVAT";
+            until billingcalculationgird1.Next() = 0;
+
+        // Write the same (absolute) total to every grid record for this contract
+        billingcalculationgird2.SetRange("Contract ID", BillingCalcGrid."Contract ID");
+        if billingcalculationgird2.FindSet() then
+            repeat
+                // Keep already invoiced lines at zero (existing business rule)
+                if billingcalculationgird2.Invoiced then
+                    billingcalculationgird2."Invoice To Be Raised" := 0
+                else
+                    billingcalculationgird2."Invoice To Be Raised" := Abs(TotalNegativeDifference);
+                billingcalculationgird2."Invoice Amount" := Abs(TotalNegativeDifference);
+                billingcalculationgird2.Modify();
+            until billingcalculationgird2.Next() = 0;
+    end;
+
+    procedure DifferenceAmountCalculationBilling(var BillingCalcGrid: Record "Final Billing Calculation Grid")
+    var
+
+    begin
+
+        BillingCalcGrid."DifferenceAmount" := BillingCalcGrid.InvoicedAmount - BillingCalcGrid.RevisedAmount;
+        BillingCalcGrid."DifferenceVAT" := BillingCalcGrid.InvoicedVAT - BillingCalcGrid.RevisedVAT;
+        BillingCalcGrid.DifferenceAmountInclVAT := BillingCalcGrid.InvoicedAmountInclVAT - BillingCalcGrid.RevisedAmountInclVAT;
+        BillingCalcGrid.Modify();
+
+    end;
+
+
+
+    ////////////////////// End Billing Invoiced Calculation //////////////////////
+
 
     /////// START POPULATED DATA IN PENDING RECIVEABLE //////////////////////
 
@@ -1153,37 +1510,103 @@ page 50903 "Final Calculation Card"
         end;
     end;
 
-    procedure CalculateFinalSummary()
+    //////////////////////// START PENDING RECIVEABLE CALCULATION //////////////////////
+
+    procedure PopulatePendingReceivableGrid()
     var
         PendingReceivableGrid: Record "Pending Receviable Grid";
-        TerminationAddCharges: Record "Additional Charges Sub";
-        TotalRefundableAmount: Decimal;
-        TotalReceivableAmount: Decimal;
     begin
         PendingReceivableGrid.SetRange("Contract ID", Rec."Contract ID");
-        if PendingReceivableGrid.FindFirst() then begin
-            PendingReceivableGrid.CalcSums("Total Refundable", "Total Receivable");
-            TotalRefundableAmount := PendingReceivableGrid."Total Refundable";
-            TotalReceivableAmount := PendingReceivableGrid."Total Receivable";
-        end;
+        if PendingReceivableGrid.FindSet() then
+            repeat
+                FetchDataFromRevenueCalcGrid(PendingReceivableGrid);
+                Recvieableamountfrompaymentscheule(PendingReceivableGrid);
+                DifferenceAmountCalculationReceivable(PendingReceivableGrid);
+            //  RecevieablePositiveamount(PendingReceivableGrid);
+            until PendingReceivableGrid.Next() = 0;
 
-        TerminationAddCharges.Reset();
-        TerminationAddCharges.SetRange("Contract ID", Rec."Contract ID");
-        TerminationAddCharges.CalcSums(Amount);
-        TotalReceivableAmount += TerminationAddCharges.Amount;
 
-        TotalRefundableAmount += Rec."Total Refundable Deposit";
-
-        Rec."Total Claim" := TotalReceivableAmount;
-        Rec."Total Refund" := TotalRefundableAmount;
-
-        Rec."Summery Net Balance" := Rec."Total Claim" - Rec."Total Refund";
-
-        if Rec."Summery Net Balance" < 0 then
-            Rec."Amount Refundable" := Abs(Rec."Summery Net Balance")
-        else
-            Rec."Net Receivable From The Tenant" := Rec."Summery Net Balance";
     end;
+
+    procedure FetchDataFromRevenueCalcGrid(var pendingReceiveable: Record "Pending Receviable Grid")
+    var
+        RevenueGrid: Record "Final Revenue Calculation Grid";
+    begin
+        RevenueGrid.SetRange("Contract ID", pendingReceiveable."Contract ID");
+        RevenueGrid.SetRange("Revenue Description", pendingReceiveable.RevenueDescription);
+        if RevenueGrid.FindSet() then
+            repeat
+                pendingReceiveable.RevisedAmount := RevenueGrid."Revised Amount";
+                pendingReceiveable.RevisedVAT := RevenueGrid."Revised VAT";
+                pendingReceiveable.RevisedAmountInclVAT := RevenueGrid."Revised Amount Incl.";
+                pendingReceiveable.Modify();
+            until RevenueGrid.Next() = 0;
+
+    end;
+
+    procedure Recvieableamountfrompaymentscheule(var pendingReceiveable: Record "Pending Receviable Grid")
+    var
+        PaymentScheduleRec: Record "Payment Schedule2";
+        Totalamount: Decimal;
+        VATAmount: Decimal;
+        AmountIncVAT: Decimal;
+    begin
+        Totalamount := 0;
+        PaymentScheduleRec.Reset();
+        PaymentScheduleRec.SetRange("Contract ID", pendingReceiveable."Contract ID");
+        PaymentScheduleRec.SetFilter("Due Date", '<=%1', pendingReceiveable."Termination Date");
+        PaymentScheduleRec.SetRange("Payment Status", 'Received');
+        PaymentScheduleRec.SetRange("Secondary Item Type", pendingReceiveable.RevenueDescription);
+        if PaymentScheduleRec.FindSet() then
+            repeat
+                Totalamount += PaymentScheduleRec.Amount;
+                VATAmount += PaymentScheduleRec."VAT Amount";
+                AmountIncVAT += PaymentScheduleRec."Amount Including VAT";
+
+            until PaymentScheduleRec.Next() = 0;
+
+        PaymentScheduleRec.SetRange("Contract ID", pendingReceiveable."Contract ID");
+        PaymentScheduleRec.SetRange("Secondary Item Type", pendingReceiveable.RevenueDescription);
+        if PaymentScheduleRec.FindSet() then
+            repeat
+                pendingReceiveable.ReceiptsAmount := Totalamount;
+                pendingReceiveable.ReceiptsVAT := VATAmount;
+                pendingReceiveable.ReceiptsAmountInclVAT := AmountIncVAT;
+                pendingReceiveable.Modify();
+            until PaymentScheduleRec.Next() = 0;
+    end;
+
+    procedure DifferenceAmountCalculationReceivable(var RecvieableCalcGrid: Record "Pending Receviable Grid")
+
+    begin
+
+        RecvieableCalcGrid.DifferenceAmount := RecvieableCalcGrid.RevisedAmount - RecvieableCalcGrid.ReceiptsAmount;
+        RecvieableCalcGrid.DifferenceVAT := RecvieableCalcGrid.RevisedVAT - RecvieableCalcGrid.ReceiptsVAT;
+        RecvieableCalcGrid.DifferenceAmountInclVAT := RecvieableCalcGrid.RevisedAmountInclVAT - RecvieableCalcGrid.ReceiptsAmountInclVAT;
+        RecvieableCalcGrid.Modify();
+
+    end;
+
+    procedure RecevieablePositiveamount()
+    var
+        pendingReceieableRecGrid: Record "Pending Receviable Grid";
+    begin
+        pendingReceieableRecGrid.SetRange("Contract ID", Rec."Contract ID");
+        if pendingReceieableRecGrid.FindSet() then
+            repeat
+                pendingReceieableRecGrid.CalcFields("Total DifferenceAmountIncl.VAT");
+                if pendingReceieableRecGrid."Total DifferenceAmountIncl.VAT" < 0 then begin
+                    pendingReceieableRecGrid."Total Refundable" := Abs(pendingReceieableRecGrid."Total DifferenceAmountIncl.VAT");
+                    pendingReceieableRecGrid.Modify();
+                end else begin
+                    pendingReceieableRecGrid."Total Receivable" := pendingReceieableRecGrid."Total DifferenceAmountIncl.VAT";
+                    pendingReceieableRecGrid.Modify();
+
+                end;
+            until pendingReceieableRecGrid.Next() = 0;
+    end;
+
+    //////////////////////// END PENDING RECIVEABLE CALCULATION //////////////////////
 
     var
         IsReceivable: Boolean;
