@@ -532,7 +532,11 @@ page 50903 "Final Calculation Card"
                     end;
                 }
             }
-
+            part("Adjustment Deposits"; "Adjustment Deposits")
+            {
+                SubPageLink = "Contract ID" = FIELD("Contract ID");
+                ApplicationArea = All;
+            }
             group("FinalSettlemt")
             {
                 Caption = 'Final Settlement';
