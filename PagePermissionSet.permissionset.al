@@ -207,5 +207,7 @@ permissionset 50101 PagePermissionSet
         codeunit SendListPendingCreditNoteInv = X,
         page OverduePaymentmodelist = X,
         codeunit "Attach Credit Memo Report" = X,
-        codeunit "Attach Invoice Report" = X;
+        codeunit "Attach Invoice Report" = X,
+        codeunit "Ledger Entries Event Handler" = X,
+        page "Adjustment Deposits" = X;
 }
