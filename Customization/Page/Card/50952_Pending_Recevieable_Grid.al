@@ -160,14 +160,6 @@ page 50952 "Pending Recevieable Grid"
         }
     }
 
-    trigger OnAfterGetRecord()
-    var
-    begin
-        FetchDataFromRevenueCalcGrid();
-        Recvieableamountfrompaymentscheule();
-        DifferenceAmountCalculation();
-        GetpositiveAmount();
-    end;
 
     procedure CreateSecurityDepositCreditMemo()
     var
@@ -311,81 +303,5 @@ page 50952 "Pending Recevieable Grid"
         saleline."Contract ID" := paymentScheduleRec1."Contract ID";
         saleline.Insert();
 
-    end;
-
-
-
-
-
-    procedure FetchDataFromRevenueCalcGrid()
-    var
-        RevenueGrid: Record "Final Revenue Calculation Grid";
-    begin
-        RevenueGrid.SetRange("Contract ID", Rec."Contract ID");
-        RevenueGrid.SetRange("Revenue Description", Rec.RevenueDescription);
-        if RevenueGrid.FindSet() then
-            repeat
-                Rec.RevisedAmount := RevenueGrid."Revised Amount";
-                Rec.RevisedVAT := RevenueGrid."Revised VAT";
-                Rec.RevisedAmountInclVAT := RevenueGrid."Revised Amount Incl.";
-                Rec.Modify();
-            until RevenueGrid.Next() = 0;
-
-    end;
-
-    procedure Recvieableamountfrompaymentscheule()
-    var
-        PaymentScheduleRec: Record "Payment Schedule2";
-        Totalamount: Decimal;
-        VATAmount: Decimal;
-        AmountIncVAT: Decimal;
-    begin
-        Totalamount := 0;
-        PaymentScheduleRec.Reset();
-        PaymentScheduleRec.SetRange("Contract ID", Rec."Contract ID");
-        PaymentScheduleRec.SetFilter("Due Date", '<=%1', Rec."Termination Date");
-        PaymentScheduleRec.SetRange("Payment Status", 'Received');
-        PaymentScheduleRec.SetRange("Secondary Item Type", Rec.RevenueDescription);
-        if PaymentScheduleRec.FindSet() then begin
-            repeat
-                Totalamount += PaymentScheduleRec.Amount;
-                VATAmount += PaymentScheduleRec."VAT Amount";
-                AmountIncVAT += PaymentScheduleRec."Amount Including VAT";
-
-            until PaymentScheduleRec.Next() = 0;
-        end;
-        PaymentScheduleRec.SetRange("Contract ID", Rec."Contract ID");
-        PaymentScheduleRec.SetRange("Secondary Item Type", Rec.RevenueDescription);
-        if PaymentScheduleRec.FindSet() then
-            repeat
-                Rec.ReceiptsAmount := Totalamount;
-                Rec.ReceiptsVAT := VATAmount;
-                Rec.ReceiptsAmountInclVAT := AmountIncVAT;
-                Rec.Modify();
-            until PaymentScheduleRec.Next() = 0;
-    end;
-
-
-    procedure DifferenceAmountCalculation()
-    var
-
-    begin
-
-        Rec."DifferenceAmount" := Rec.RevisedAmount - Rec.ReceiptsAmount;
-        Rec."DifferenceVAT" := Rec.RevisedVAT - Rec.ReceiptsVAT;
-        Rec.DifferenceAmountInclVAT := Rec.RevisedAmountInclVAT - Rec.ReceiptsAmountInclVAT;
-        Rec.Modify();
-
-    end;
-
-    procedure GetpositiveAmount()
-    begin
-        if Rec."Total DifferenceAmountIncl.VAT" < 0 then begin
-            Rec."Total Refundable" := Abs(Rec."Total DifferenceAmountIncl.VAT");
-            Rec.Modify();
-        end else begin
-            Rec."Total Receivable" := Rec."Total DifferenceAmountIncl.VAT";
-            Rec.Modify();
-        end;
     end;
 }
