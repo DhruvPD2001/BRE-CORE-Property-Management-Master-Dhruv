@@ -104,6 +104,7 @@ page 50903 "Final Calculation Card"
 
 
                         Rec.CalculateFinalSummary(Rec);
+                        CurrPage.Update();
                     end;
                 }
                 field("ContractYear(Termination Date)"; Rec."ContractYear(Termination Date)")
@@ -530,6 +531,21 @@ page 50903 "Final Calculation Card"
                             IsRefundable := true;
                         UpdateCanPost();
                     end;
+                }
+                field("Remaining Security Deposit"; Rec."Remaining Security Deposit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Shows the remaining security deposit after adjustments.';
+                }
+                field("Remaining Chiller Deposit"; Rec."Remaining Chiller Deposit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Shows the remaining chiller deposit after adjustments.';
+                }
+                field("Remaining Other Deposit"; Rec."Remaining Other Deposit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Shows the remaining other deposit after adjustments.';
                 }
             }
             part("Adjustment Deposits"; "Adjustment Deposits")
