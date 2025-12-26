@@ -41,6 +41,8 @@ page 50145 "Adjustment Deposits"
                     begin
                         ClearNarration();
                         UpdateNarration();
+                        RefundValidateDepositAmount(Rec);
+
                     end;
                 }
                 field(Amount; Rec.Amount)
@@ -100,7 +102,14 @@ page 50145 "Adjustment Deposits"
                 trigger OnAction()
                 var
                     adjustmentDepositsRec: Record "Adjustment Deposits";
+                    GenJnlLine: Record "Gen. Journal Line";
                 begin
+                    GenJnlLine.Reset();
+                    GenJnlLine.SetRange("Journal Template Name", 'CASH RECE');
+                    GenJnlLine.SetRange("Journal Batch Name", 'DEFAULT');
+                    if GenJnlLine.FindSet() then
+                        GenJnlLine.DeleteAll();
+
                     adjustmentDepositsRec.SetRange("Contract ID", Rec."Contract ID");
                     if adjustmentDepositsRec.FindSet() then
                         repeat
@@ -161,12 +170,6 @@ page 50145 "Adjustment Deposits"
     begin
         Rec."Transaction Type" := Rec."Transaction Type"::" ";
         Rec.Amount := 0;
-    end;
-
-
-    procedure RefundEntries(AdjustmentDepositsRec1: Record "Adjustment Deposits")
-    begin
-        // To be implemented if needed in future
     end;
 
     procedure AdditinalchargescashReceipt(adjustmentDepositsRec: Record "Adjustment Deposits")
@@ -255,11 +258,7 @@ page 50145 "Adjustment Deposits"
         end;
 
 
-        GenJnlLine.Reset();
-        GenJnlLine.SetRange("Journal Template Name", JournalTemplateName);
-        GenJnlLine.SetRange("Journal Batch Name", JournalBatchName);
-        if GenJnlLine.FindSet() then
-            GenJnlLine.DeleteAll();
+
 
 
         // Insert a single cash receipt journal line for this adjustment record
@@ -288,6 +287,28 @@ page 50145 "Adjustment Deposits"
 
 
     // Validate deposit amount
+
+    procedure RefundValidateDepositAmount(var adjustmenrtDepositsRec: Record "Adjustment Deposits")
+    var
+        finalcalculationRec: Record "Final Calculation";
+    begin
+        finalcalculationRec.SetRange("Contract ID", adjustmenrtDepositsRec."Contract Id");
+        if finalcalculationRec.FindFirst() then
+            if adjustmenrtDepositsRec."Transaction Type" = adjustmenrtDepositsRec."Transaction Type"::Refund then
+                if finalcalculationRec."Total Claim" <> 0 then
+                    case adjustmenrtDepositsRec."Item Description" of
+                        adjustmenrtDepositsRec."Item Description"::"Security Deposit":
+                            if finalcalculationRec."Remaining Security Deposit" = 0 then
+                                Error('No Security Deposit available for refund.');
+                        adjustmenrtDepositsRec."Item Description"::"Chiller Deposit":
+                            if finalcalculationRec."Remaining Chiller Deposit" = 0 then
+                                Error('No Chiller Deposit available for refund.');
+                        adjustmenrtDepositsRec."Item Description"::"Other Deposit":
+                            if finalcalculationRec."Remaining Other Deposit" = 0 then
+                                Error('No Other Deposit available for refund.');
+                    end;
+    end;
+
 
 
 

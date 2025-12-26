@@ -451,13 +451,13 @@ page 50903 "Final Calculation Card"
                     field("Chiller Deposit"; Rec."Chiller Deposit")
                     {
                         ApplicationArea = All;
-                        Editable = false;
+                        //Editable = false;
                         ToolTip = 'Shows the refundable chiller deposit amount.';
                     }
                     field("Other Deposit"; Rec."Other Deposit")
                     {
                         ApplicationArea = All;
-                        Editable = false;
+                        // Editable = false;
                         ToolTip = 'Displays other refundable deposits.';
                     }
                     field("Total Net Balance"; Rec."Total Refundable Deposit")
