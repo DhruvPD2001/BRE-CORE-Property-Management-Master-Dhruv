@@ -35,8 +35,9 @@ pageextension 50519 CashReceiptJournalExt extends "Cash Receipt Journal"
             trigger OnBeforeAction()
             var
                 finalcalculationRec: Record "Final Calculation";
-                AmountToDeduct: Decimal;
                 cashRecJournalLine: Record "Gen. Journal Line";
+                tenancyContractRec: Record "Tenancy Contract";
+                AmountToDeduct: Decimal;
             begin
                 cashRecJournalLine.SetRange("Journal Template Name", Rec."Journal Template Name");
                 cashRecJournalLine.SetRange("Journal Batch Name", Rec."Journal Batch Name");
@@ -68,6 +69,10 @@ pageextension 50519 CashReceiptJournalExt extends "Cash Receipt Journal"
                                             finalcalculationRec."Remaining Security Deposit" := finalcalculationRec."Security Deposit" - AmountToDeduct
                                         else
                                             finalcalculationRec."Remaining Security Deposit" := 0;
+                                        if tenancyContractRec.Get(cashRecJournalLine."Contract ID") then begin
+                                            tenancyContractRec.Validate(Adjustments, tenancyContractRec.Adjustments + AmountToDeduct);
+                                            tenancyContractRec.Modify();
+                                        end;
                                     end;
                                 'Chiller Deposit':
                                     begin
