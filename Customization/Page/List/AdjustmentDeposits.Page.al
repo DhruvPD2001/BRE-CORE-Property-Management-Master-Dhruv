@@ -347,7 +347,7 @@ page 50145 "Adjustment Deposits"
         PostingDate := Today();
 
         // Only process Adjustment transaction types in this procedure
-        if ((adjustmentDepositsRec."Transaction Type" = adjustmentDepositsRec."Transaction Type"::Refund) AND (adjustmentDepositsRec.Amount = 0)) or (adjustmentDepositsRec."Transaction Type" = adjustmentDepositsRec."Transaction Type"::Refund) then
+        if ((adjustmentDepositsRec."Transaction Type" = adjustmentDepositsRec."Transaction Type"::Refund) AND (adjustmentDepositsRec.Amount = 0)) or (adjustmentDepositsRec."Transaction Type" = adjustmentDepositsRec."Transaction Type"::Adjustment) then
             exit;
 
         // Use a clear document number for adjustment postings
@@ -392,22 +392,21 @@ page 50145 "Adjustment Deposits"
         // Insert a single cash receipt journal line for this adjustment record
         Clear(GenJnlLine);
         GenJnlLine.Init();
-        GenJnlLine."Journal Template Name" := JournalTemplateName;
-        GenJnlLine."Journal Batch Name" := JournalBatchName;
+        GenJnlLine.Validate("Journal Template Name", JournalTemplateName);
+        GenJnlLine.Validate("Journal Batch Name", JournalBatchName);
         GenJnlLine."Line No." := LastLineNo;
         GenJnlLine."Posting Date" := PostingDate;
-        GenJnlLine."Document Type" := GenJnlLine."Document Type"::Payment;
+        //GenJnlLine."Document Type" := GenJnlLine."Document Type"::Payment;
         GenJnlLine."Document No." := DocumentNo;
+        GenJnlLine.Validate("Account Type", GenJnlLine."Account Type"::Customer);
+        GenJnlLine.Validate("Account No.", Tenantid);
         GenJnlLine.Description := adjustmentDepositsRec.Narration;
-        GenJnlLine."Account Type" := GenJnlLine."Account Type"::Customer;
-        GenJnlLine."Account No." := Tenantid;
         GenJnlLine."Contract ID" := ContractID;
-        GenJnlLine.Amount := Round(-AppliedAmount);
-        GenJnlLine."Amount (LCY)" := GenJnlLine.Amount;
+        GenJnlLine.Validate("Amount", Round(-AppliedAmount));
         GenJnlLine."Item Description" := adjustmentDepositsRec."Item Description";
         GenJnlLine."Transaction Type" := adjustmentDepositsRec."Transaction Type";
-        GenJnlLine."Bal. Account Type" := GenJnlLine."Bal. Account Type"::"G/L Account";
-        GenJnlLine."Bal. Account No." := BalanceAccountNo;
+        GenJnlLine.Validate("Bal. Account Type", GenJnlLine."Bal. Account Type"::"G/L Account");
+        GenJnlLine.Validate("Bal. Account No.", BalanceAccountNo);
         // Do not set Applies-to fields since we don't need Posted Invoice IDs for adjustments
         GenJnlLine.Insert(true);
         LastLineNo += 10000;
