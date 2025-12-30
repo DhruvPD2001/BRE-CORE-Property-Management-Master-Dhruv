@@ -719,6 +719,7 @@ page 50903 "Final Calculation Card"
 
         // TenancyContractLine.Reset();
         TenancyContractLine1.SetRange("ContractID", Rec."Contract ID");
+        TenancyContractLine1.SetFilter("Amount Including VAT", '<>%1', 0);
         if TenancyContractLine1.FindSet() then
             repeat
                 FinalRevCalcGrid1.Init();
@@ -1267,6 +1268,7 @@ page 50903 "Final Calculation Card"
     begin
         // TenancyContractLine.Reset();
         TenancyContractLine2.SetRange("ContractID", Rec."Contract ID");
+        TenancyContractLine2.SetFilter("Amount Including VAT", '<>%1', 0);
         if TenancyContractLine2.FindSet() then
             repeat
                 BillingCalc1.Init();
@@ -1477,6 +1479,7 @@ page 50903 "Final Calculation Card"
     begin
         // TenancyContractLine.Reset();
         TenancyContractLine3.SetRange("ContractID", Rec."Contract ID");
+        TenancyContractLine3.SetFilter("Amount Including VAT", '<>%1', 0);
         if TenancyContractLine3.FindSet() then
             repeat
                 RecvieableCalcGrid1.Init();

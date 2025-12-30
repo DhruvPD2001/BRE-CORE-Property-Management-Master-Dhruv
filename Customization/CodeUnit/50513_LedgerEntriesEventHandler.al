@@ -118,18 +118,8 @@ codeunit 50113 "Ledger Entries Event Handler"
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Apply", OnSelectCustLedgEntryOnAfterSetFilters, '', false, false)]
     local procedure OnSelectCustLedgEntryOnAfterSetFilters(var CustLedgerEntry: Record "Cust. Ledger Entry"; var GenJournalLine: Record "Gen. Journal Line")
-
-    var
-        ApplyCustEntries: Page "Apply Customer Entries";
-    //  CustLedgEntry: Record "Cust. Ledger Entry";
-    // GenJnlLine: Record "Gen. Journal Line";
     begin
         CustLedgerEntry.SetRange("Contract ID", GenJournalLine."Contract ID");
-
-
-
-        // Open Apply Entries page with filtered records
-
     end;
 
 
