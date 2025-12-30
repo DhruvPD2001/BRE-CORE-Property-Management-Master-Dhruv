@@ -104,7 +104,15 @@ page 50903 "Final Calculation Card"
 
 
                         Rec.CalculateFinalSummary(Rec);
-                        CurrPage.Update();
+                        CurrPage.UPDATE(false);
+                        CurrPage."FinalRevenueCalculation".Page.UPDATE();
+                        CurrPage."BillingCalculation".Page.UPDATE();
+                        CurrPage."Pendingreceivable/Payable".Page.UPDATE();
+                        CurrPage."Rent Calculation".Page.UPDATE();
+                        CurrPage."Other Payment".Page.UPDATE();
+                        CurrPage."Revenue Structure".Page.UPDATE();
+                        CurrPage.PaymentDetails.Page.UPDATE();
+
                     end;
                 }
                 field("ContractYear(Termination Date)"; Rec."ContractYear(Termination Date)")
@@ -333,12 +341,14 @@ page 50903 "Final Calculation Card"
             {
                 SubPageLink = "Contract ID" = FIELD("Contract ID");
                 ApplicationArea = All;
+                UpdatePropagation = Both;
             }
 
             part("BillingCalculation"; "Final Billing Calculation")
             {
                 SubPageLink = "Contract ID" = FIELD("Contract ID");
                 ApplicationArea = All;
+                UpdatePropagation = Both;
             }
 
 
@@ -347,6 +357,7 @@ page 50903 "Final Calculation Card"
             {
                 SubPageLink = "Contract ID" = FIELD("Contract ID");
                 ApplicationArea = All;
+                UpdatePropagation = Both;
             }
 
             group("Termination Additional Charges")
@@ -355,6 +366,7 @@ page 50903 "Final Calculation Card"
                 {
                     SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
                     ApplicationArea = All;
+                    UpdatePropagation = Both;
                     // Visible = isVisible;
                 }
             }
@@ -364,6 +376,7 @@ page 50903 "Final Calculation Card"
                 {
                     SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
                     ApplicationArea = All;
+                    UpdatePropagation = Both;
                     // Visible = isVisible;
                 }
             }
@@ -373,6 +386,7 @@ page 50903 "Final Calculation Card"
                 {
                     SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
                     ApplicationArea = All;
+                    UpdatePropagation = Both;
                     // Visible = isVisible;
                 }
             }
@@ -382,6 +396,7 @@ page 50903 "Final Calculation Card"
                 {
                     SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
                     ApplicationArea = All;
+                    UpdatePropagation = Both;
                     // Visible = isVisible;
                 }
             }
@@ -396,6 +411,7 @@ page 50903 "Final Calculation Card"
             {
                 SubPageLink = "Contract ID" = FIELD("Contract ID");
                 ApplicationArea = All;
+                UpdatePropagation = Both;
             }
             group("Adjust Security Deposit")
             {
@@ -436,6 +452,7 @@ page 50903 "Final Calculation Card"
                     {
                         SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
                         ApplicationArea = All;
+                        UpdatePropagation = Both;
                         // Visible = isVisible;
                     }
                 }
@@ -451,13 +468,13 @@ page 50903 "Final Calculation Card"
                     field("Chiller Deposit"; Rec."Chiller Deposit")
                     {
                         ApplicationArea = All;
-                        //Editable = false;
+                        Editable = false;
                         ToolTip = 'Shows the refundable chiller deposit amount.';
                     }
                     field("Other Deposit"; Rec."Other Deposit")
                     {
                         ApplicationArea = All;
-                        // Editable = false;
+                        Editable = false;
                         ToolTip = 'Displays other refundable deposits.';
                     }
                     field("Total Net Balance"; Rec."Total Refundable Deposit")
@@ -490,12 +507,6 @@ page 50903 "Final Calculation Card"
                     ApplicationArea = All;
                     Editable = false;
                     ToolTip = 'Displays the total refund amount to the tenant.';
-                }
-                field("Total Receive"; Rec."Total Receive")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Shows the total amount received from the tenant.';
                 }
                 field("Summery Net Balance"; Rec."Summery Net Balance")
                 {
@@ -536,22 +547,26 @@ page 50903 "Final Calculation Card"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Shows the remaining security deposit after adjustments.';
+                    Visible = false;
                 }
                 field("Remaining Chiller Deposit"; Rec."Remaining Chiller Deposit")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Shows the remaining chiller deposit after adjustments.';
+                    Visible = false;
                 }
                 field("Remaining Other Deposit"; Rec."Remaining Other Deposit")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Shows the remaining other deposit after adjustments.';
+                    Visible = false;
                 }
             }
             part("Adjustment Deposits"; "Adjustment Deposits")
             {
                 SubPageLink = "Contract ID" = FIELD("Contract ID");
                 ApplicationArea = All;
+                UpdatePropagation = Both;
             }
             group("FinalSettlemt")
             {
@@ -562,6 +577,7 @@ page 50903 "Final Calculation Card"
                     SubPageLink = "FC ID" = FIELD("FC ID");
                     //  "Tenant ID" = FIELD("Tenant ID");
                     ApplicationArea = All;
+                    UpdatePropagation = Both;
                     // Visible = isVisible;
                 }
             }
@@ -575,6 +591,7 @@ page 50903 "Final Calculation Card"
                     SubPageLink = "FC ID" = FIELD("FC ID");
                     // "Tenant ID" = FIELD("Tenant ID");
                     ApplicationArea = All;
+                    UpdatePropagation = Both;
                     // Visible = isVisible;
                 }
             }

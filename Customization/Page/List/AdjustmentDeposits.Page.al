@@ -42,6 +42,7 @@ page 50145 "Adjustment Deposits"
                         ClearNarration();
                         UpdateNarration();
                         RefundValidateDepositAmount(Rec);
+                        checkedadjustement();
 
                     end;
                 }
@@ -61,6 +62,10 @@ page 50145 "Adjustment Deposits"
                     ApplicationArea = All;
                     Editable = false;
                     ToolTip = 'Shows narration based on the transaction type selected.';
+                }
+                field(Adjusted; Rec.Adjusted)
+                {
+                    ApplicationArea = All;
                 }
             }
         }
@@ -434,5 +439,19 @@ page 50145 "Adjustment Deposits"
                             if finalcalculationRec."Remaining Other Deposit" = 0 then
                                 Error('No Other Deposit available for refund.');
                     end;
+    end;
+
+    procedure checkedadjustement()
+    var
+        adjustmentdepositsRec: Record "Adjustment Deposits";
+    begin
+        adjustmentdepositsRec.SetRange("Contract Id", Rec."Contract Id");
+        adjustmentdepositsRec.SetRange("Item Description", Rec."Item Description");
+        adjustmentdepositsRec.SetRange("Transaction Type", Rec."Transaction Type");
+        adjustmentdepositsRec.SetRange(Adjusted, true);
+        if adjustmentdepositsRec.FindFirst()
+        then
+            Error('%1 - %2 entry already exists for this contract', adjustmentdepositsRec."Item Description", adjustmentdepositsRec."Transaction Type");
+
     end;
 }

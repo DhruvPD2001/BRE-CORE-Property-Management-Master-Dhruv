@@ -35,14 +35,66 @@ codeunit 50113 "Ledger Entries Event Handler"
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post Line", OnAfterInitGLEntry, '', false, false)]
     local procedure OnAfterInitGLEntry(var GLEntry: Record "G/L Entry"; GenJournalLine: Record "Gen. Journal Line"; Amount: Decimal; AddCurrAmount: Decimal; UseAddCurrAmount: Boolean; var CurrencyFactor: Decimal; var GLRegister: Record "G/L Register")
+    var
+        adjustmentdeposit: Record "Adjustment Deposits";
     begin
         GLEntry."Contract ID" := GenJournalLine."Contract ID";
+
+        adjustmentdeposit.SetRange("Contract Id", GenJournalLine."Contract ID");
+        adjustmentdeposit.SetRange("Transaction Type", GenJournalLine."Transaction Type");
+        if adjustmentdeposit.FindSet() then
+            repeat
+                adjustmentdeposit.Adjusted := true;
+                adjustmentdeposit.Modify();
+            until adjustmentdeposit.Next() = 0;
+
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post Line", OnAfterInitCustLedgEntry, '', false, false)]
     local procedure OnAfterInitCustLedgEntry(var CustLedgerEntry: Record "Cust. Ledger Entry"; GenJournalLine: Record "Gen. Journal Line"; var GLRegister: Record "G/L Register")
+    var
+        finalcalculationRec: Record "Final Calculation";
+        cashRecJournalLine: Record "Gen. Journal Line";
+        tenancyContractRec: Record "Tenancy Contract";
+        AmountToDeduct: Decimal;
+        checked: Boolean;
     begin
-        CustLedgerEntry."Contract ID" := GenJournalLine."Contract ID";
+
+        AmountToDeduct := GenJournalLine.Amount;
+        if AmountToDeduct < 0 then
+            AmountToDeduct := -AmountToDeduct;
+        finalcalculationRec.SetRange("Contract ID", GenJournalLine."Contract ID");
+        if finalcalculationRec.FindFirst() then
+            case Format(GenJournalLine."Item Description") of
+                'Security Deposit':
+                    begin
+                        if finalcalculationRec."Security Deposit" >= AmountToDeduct then
+                            finalcalculationRec."Remaining Security Deposit" -= AmountToDeduct
+                        else
+                            finalcalculationRec."Remaining Security Deposit" := 0;
+                        if tenancyContractRec.Get(GenJournalLine."Contract ID") then begin
+                            tenancyContractRec.Validate(Adjustments, tenancyContractRec.Adjustments + AmountToDeduct);
+                            tenancyContractRec.Modify();
+                        end;
+                    end;
+                'Chiller Deposit':
+                    begin
+                        if finalcalculationRec."Chiller Deposit" >= AmountToDeduct then
+                            finalcalculationRec."Remaining Chiller Deposit" -= AmountToDeduct
+                        else
+                            finalcalculationRec."Remaining Chiller Deposit" := 0;
+                    end;
+                'Other Deposit':
+                    begin
+                        if finalcalculationRec."Other Deposit" >= AmountToDeduct then
+                            finalcalculationRec."Remaining Other Deposit" -= AmountToDeduct
+                        else
+                            finalcalculationRec."Remaining Other Deposit" := 0;
+                    end;
+            end;
+
+        finalcalculationRec.Modify();
+
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Gen. Jnl.-Post Line", OnAfterFinishPosting, '', false, false)]
