@@ -2240,6 +2240,7 @@ page 50313 "Tenancy Contract Card"
         aFinalCalculation."Tenant Email" := Rec."Email Address";
         aFinalCalculation."Tenant Name" := Rec."Customer Name";
         aFinalCalculation."Security Deposit" := Rec."Security Deposit Amount";
+        aFinalCalculation."Remaining Security Deposit" := Rec."Security Deposit Amount";
         aFinalCalculation."Adjustment Security Deposit" := Rec."Carry Forward Out";
         aFinalCalculation."Net Balance" := aFinalCalculation."Security Deposit" - aFinalCalculation."Adjustment Security Deposit";
 
@@ -2249,6 +2250,7 @@ page 50313 "Tenancy Contract Card"
         TenancyContractSubpage.SetRange("Secondary Item Type", 'Chiller Deposit Amount');
         if TenancyContractSubpage.FindFirst() then
             aFinalCalculation."Chiller Deposit" := TenancyContractSubpage.Amount;
+        aFinalCalculation."Remaining Chiller Deposit" := TenancyContractSubpage.Amount;
 
         // Add Other Deposit
         TenancyContractSubpage.Reset();
@@ -2256,6 +2258,7 @@ page 50313 "Tenancy Contract Card"
         TenancyContractSubpage.SetRange("Secondary Item Type", 'Other Deposit');
         if TenancyContractSubpage.FindFirst() then
             aFinalCalculation."Other Deposit" := TenancyContractSubpage.Amount;
+        aFinalCalculation."Remaining Other Deposit" := TenancyContractSubpage.Amount;
 
         aFinalCalculation."Total Refundable Deposit" := aFinalCalculation."Net Balance" + aFinalCalculation."Chiller Deposit" + aFinalCalculation."Other Deposit";
     end;
