@@ -426,7 +426,7 @@ page 50145 "Adjustment Deposits"
     begin
         finalcalculationRec.SetRange("Contract ID", adjustmenrtDepositsRec."Contract Id");
         if finalcalculationRec.FindFirst() then
-            if adjustmenrtDepositsRec."Transaction Type" = adjustmenrtDepositsRec."Transaction Type"::Refund then
+            if adjustmenrtDepositsRec."Transaction Type" = adjustmenrtDepositsRec."Transaction Type"::Refund then begin
                 if finalcalculationRec."Total Claim" <> 0 then
                     case adjustmenrtDepositsRec."Item Description" of
                         adjustmenrtDepositsRec."Item Description"::"Security Deposit":
@@ -439,6 +439,13 @@ page 50145 "Adjustment Deposits"
                             if finalcalculationRec."Remaining Other Deposit" = 0 then
                                 Error('No Other Deposit available for refund.');
                     end;
+
+            end
+            else
+                if finalcalculationRec."Total Claim" = 0 then
+                    Error('Adjustment cannot be processed because no claim amount is available for contract  %1', Rec."Contract Id");
+
+
     end;
 
     procedure checkedadjustement()
