@@ -59,6 +59,7 @@ codeunit 50113 "Ledger Entries Event Handler"
         AmountToDeduct: Decimal;
         checked: Boolean;
     begin
+        CustLedgerEntry."Contract ID" := GenJournalLine."Contract ID";
 
         AmountToDeduct := GenJournalLine.Amount;
         if AmountToDeduct < 0 then
