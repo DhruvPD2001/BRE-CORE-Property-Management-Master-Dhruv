@@ -2247,7 +2247,7 @@ page 50313 "Tenancy Contract Card"
         // Add Chiller Deposit
         TenancyContractSubpage.Reset();
         TenancyContractSubpage.SetRange(ContractID, Rec."Contract ID");
-        TenancyContractSubpage.SetRange("Secondary Item Type", 'Chiller Deposit Amount');
+        TenancyContractSubpage.SetRange("Secondary Item Type", 'Chiller Deposit');
         if TenancyContractSubpage.FindFirst() then
             aFinalCalculation."Chiller Deposit" := TenancyContractSubpage.Amount;
         aFinalCalculation."Remaining Chiller Deposit" := TenancyContractSubpage.Amount;

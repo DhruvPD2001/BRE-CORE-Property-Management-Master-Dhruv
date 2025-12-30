@@ -61,11 +61,11 @@ codeunit 50113 "Ledger Entries Event Handler"
     begin
         CustLedgerEntry."Contract ID" := GenJournalLine."Contract ID";
 
-        AmountToDeduct := GenJournalLine.Amount;
+        AmountToDeduct := Abs(GenJournalLine.Amount);
         if AmountToDeduct < 0 then
-            AmountToDeduct := -AmountToDeduct;
+            AmountToDeduct := AmountToDeduct;
         finalcalculationRec.SetRange("Contract ID", GenJournalLine."Contract ID");
-        if finalcalculationRec.FindFirst() then
+        if finalcalculationRec.FindFirst() then begin
             case Format(GenJournalLine."Item Description") of
                 'Security Deposit':
                     begin
@@ -74,7 +74,7 @@ codeunit 50113 "Ledger Entries Event Handler"
                         else
                             finalcalculationRec."Remaining Security Deposit" := 0;
                         if tenancyContractRec.Get(GenJournalLine."Contract ID") then begin
-                            tenancyContractRec.Validate(Adjustments, tenancyContractRec.Adjustments + AmountToDeduct);
+                            tenancyContractRec.Validate(Adjustments, tenancyContractRec.Adjustments + Abs(AmountToDeduct));
                             tenancyContractRec.Modify();
                         end;
                     end;
@@ -93,8 +93,9 @@ codeunit 50113 "Ledger Entries Event Handler"
                             finalcalculationRec."Remaining Other Deposit" := 0;
                     end;
             end;
+            finalcalculationRec.Modify();
+        end;
 
-        finalcalculationRec.Modify();
 
     end;
 

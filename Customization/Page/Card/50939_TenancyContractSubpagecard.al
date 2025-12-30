@@ -125,9 +125,10 @@ page 50939 "Tenancy Contract SubPage Card"
                         EndYear: Integer;
                         LeapDate: Date;
                         Revenuestructureid: Integer;
-                    //LeaseRecord: Record "Lease Proposal Details";
+                        //LeaseRecord: Record "Lease Proposal Details";
 
-
+                        DaysToAdd: Integer;
+                        LeapDays: Integer;
                     begin
 
                         if Rec."Payment Type" = Rec."Payment Type"::Installment then begin
@@ -195,31 +196,43 @@ page 50939 "Tenancy Contract SubPage Card"
                                     RevenueStructure."VAT %" := TargetRecord."VAT %";
 
 
-                                    if PeriodStartDate + 365 >= EndDate then
-                                        PeriodEndDate := EndDate
-                                    else
-                                        PeriodEndDate := PeriodStartDate + 365 - 1;
+                                    DaysToAdd := 365; // Default to 365 days
+                                    LeapDays := 0;
+
+                                    // if PeriodStartDate + 365 >= EndDate then
+                                    //     PeriodEndDate := EndDate
+                                    // else
+                                    //     PeriodEndDate := PeriodStartDate + 365 - 1;
+
+
+
+                                    // NumDays := PeriodEndDate - PeriodStartDate + 1;
+
+                                    // Check if February 29 falls within the range
+                                    // StartYear := Date2DMY(PeriodStartDate, 3); // Extract the year of PeriodStartDate
+                                    // EndYear := Date2DMY(PeriodEndDate, 3);    // Extract the year of PeriodEndDate
+
+                                    // IsLeapYearInRange := false;
+
+                                    for CurrentYear := Date2DMY(PeriodStartDate, 3) to Date2DMY(PeriodStartDate + 364, 3) do begin
+                                        if IsLeapYear(CurrentYear) then begin
+                                            // Ensure the leap day (Feb 29) falls within the range
+                                            if (DMY2Date(29, 2, CurrentYear) >= PeriodStartDate) and
+                                               (DMY2Date(29, 2, CurrentYear) <= PeriodStartDate + DaysToAdd - 1) then
+                                                LeapDays += 1;
+                                        end;
+                                    end;
+
+                                    DaysToAdd := DaysToAdd + LeapDays;
+
+                                    PeriodEndDate := PeriodStartDate + DaysToAdd - 1;
+
+                                    if PeriodEndDate > EndDate then
+                                        PeriodEndDate := EndDate;
 
                                     RevenueStructure."Period End Date" := PeriodEndDate;
 
                                     NumDays := PeriodEndDate - PeriodStartDate + 1;
-
-                                    // Check if February 29 falls within the range
-                                    StartYear := Date2DMY(PeriodStartDate, 3); // Extract the year of PeriodStartDate
-                                    EndYear := Date2DMY(PeriodEndDate, 3);    // Extract the year of PeriodEndDate
-
-                                    IsLeapYearInRange := false;
-
-                                    for CurrentYear := StartYear to EndYear do begin
-                                        if IsLeapYear(CurrentYear) then begin
-                                            LeapDate := DMY2Date(29, 2, CurrentYear); // Generate February 29 date
-                                            if (LeapDate >= PeriodStartDate) and (LeapDate <= PeriodEndDate) then begin
-                                                IsLeapYearInRange := true;
-                                                break; // No need to check further if a leap year is found in range
-                                            end;
-                                        end;
-                                    end;
-
                                     // Adjust the number of days if a leap year is in range
                                     // if IsLeapYearInRange then
                                     //     NumDays := NumDays + 1;

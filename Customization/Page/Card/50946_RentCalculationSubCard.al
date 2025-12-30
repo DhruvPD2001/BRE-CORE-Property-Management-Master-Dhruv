@@ -163,12 +163,12 @@ page 50946 "Rent Calculation SubCard"
                     trigger OnDrillDown()
                     var
                         tenancyContract: Record "Tenancy Contract";
-                        TargetPageID: Integer;
                         TargetRecord: Record "Rent Calculation";
                         RevenueStructure: Record "Rent Calculation Subpage"; // Main table
                         InstallmentStructure: Record "Rent Calculation Subpage2"; // Second subgrid table
                         fetchMonth: Codeunit "Fetch Month";
                         StartDate: Date;
+                        TargetPageID: Integer;
                         EndDate: Date;
                         AnnualAmount: Decimal;
                         NumInstallments: Integer;
@@ -200,6 +200,7 @@ page 50946 "Rent Calculation SubCard"
 
 
                         isMonthEnd: Boolean;
+                        isMonthStart: Boolean;
                         PeriodEndDate: Date;
                         IntMonthsPerInstallment: Integer;
                         OffsetMonths: Integer;
@@ -221,7 +222,7 @@ page 50946 "Rent Calculation SubCard"
                             InstallmentStructure.DeleteAll();
                         end;
 
-                        InstallmentStartDate := GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd);
+                        InstallmentStartDate := GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd, isMonthStart);
                         OriginalStartDate := InstallmentStartDate;
                         OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
                         InstallmentEndDate := 0D;
@@ -283,6 +284,11 @@ page 50946 "Rent Calculation SubCard"
                                             // fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
                                             InstallmentEndDate := CalcDate('<-1D>', CalcDate('<CM>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate)));
                                         end
+                                        // else if isMonthStart then begin
+                                        //     InstallmentStartDate := CalcDate('<-CM>', InstallmentStartDate);
+                                        //     // DaysInMonth := fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
+                                        //     InstallmentEndDate := CalcDate('<-1D>', CalcDate('<CM>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate)));
+                                        // end
                                         else
                                             InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
                                     end
@@ -446,13 +452,16 @@ page 50946 "Rent Calculation SubCard"
 
 
 
-    procedure GetStartDate(pContractStartDate: Date; pContractEndDate: Date; var isMonthEnd: Boolean): Date
+    procedure GetStartDate(pContractStartDate: Date; pContractEndDate: Date; var isMonthEnd: Boolean; var isMonthStart: Boolean): Date
     var
         StartDate: Date;
     begin
         isMonthEnd := false;
-        if pContractStartDate = CalcDate('<-CM>', pContractStartDate) then
-            StartDate := CalcDate('<-CM>', pContractStartDate)
+        isMonthStart := false;
+        if pContractStartDate = CalcDate('<-CM>', pContractStartDate) then begin
+            StartDate := CalcDate('<-CM>', pContractStartDate);
+            isMonthStart := true;
+        end
         else
             if pContractStartDate = CalcDate('<CM>', pContractStartDate) then begin
                 StartDate := CalcDate('<CM>', pContractStartDate);
