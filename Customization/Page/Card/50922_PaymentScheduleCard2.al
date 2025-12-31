@@ -307,7 +307,9 @@ page 50922 "Payment Schedule Card2"
                         PaymentscheduleGridRec.SetRange("Contract ID", Rec."Contract ID");
                         PaymentscheduleGridRec.SetRange("Tenant ID", Rec."Tenant ID");
                         PaymentscheduleGridRec.SetFilter(Invoiced, '=false');
+                        PaymentscheduleGridRec.SetRange(Year, 1);
                         PaymentscheduleGridRec.SetRange("Installment No.", 1);
+
                         if PaymentscheduleGridRec.FindSet() then
                             repeat
                                 Saleslinecreate(newsalesheader, PaymentscheduleGridRec);
