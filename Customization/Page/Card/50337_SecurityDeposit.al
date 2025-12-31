@@ -176,9 +176,17 @@ page 50337 "Security Deposit Card"
                 Image = Post;
                 trigger OnAction()
                 var
-                    SecurityDepositPostMgt: Codeunit "Security Deposit Posting Mgt."; // We will create this codeunit
+                    SecurityDepositPostMgt: Codeunit "Security Deposit Posting Mgt.";
+                    finalcalculationRec: Record "Final Calculation";
                 begin
                     SecurityDepositPostMgt.PostSecurityDepositAmount(Rec);
+                    Rec.UpdateAdjustedAmount();
+                    finalcalculationRec.SetRange("Contract ID", Rec."Contract ID");
+                    if finalcalculationRec.FindFirst() then begin
+                        finalcalculationRec."Total Refundable Deposit" := finalcalculationRec."Security Deposit" + finalcalculationRec."Chiller Deposit" + finalcalculationRec."Other Deposit";
+                        finalcalculationRec.Modify(true);
+                        finalcalculationRec.CalculateFinalSummary(finalcalculationRec);
+                    end;
                 end;
             }
         }

@@ -433,18 +433,18 @@ page 50903 "Final Calculation Card"
                         Editable = false;
                         ToolTip = 'Shows the amount of the carried forward security deposit.';
                     }
-                    field("Adjustment Security Deposit"; Rec."Adjustment Security Deposit")
-                    {
-                        ApplicationArea = All;
-                        Editable = false;
-                        ToolTip = 'Displays the adjusted security deposit amount.';
-                    }
-                    field("Net Balance"; Rec."Net Balance")
-                    {
-                        ApplicationArea = All;
-                        Editable = false;
-                        ToolTip = 'Shows the net balance after adjustments.';
-                    }
+                    // field("Adjustment Security Deposit"; Rec."Adjustment Security Deposit")
+                    // {
+                    //     ApplicationArea = All;
+                    //     Editable = false;
+                    //     ToolTip = 'Displays the adjusted security deposit amount.';
+                    // }
+                    // field("Net Balance"; Rec."Net Balance")
+                    // {
+                    //     ApplicationArea = All;
+                    //     Editable = false;
+                    //     ToolTip = 'Shows the net balance after adjustments.';
+                    // }
                 }
                 group("Carry Forward the Security Deposit To")
                 {
@@ -453,12 +453,12 @@ page 50903 "Final Calculation Card"
                         SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
                         ApplicationArea = All;
                         UpdatePropagation = Both;
-                        // Visible = isVisible;
+                        Editable = false;
                     }
                 }
                 group("Refundable Deposits")
                 {
-                    field("NetBalance"; Rec."Net Balance")
+                    field("NetBalance"; Rec."Security Deposit")
                     {
                         ApplicationArea = All;
                         Caption = 'Security Deposit';
@@ -1161,6 +1161,7 @@ page 50903 "Final Calculation Card"
         CurrPage."FinalSettelemts".Page.SetContractID(Rec."Contract ID");
         CurrPage."FinalSettelemtss".Page.SetTenantID(Rec."Tenant ID");
         CurrPage."FinalSettelemtss".Page.SetContractID(Rec."Contract ID");
+        CurrPage."Carry Forward".Page.SetContractId(Rec."Contract ID");
         // FetchSecurityDepositInfo();
         // UpdateTotalClaim(); // Add this line to calculate the total
         FinalSettlementVisible();
@@ -1174,7 +1175,10 @@ page 50903 "Final Calculation Card"
         else
             IsRefundable := true;
         UpdateCanPost();
+        CurrPage."Carry Forward".Page.SetContractId(Rec."Contract ID");
     end;
+
+
 
     trigger OnModifyRecord(): Boolean
     begin
@@ -1186,6 +1190,7 @@ page 50903 "Final Calculation Card"
         CurrPage."FinalSettelemts".Page.SetContractID(Rec."Contract ID");
         CurrPage."FinalSettelemtss".Page.SetTenantID(Rec."Tenant ID");
         CurrPage."FinalSettelemtss".Page.SetContractID(Rec."Contract ID");
+        CurrPage."Carry Forward".Page.SetContractId(Rec."Contract ID");
         // UpdateTotalClaim(); // Add this line to calculate the total
         FinalSettlementVisible();
         if Rec."Amount Refundable" <> 0 then
@@ -1197,6 +1202,7 @@ page 50903 "Final Calculation Card"
             IsReceivable := true
         else
             IsRefundable := true;
+
     end;
 
     trigger OnInsertRecord(BelowxRec: Boolean): Boolean
@@ -1209,6 +1215,7 @@ page 50903 "Final Calculation Card"
         CurrPage."FinalSettelemts".Page.SetContractID(Rec."Contract ID");
         CurrPage."FinalSettelemtss".Page.SetTenantID(Rec."Tenant ID");
         CurrPage."FinalSettelemtss".Page.SetContractID(Rec."Contract ID");
+        CurrPage."Carry Forward".Page.SetContractId(Rec."Contract ID");
         FinalSettlementVisible();
         if Rec."Amount Refundable" <> 0 then
             IsRefundable := true
@@ -1219,6 +1226,7 @@ page 50903 "Final Calculation Card"
             IsReceivable := true
         else
             IsRefundable := true;
+
     end;
 
     procedure BillingCalcGridRentCalc()
@@ -1649,6 +1657,7 @@ page 50903 "Final Calculation Card"
     //////////////////////// END PENDING RECIVEABLE CALCULATION //////////////////////
 
     var
+        carryForwardGrid: Page "Carry Forward Grid";
         IsReceivable: Boolean;
         IsRefundable: Boolean;
         CanPost: Boolean;
