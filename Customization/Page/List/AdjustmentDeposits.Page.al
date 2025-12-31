@@ -92,10 +92,13 @@ page 50145 "Adjustment Deposits"
 
                     adjustmentDepositsRec.SetRange("Contract ID", Rec."Contract ID");
                     adjustmentDepositsRec.SetRange("Transaction Type", Rec."Transaction Type"::Refund);
+                    adjustmentDepositsRec.SetRange(Adjusted, false);
                     if adjustmentDepositsRec.FindSet() then
                         repeat
                             RefundDepositAmount(adjustmentDepositsRec);
-                        until adjustmentDepositsRec.Next() = 0;
+                        until adjustmentDepositsRec.Next() = 0
+                    else
+                        Error('No refund entries found to post for this contract or all entries have already been refunded.');
 
                     Commit();
                     GenJournalLineRec.Reset();
@@ -121,13 +124,18 @@ page 50145 "Adjustment Deposits"
                         GenJnlLine.DeleteAll();
 
                     adjustmentDepositsRec.SetRange("Contract ID", Rec."Contract ID");
-                    if adjustmentDepositsRec.FindSet() then
+                    adjustmentDepositsRec.SetRange("Transaction Type", Rec."Transaction Type"::Adjustment);
+                    adjustmentDepositsRec.SetRange(Adjusted, false);
+                    if adjustmentDepositsRec.FindSet() then begin
                         repeat
                             AdditinalchargescashReceipt(adjustmentDepositsRec);
                         until adjustmentDepositsRec.Next() = 0;
+                        Commit();
+                        PAGE.Run(PAGE::"Cash Receipt Journal");
+                    end
+                    else
+                        Error('No adjustment entries found to post for this contract or all entries have already been adjusted.');
                     // Commit created journal lines and open Cash Receipt Journals for user review
-                    Commit();
-                    PAGE.Run(PAGE::"Cash Receipt Journal");
                 end;
             }
         }

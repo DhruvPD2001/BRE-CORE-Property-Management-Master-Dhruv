@@ -184,11 +184,14 @@ page 50915 "Payment Schedule"
 
                     trigger OnDrillDown()
                     var
-                        TargetPageID: Integer;
+                        tenancyContract: Record "Tenancy Contract";
                         TargetRecord: Record "Revenue Structure";
                         RevenueStructure1: Record "Revenue Structure";
                         RevenueStructure: Record "Revenue Structure Subpage"; // Main table
                         InstallmentStructure: Record "Revenue Structure Subpage1"; // Second subgrid table
+                        rentCalcSubCard: Page "Rent Calculation SubCard";
+                        fetchMonth: Codeunit "Fetch Month";
+                        TargetPageID: Integer;
                         StartDate: Date;
                         EndDate: Date;
                         AnnualAmount: Decimal;
@@ -212,7 +215,11 @@ page 50915 "Payment Schedule"
                         TotalCalculatedAmount: Decimal;
                         LastInstallmentAmount: Decimal;
                         InstallmentAmount2: Decimal;
-
+                        OffsetMonths: Integer;
+                        OriginalStartDate: Date;
+                        YearNo: Integer;
+                        isMonthEnd: Boolean;
+                        isMonthStart: Boolean;
                     begin
 
                         RevenueStructure1.SetRange("RS ID", Rec."RS ID");
@@ -225,6 +232,14 @@ page 50915 "Payment Schedule"
                                 if InstallmentStructure.FindSet() then begin
                                     InstallmentStructure.DeleteAll();
                                 end;
+
+                                tenancyContract.Get(Rec."Contract ID");
+                                InstallmentStartDate := rentCalcSubCard.GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd, isMonthStart);
+                                OriginalStartDate := InstallmentStartDate;
+                                OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
+                                InstallmentEndDate := 0D;
+                                NumInstallments := RevenueStructure."Yearly No. of Installment";
+
                                 // Set filters to fetch related records
                                 // RevenueStructure.SetRange("Proposal ID", Rec."Proposal ID");
                                 RevenueStructure.SetRange("Tenant ID", Rec."Tenant ID");
@@ -239,6 +254,10 @@ page 50915 "Payment Schedule"
                                 if RevenueStructure.FindSet() then begin
                                     // Loop through Revenue Structure to calculate and populate or update Installment Structure
                                     repeat
+                                        if RevenueStructure.Year < YearNo then begin
+                                            InstallmentStartDate := OriginalStartDate;
+                                            InstallmentEndDate := 0D;
+                                        end;
 
                                         NumInstallments := RevenueStructure."Yearly No. of Installment";
 
@@ -267,6 +286,28 @@ page 50915 "Payment Schedule"
                                         InstallmentAmount2 := InstallmentAmount - LastInstallmentAmount;   // 1666.67 - 0.01 = 1666.66
 
                                         for InstallmentNumber := 1 to RevenueStructure."Yearly No. of Installment" do begin
+
+                                            if InstallmentEndDate > tenancyContract."Contract Start Date" then begin
+                                                InstallmentStartDate := CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate);
+                                                if isMonthEnd then begin
+                                                    InstallmentStartDate := CalcDate('<CM>', InstallmentStartDate);
+                                                    // fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
+                                                    InstallmentEndDate := CalcDate('<-1D>', CalcDate('<CM>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate)));
+                                                end
+                                                // else if isMonthStart then begin
+                                                //     InstallmentStartDate := CalcDate('<-CM>', InstallmentStartDate);
+                                                //     // DaysInMonth := fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
+                                                //     InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+                                                // end
+                                                else
+                                                    InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+                                            end
+                                            else
+                                                InstallmentEndDate := CalcDate('<-1D>', CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate));
+
+                                            if InstallmentEndDate > tenancyContract."Contract End Date" then
+                                                InstallmentEndDate := tenancyContract."Contract End Date";
+
                                             InstallmentStructure.SetRange("RS ID", TargetPageID);
                                             InstallmentStructure.SetRange("Year", TotalYears);
                                             InstallmentStructure.SetRange("Installment No.", InstallmentNumber);
@@ -276,13 +317,18 @@ page 50915 "Payment Schedule"
 
                                                 if InstallmentNumber = 1 then begin
                                                     InstallmentStructure.Amount := InstallmentAmount2;
-                                                    InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date";
-                                                    InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
+                                                    // InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date";
+                                                    // InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
                                                 end else begin
                                                     InstallmentStructure.Amount := InstallmentAmount;
-                                                    InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date" + (InstallmentNumber - 1) * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
+                                                    // InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date" + (InstallmentNumber - 1) * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
 
-                                                    InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + InstallmentNumber * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
+                                                    // InstallmentStructure."Installment End Date" := RevenueStructure."Period Start Date" + InstallmentNumber * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
+
+                                                    InstallmentStructure."Installment Start Date" := InstallmentStartDate;
+                                                    InstallmentStructure."Installment End Date" := InstallmentEndDate;
+
+                                                    InstallmentStructure.Modify();
                                                 end;
 
                                                 // TotalCalculatedAmount := InstallmentAmount * RevenueStructure."Yearly No. of Installment";  // 1666.67*3 = 5000.01
@@ -293,8 +339,8 @@ page 50915 "Payment Schedule"
 
 
 
-                                                InstallmentStructure.Modify();
-                                                Message('Data Update Successfully!');
+                                                // InstallmentStructure.Modify();
+                                                // Message('Data Update Successfully!');
                                             end else begin
                                                 // Insert new record
                                                 InstallmentStructure.Init();
@@ -322,21 +368,22 @@ page 50915 "Payment Schedule"
                                                 InstallmentStructure."VAT Amount" := InstallmentStructure.Amount * (InstallmentStructure."VAT %" / 100);
                                                 InstallmentStructure."Amount Including VAT" := InstallmentStructure.Amount + InstallmentStructure."VAT Amount";
 
+                                                InstallmentStructure."Installment Start Date" := InstallmentStartDate;
+                                                InstallmentStructure."Installment End Date" := InstallmentEndDate;
 
-
-                                                IF InstallmentNumber = 1 THEN BEGIN
-                                                    InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date";
-                                                    InstallmentStructure."Installment End Date" :=
-                                                        RevenueStructure."Period Start Date" +
-                                                        ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
-                                                END ELSE BEGIN
-                                                    InstallmentStructure."Installment Start Date" :=
-                                                        RevenueStructure."Period Start Date" +
-                                                        (InstallmentNumber - 1) * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
-                                                    InstallmentStructure."Installment End Date" :=
-                                                        RevenueStructure."Period Start Date" +
-                                                        InstallmentNumber * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
-                                                END;
+                                                // IF InstallmentNumber = 1 THEN BEGIN
+                                                //     InstallmentStructure."Installment Start Date" := RevenueStructure."Period Start Date";
+                                                //     InstallmentStructure."Installment End Date" :=
+                                                //         RevenueStructure."Period Start Date" +
+                                                //         ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
+                                                // END ELSE BEGIN
+                                                //     InstallmentStructure."Installment Start Date" :=
+                                                //         RevenueStructure."Period Start Date" +
+                                                //         (InstallmentNumber - 1) * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<');
+                                                //     InstallmentStructure."Installment End Date" :=
+                                                //         RevenueStructure."Period Start Date" +
+                                                //         InstallmentNumber * ROUND(RevenueStructure."Number of Days" / RevenueStructure."Yearly No. of Installment", 1, '<') - 1;
+                                                // END;
 
 
                                                 // Ensure the last installment end date matches the full period end date
@@ -387,7 +434,7 @@ page 50915 "Payment Schedule"
 
                                         end;
 
-
+                                        YearNo := RevenueStructure.Year;
                                     until RevenueStructure.Next() = 0;
 
 
