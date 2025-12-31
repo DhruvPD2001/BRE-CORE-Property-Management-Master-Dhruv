@@ -1069,7 +1069,7 @@ page 50903 "Final Calculation Card"
                 RevenueCalculates."Secondary Item Type" := TenancyContractSub."Secondary Item Type";
                 RevenueCalculates.Amount := TenancyContractSub.Amount;
                 RevenueCalculates."VAT Amount" := TenancyContractSub."VAT Amount";
-                RevenueCalculates."Amount Including VAT" := TenancyContractSub."Amount Including VAT";
+                RevenueCalculates."Amount Including VAT" := RevenueCalculates.Amount + RevenueCalculates."VAT Amount";
                 RevenueCalculates."Installment Start Date" := TenancyContractSub."Start Date";
                 RevenueCalculates."Installment End Date" := TenancyContractSub."End Date";
                 RevenueCalculates.Insert();
@@ -1095,7 +1095,7 @@ page 50903 "Final Calculation Card"
                 RevenueCalculateSub."Secondary Item Type" := RevenueStructureSub."Secondary Item Type";
                 RevenueCalculateSub."Amount" := RevenueStructureSub."Final Annual Amount";
                 RevenueCalculateSub."VAT Amount" := RevenueStructureSub."VAT Amount";
-                RevenueCalculateSub."Amount Including VAT" := RevenueStructureSub."Amount Including VAT";
+                RevenueCalculateSub."Amount Including VAT" := RevenueCalculateSub."Amount" + RevenueStructureSub."VAT Amount";
                 RevenueCalculateSub."Installment Start Date" := RevenueStructureSub."Period Start Date";
                 RevenueCalculateSub."Installment End Date" := RevenueStructureSub."Period End Date";
                 RevenueCalculateSub.Insert();
