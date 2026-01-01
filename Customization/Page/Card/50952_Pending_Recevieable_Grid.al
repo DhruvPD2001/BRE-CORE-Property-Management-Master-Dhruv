@@ -183,7 +183,7 @@ page 50952 "Pending Recevieable Grid"
             // Implementation for creating credit memo for security deposit
             PaymentScheduleRec.Reset();
             PaymentScheduleRec.SetRange("Contract ID", Rec."Contract ID");
-            PaymentScheduleRec.SetRange("Secondary Item Type", 'Security Deposit Amount');
+            PaymentScheduleRec.SetRange("Secondary Item Type", 'Security Deposit');
             PaymentScheduleRec.SetFilter("Payment Status", '<>%1', 'Received'); // Empty = Not Received
 
             if PaymentScheduleRec.IsEmpty then begin
@@ -211,7 +211,7 @@ page 50952 "Pending Recevieable Grid"
 
                 pendingReceivableRec.Reset();
                 pendingReceivableRec.SetRange("Contract ID", Rec."Contract ID");
-                pendingReceivableRec.SetRange(RevenueDescription, 'Security Deposit Amount');
+                pendingReceivableRec.SetRange(RevenueDescription, 'Security Deposit');
                 if pendingReceivableRec.FindFirst() then begin
                     pendingReceivableRec."CrditNoteID Security Deposit" := SalesHeader1."No.";
                     pendingReceivableRec.GeneratedCRMemoSD := true;
