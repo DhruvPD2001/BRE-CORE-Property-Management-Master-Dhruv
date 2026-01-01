@@ -61,6 +61,7 @@ page 50915 "Payment Schedule"
                     ApplicationArea = All;
                     Caption = 'Yearly No. of Instalment';
                     Editable = true;
+                    ValuesAllowed = 1, 2, 4, 12;
                     ShowMandatory = true;
                     NotBlank = true;
                     trigger OnValidate()
@@ -236,7 +237,7 @@ page 50915 "Payment Schedule"
                                 tenancyContract.Get(Rec."Contract ID");
                                 InstallmentStartDate := rentCalcSubCard.GetStartDate(tenancyContract."Contract Start Date", tenancyContract."Contract End Date", isMonthEnd, isMonthStart);
                                 OriginalStartDate := InstallmentStartDate;
-                                OffsetMonths := fetchMonth.GetNoofMonthsFromFrequency(Format(tenancyContract."Payment Frequency"));
+
                                 InstallmentEndDate := 0D;
                                 NumInstallments := RevenueStructure."Yearly No. of Installment";
 
@@ -254,6 +255,7 @@ page 50915 "Payment Schedule"
                                 if RevenueStructure.FindSet() then begin
                                     // Loop through Revenue Structure to calculate and populate or update Installment Structure
                                     repeat
+                                        OffsetMonths := fetchMonth.GetNoofMonthsFromNoofInstallment(RevenueStructure."Yearly No. of Installment");
                                         if RevenueStructure.Year < YearNo then begin
                                             InstallmentStartDate := OriginalStartDate;
                                             InstallmentEndDate := 0D;
@@ -273,10 +275,6 @@ page 50915 "Payment Schedule"
 
                                         end;
 
-
-
-
-
                                         //  InstallmentAmount := RevenueStructure."Final Annual Amount" / RevenueStructure."Yearly No. of Installment";
 
                                         InstallmentAmount := ROUND(RevenueStructure."Final Annual Amount" / RevenueStructure."Yearly No. of Installment", 0.01);
@@ -288,7 +286,11 @@ page 50915 "Payment Schedule"
                                         for InstallmentNumber := 1 to RevenueStructure."Yearly No. of Installment" do begin
 
                                             if InstallmentEndDate > tenancyContract."Contract Start Date" then begin
-                                                InstallmentStartDate := CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate);
+                                                if InstallmentNumber = 1 then
+                                                    InstallmentStartDate := RevenueStructure."Period Start Date"
+                                                else
+                                                    InstallmentStartDate := CalcDate('<' + Format(OffsetMonths) + 'M>', InstallmentStartDate);
+
                                                 if isMonthEnd then begin
                                                     InstallmentStartDate := CalcDate('<CM>', InstallmentStartDate);
                                                     // fetchMonth.GetNoofDaysInMonth(Date2DMY(InstallmentStartDate, 2), Date2DMY(InstallmentStartDate, 3));
