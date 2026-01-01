@@ -479,7 +479,7 @@ page 50909 "Revenue Item SubPage Card"
     // Replace with your actual Lease Proposal table name
     begin
         // Apply a filter on the ProposalID to find matching Lease Proposal records
-        if rec."Secondary Item Type" = 'Security Deposit Amount' then begin
+        if rec."Secondary Item Type" = 'Security Deposit' then begin
 
             LeaseProposal.SetRange("Proposal ID", Rec.ProposalID); // Adjust the field names to your table schema
 

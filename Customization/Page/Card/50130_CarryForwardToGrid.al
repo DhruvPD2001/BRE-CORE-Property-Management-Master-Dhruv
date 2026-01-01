@@ -42,13 +42,19 @@ page 50130 "Carry Forward Grid"
                     securityDepositRec: Record "Security Deposit";
                     tenancyContractRec: Record "Tenancy Contract";
                     securityDepositCard: Page "Security Deposit Card";
+                    userConfirmed: Boolean;
+                    openrecord: Boolean;
                 begin
+                    userConfirmed := Confirm('Do you want Carry forwad secuirty deposit amount?', false);
+                    if not userConfirmed then
+                        exit;
                     securityDepositRec.Reset();
                     securityDepositRec.Init();
 
-                    PopulateContractDetails(securityDepositRec, contractId);
-                    securityDepositCard.SetRecord(securityDepositRec);
-                    securityDepositCard.Run();
+                    if PopulateContractDetails(securityDepositRec, contractId) then begin
+                        securityDepositCard.SetRecord(securityDepositRec);
+                        securityDepositCard.Run();
+                    end;
                 end;
             }
         }
@@ -62,12 +68,10 @@ page 50130 "Carry Forward Grid"
         contractId := pContractId;
     end;
 
-    procedure PopulateContractDetails(var pSecurityDepositRec: Record "Security Deposit"; pContractId: Integer)
+    procedure PopulateContractDetails(var pSecurityDepositRec: Record "Security Deposit"; pContractId: Integer): Boolean
     var
         tenancyContractRec: Record "Tenancy Contract";
     begin
-        if tenancyContractRec."Security Deposit Amount" = tenancyContractRec."Carry Forward Out" then
-            exit;
         if tenancyContractRec.Get(pContractId) then begin
             pSecurityDepositRec."Contract ID" := pContractId;
             pSecurityDepositRec."Tenant Full Name" := tenancyContractRec."Customer Name";
@@ -77,6 +81,7 @@ page 50130 "Carry Forward Grid"
             pSecurityDepositRec."Security Deposit Amount" := tenancyContractRec."Security Deposit Amount";
             pSecurityDepositRec."Balance Amount" := tenancyContractRec."Security Balanced Amount";
             pSecurityDepositRec.Insert(true);
+            exit(true);
         end;
     end;
 }
