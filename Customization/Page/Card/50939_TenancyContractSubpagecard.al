@@ -25,7 +25,7 @@ page 50939 "Tenancy Contract SubPage Card"
                 {
                     ApplicationArea = All;
                     Caption = 'Amount';
-
+                    Editable = isEditable;
                 }
 
                 field("VAT %"; Rec."VAT %")
@@ -344,7 +344,7 @@ page 50939 "Tenancy Contract SubPage Card"
 
         Rec.Modify();
 
-
+        CheckRefundableDeposit();
     end;
 
 
@@ -355,6 +355,18 @@ page 50939 "Tenancy Contract SubPage Card"
         exit(false);
     end;
 
+    procedure CheckRefundableDeposit()
+    var
+        item: Record Item;
+    begin
+        item.SetRange(Description, Rec."Secondary Item Type");
+        if item.FindFirst() then begin
+            if item."Category Types" = 'Refundable Deposit' then
+                isEditable := true
+            else
+                isEditable := false;
+        end;
+    end;
 
 
     procedure SetContractID(pContractID: Integer)
@@ -388,8 +400,7 @@ page 50939 "Tenancy Contract SubPage Card"
         tenantID: Code[20];
         startDate: Date;
         endDate: Date;
-
-
+        isEditable: Boolean;
 }
 
 
