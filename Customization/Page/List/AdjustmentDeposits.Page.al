@@ -174,13 +174,13 @@ page 50145 "Adjustment Deposits"
             if Rec."Transaction Type" = Rec."Transaction Type"::Refund then
                 case Rec."Item Description" of
                     Rec."Item Description"::"Security Deposit":
-                        if Rec.Amount > finalCalculationRec."Net Balance" then
+                        if Rec.Amount > finalCalculationRec."Remaining Security Deposit" then
                             Error(errorSDamountLbl);
                     Rec."Item Description"::"Chiller Deposit":
-                        if Rec.Amount > finalCalculationRec."Chiller Deposit" then
+                        if Rec.Amount > finalCalculationRec."Remaining Chiller Deposit" then
                             Error(errorChilleramountLbl);
                     Rec."Item Description"::"Other Deposit":
-                        if Rec.Amount > finalCalculationRec."Other Deposit" then
+                        if Rec.Amount > finalCalculationRec."Remaining Other Deposit" then
                             Error(errorOtheramountLbl);
                 end
             else

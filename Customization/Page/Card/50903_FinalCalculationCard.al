@@ -413,80 +413,75 @@ page 50903 "Final Calculation Card"
                 ApplicationArea = All;
                 UpdatePropagation = Both;
             }
-            group("Adjust Security Deposit")
+            group("Carry Forward the Security Deposit From")
             {
-                group("Carry Forward the Security Deposit From")
+                field("ContractID"; Rec."Contract ID")
                 {
-                    field("ContractID"; Rec."Contract ID")
-                    {
-                        ApplicationArea = All;
-                        Editable = false;
-                        ToolTip = 'Specifies the unique identifier for the contract.';
-                        // trigger OnValidate()
-                        // begin
-                        //     FetchSecurityDepositInfo();
-                        // end;
-                    }
-                    field("Security Deposit"; Rec."Security Deposit")
-                    {
-                        ApplicationArea = All;
-                        Editable = false;
-                        ToolTip = 'Shows the amount of the carried forward security deposit.';
-                    }
-                    // field("Adjustment Security Deposit"; Rec."Adjustment Security Deposit")
-                    // {
-                    //     ApplicationArea = All;
-                    //     Editable = false;
-                    //     ToolTip = 'Displays the adjusted security deposit amount.';
-                    // }
-                    // field("Net Balance"; Rec."Net Balance")
-                    // {
-                    //     ApplicationArea = All;
-                    //     Editable = false;
-                    //     ToolTip = 'Shows the net balance after adjustments.';
-                    // }
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the unique identifier for the contract.';
+                    // trigger OnValidate()
+                    // begin
+                    //     FetchSecurityDepositInfo();
+                    // end;
                 }
-                group("Carry Forward the Security Deposit To")
+                field("Security Deposit"; Rec."Security Deposit")
                 {
-                    part("Carry Forward"; "Carry Forward Grid")
-                    {
-                        SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
-                        ApplicationArea = All;
-                        UpdatePropagation = Both;
-                        Editable = false;
-                    }
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Shows the amount of the carried forward security deposit.';
                 }
-                group("Refundable Deposits")
-                {
-                    field("NetBalance"; Rec."Security Deposit")
-                    {
-                        ApplicationArea = All;
-                        Caption = 'Security Deposit';
-                        Editable = false;
-                        ToolTip = 'Displays the refundable security deposit amount.';
-                    }
-                    field("Chiller Deposit"; Rec."Chiller Deposit")
-                    {
-                        ApplicationArea = All;
-                        Editable = false;
-                        ToolTip = 'Shows the refundable chiller deposit amount.';
-                    }
-                    field("Other Deposit"; Rec."Other Deposit")
-                    {
-                        ApplicationArea = All;
-                        Editable = false;
-                        ToolTip = 'Displays other refundable deposits.';
-                    }
-                    field("Total Net Balance"; Rec."Total Refundable Deposit")
-                    {
-                        ApplicationArea = All;
-                        Caption = 'Total Refundable Deposit';
-                        Editable = false;
-                        ToolTip = 'Shows the total amount of refundable deposits.';
-                    }
-                }
-
+                // field("Adjustment Security Deposit"; Rec."Adjustment Security Deposit")
+                // {
+                //     ApplicationArea = All;
+                //     Editable = false;
+                //     ToolTip = 'Displays the adjusted security deposit amount.';
+                // }
+                // field("Net Balance"; Rec."Net Balance")
+                // {
+                //     ApplicationArea = All;
+                //     Editable = false;
+                //     ToolTip = 'Shows the net balance after adjustments.';
+                // }
             }
+            part("Carry Forward"; "Carry Forward Grid")
+            {
+                SubPageLink = "Contract ID" = FIELD("Contract ID"); // Link to filter attachments for this owner only
+                ApplicationArea = All;
+                Caption = 'Carry Forward the Security Deposit To';
+                UpdatePropagation = Both;
+                Editable = false;
+            }
+            group("Refundable Deposits")
+            {
+                field("NetBalance"; Rec."Security Deposit")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Security Deposit';
+                    Editable = false;
+                    ToolTip = 'Displays the refundable security deposit amount.';
+                }
+                field("Chiller Deposit"; Rec."Chiller Deposit")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Shows the refundable chiller deposit amount.';
+                }
+                field("Other Deposit"; Rec."Other Deposit")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Displays other refundable deposits.';
+                }
+                field("Total Net Balance"; Rec."Total Refundable Deposit")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Total Refundable Deposit';
+                    Editable = false;
+                    ToolTip = 'Shows the total amount of refundable deposits.';
+                }
+            }
+
             group("Summary")
             {
                 field("Total Claim"; Rec."Total Claim")
