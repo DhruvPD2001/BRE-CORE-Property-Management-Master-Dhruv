@@ -212,6 +212,9 @@ page 50145 "Adjustment Deposits"
         GenJnlTemplate: Record "Gen. Journal Template";
         GenJnlBatch: Record "Gen. Journal Batch";
         BillingCalculation: Record "Final Billing Calculation Grid";
+        CustomerCard: Record Customer;
+        COASetup: Record "COA Setup";
+        COASetupLine: Record "COA Setup Line";
         Math: Codeunit Math;
         PostingDate: Date;
         DocumentNo: Code[20];
@@ -280,12 +283,38 @@ page 50145 "Adjustment Deposits"
         else
             LastLineNo := 10000;
 
-        case adjustmentDepositsRec."Item Description" of
-            adjustmentDepositsRec."Item Description"::"Security Deposit":
-                BalanceAccountNo := '4502';
-            adjustmentDepositsRec."Item Description"::"Chiller Deposit",
-            adjustmentDepositsRec."Item Description"::"Other Deposit":
-                BalanceAccountNo := '4508';
+        // case adjustmentDepositsRec."Item Description" of
+        //     adjustmentDepositsRec."Item Description"::"Security Deposit":
+        //         BalanceAccountNo := '4502';
+        //     adjustmentDepositsRec."Item Description"::"Chiller Deposit",
+        //     adjustmentDepositsRec."Item Description"::"Other Deposit":
+        //         BalanceAccountNo := '4508';
+        // end;
+
+        COASetupLine.SetRange("Secondary Item", Format(adjustmentDepositsRec."Item Description"));
+        if COASetupLine.FindFirst() then begin
+            if (COASetupLine.Residential = '') and (COASetupLine.Commercial = '') then
+                Error('COA Setup doest not exist or no G/L account has been selected for %1', adjustmentDepositsRec."Item Description")
+            else begin
+                if COASetupLine.Residential <> '' then
+                    BalanceAccountNo := COASetupLine.Residential
+                else
+                    BalanceAccountNo := COASetupLine.Commercial;
+
+            end;
+        end
+        else begin
+            Error('COA Setup doest not exist or no G/L account has been selected for %1', adjustmentDepositsRec."Item Description");
+        end;
+
+        if finalcalculation."Unit Type" <> '' then begin
+            CustomerCard.Reset();
+            CustomerCard.SetRange("No.", finalcalculation."Tenant ID");
+            if CustomerCard.FindFirst() then begin
+                CustomerCard.Validate("Gen. Bus. Posting Group", finalcalculation."Unit Type");
+                CustomerCard.Validate("Customer Posting Group", finalcalculation."Unit Type");
+                CustomerCard.Modify();
+            end;
         end;
 
 
@@ -325,6 +354,9 @@ page 50145 "Adjustment Deposits"
         GenJnlTemplate: Record "Gen. Journal Template";
         GenJnlBatch: Record "Gen. Journal Batch";
         BillingCalculation: Record "Final Billing Calculation Grid";
+        CustomerCard: Record Customer;
+        COASetup: Record "COA Setup";
+        COASetupLine: Record "COA Setup Line";
         Math: Codeunit Math;
         PostingDate: Date;
         DocumentNo: Code[20];
@@ -393,12 +425,36 @@ page 50145 "Adjustment Deposits"
         else
             LastLineNo := 10000;
 
-        case adjustmentDepositsRec."Item Description" of
-            adjustmentDepositsRec."Item Description"::"Security Deposit":
-                BalanceAccountNo := '4502';
-            adjustmentDepositsRec."Item Description"::"Chiller Deposit",
-            adjustmentDepositsRec."Item Description"::"Other Deposit":
-                BalanceAccountNo := '4508';
+        // case adjustmentDepositsRec."Item Description" of
+        //     adjustmentDepositsRec."Item Description"::"Security Deposit":
+        //         BalanceAccountNo := '4502';
+        //     adjustmentDepositsRec."Item Description"::"Chiller Deposit",
+        //     adjustmentDepositsRec."Item Description"::"Other Deposit":
+        //         BalanceAccountNo := '4508';
+        // end;
+
+        COASetupLine.SetRange("Secondary Item", Format(adjustmentDepositsRec."Item Description"));
+        if COASetupLine.FindFirst() then begin
+            if (COASetupLine.Residential = '') and (COASetupLine.Commercial = '') then
+                Error('COA Setup doest not exist or no G/L account has been selected for %1', adjustmentDepositsRec."Item Description")
+            else begin
+                if COASetupLine.Residential <> '' then
+                    BalanceAccountNo := COASetupLine.Residential
+                else
+                    BalanceAccountNo := COASetupLine.Commercial;
+
+            end;
+        end
+        else
+            Error('COA Setup doest not exist or no G/L account has been selected for %1', adjustmentDepositsRec."Item Description");
+        if finalcalculation."Unit Type" <> '' then begin
+            CustomerCard.Reset();
+            CustomerCard.SetRange("No.", finalcalculation."Tenant ID");
+            if CustomerCard.FindFirst() then begin
+                CustomerCard.Validate("Gen. Bus. Posting Group", finalcalculation."Unit Type");
+                CustomerCard.Validate("Customer Posting Group", finalcalculation."Unit Type");
+                CustomerCard.Modify();
+            end;
         end;
 
 
