@@ -895,7 +895,21 @@ page 50928 "Payment Mode Card2"
         GenJournalDocumentType: Enum "Gen. Journal Document Type";
         ChequeStatus: Enum "PDC Status Type Enum";
         GenJnlPostLine: Codeunit "Gen. Jnl.-Post Line";
+        COASetup: Record "COA Setup";
+        PDCAccount: Code[20];
     begin
+        ///////////////////////// COA Setup /////////////////////////////
+
+        COASetup.Get();
+        if COASetup."PDC Received" <> '' then begin
+            PDCAccount := COASetup."PDC Received";
+        end
+        else
+            Error('COA Setup doest not exist for PDC Received account');
+
+
+        ////////////////////////////// END COA Setup /////////////////////////
+
         // Filter all records with Cheque Status = 'Cheque Received'
         Rec.SetRange("Cheque Status", ChequeStatus::"Cheque Received");
 
@@ -926,7 +940,7 @@ page 50928 "Payment Mode Card2"
                 GenJournalLine.Amount := -Rec."Amount Including VAT";
                 GenJournalLine."Amount (LCY)" := GenJournalLine.Amount;
                 GenJournalLine."Bal. Account Type" := GenJournalAccountType::"G/L Account";
-                GenJournalLine."Bal. Account No." := '2001';
+                GenJournalLine."Bal. Account No." := PDCAccount;
                 GenJournalLine.Insert(true);
 
                 // Optional: Post line
