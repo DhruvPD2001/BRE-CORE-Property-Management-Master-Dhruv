@@ -40,6 +40,13 @@ page 50146 "Management Fee Calc."
                     ApplicationArea = All;
                 }
             }
+            part(ManagementFeeGrid; "Management Fee Calc Grid")
+            {
+                SubPageLink = "Primary Key" = FIELD("Primary Key"); // Link to filter attachments for this owner only
+                ApplicationArea = All;
+                Caption = 'Management Fee Details';
+                UpdatePropagation = Both;
+            }
         }
     }
 
