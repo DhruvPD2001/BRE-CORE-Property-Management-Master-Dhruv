@@ -6,6 +6,8 @@ codeunit 50111 "Attach Invoice Report"
     var
         SalesHeader1: Record "Sales Header";
         ConfigRecord: Record AzureConfiguration;
+        tenancyContract: Record "Tenancy Contract";
+        customer: Record Customer;
         azureBlobUploader: Codeunit "Azure AD Blob Storage";
         TempBlob: Codeunit "Temp Blob";
         RecRef: RecordRef;
@@ -18,6 +20,7 @@ codeunit 50111 "Attach Invoice Report"
         ReportID: Integer;
         OutStream: OutStream;
         folderName: Text;
+        postingGroup: Code[20];
     begin
         if not ConfigRecord.FindFirst() then
             Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
@@ -44,9 +47,53 @@ codeunit 50111 "Attach Invoice Report"
         UploadResult := azureBlobUploader.UploadDocumentToBlob(InStream, FileName, folderName);
         SalesInvHeader."View Invoice" := CopyStr(FileName, 1, StrLen(FileName));
         SalesInvHeader."View Document URL" := CopyStr(UploadResult, 1, StrLen(UploadResult));
-        AdddocumentInBillingCalculations(SalesInvHeader);
+        AddDocumentInBillingCalculations(SalesInvHeader);
         AddDocumentInAdditionalCharges(SalesInvHeader);
 
+        if tenancyContract.Get(SalesHeader."Contract ID") then begin
+            postingGroup := CopyStr(UpperCase(tenancyContract."Property Classification"), 1, 20);
+            if customer.Get(tenancyContract."Tenant ID") then begin
+                customer."Gen. Bus. Posting Group" := postingGroup;
+                customer."VAT Bus. Posting Group" := postingGroup;
+                customer."Customer Posting Group" := postingGroup;
+                customer.Modify();
+            end;
+
+            SalesInvHeader.Validate("Gen. Bus. Posting Group", postingGroup);
+            SalesInvHeader.Validate("VAT Bus. Posting Group", postingGroup);
+            SalesInvHeader.Validate("Customer Posting Group", postingGroup);
+        end;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", 'OnBeforePostSalesDoc', '', false, false)]
+    local procedure OnBeforePostSalesDoc(var SalesHeader: Record "Sales Header"; CommitIsSuppressed: Boolean; PreviewMode: Boolean; var HideProgressWindow: Boolean; var IsHandled: Boolean; var CalledBy: Integer)
+    var
+        SalesLine: Record "Sales Line";
+        TenancyContract: Record "Tenancy Contract";
+    begin
+        if PreviewMode then
+            exit;
+
+        if not TenancyContract.Get(SalesHeader."Contract ID") then
+            exit;
+
+        SalesLine.SetRange("Document Type", SalesHeader."Document Type");
+        SalesLine.SetRange("Document No.", SalesHeader."No.");
+
+        if SalesLine.FindSet(true) then
+            repeat
+                SalesLine.Validate(
+                    "Gen. Bus. Posting Group",
+                    CopyStr(UpperCase(TenancyContract."Property Classification"), 1, 20));
+
+                SalesLine.Validate(
+                    "VAT Bus. Posting Group",
+                    CopyStr(UpperCase(TenancyContract."Property Classification"), 1, 20));
+
+                SalesLine.Validate("VAT Prod. Posting Group", SalesLine."VAT Prod. Posting Group");
+
+                SalesLine.Modify(true);
+            until SalesLine.Next() = 0;
     end;
 
     procedure AddDocumentInAdditionalCharges(salesInvHeaderRec: Record "Sales Invoice Header")
@@ -66,7 +113,7 @@ codeunit 50111 "Attach Invoice Report"
 
     end;
 
-    procedure AdddocumentInBillingCalculations(salesInvHeaderRec: Record "Sales Invoice Header")
+    procedure AddDocumentInBillingCalculations(salesInvHeaderRec: Record "Sales Invoice Header")
     var
         billingcalculationgrid: Record "Final Billing Calculation Grid";
     begin
