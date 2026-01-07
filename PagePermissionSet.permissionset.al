@@ -209,5 +209,9 @@ permissionset 50101 PagePermissionSet
         codeunit "Attach Credit Memo Report" = X,
         codeunit "Attach Invoice Report" = X,
         codeunit "Ledger Entries Event Handler" = X,
-        page "Adjustment Deposits" = X;
+        page "Adjustment Deposits" = X,
+        page "Management Fee Calc Grid" = X,
+        page "Management Fee Calc." = X,
+        page "Management Fee Grid ListPart" = X,
+        page "Mangement Fee Master Card" = X;
 }
