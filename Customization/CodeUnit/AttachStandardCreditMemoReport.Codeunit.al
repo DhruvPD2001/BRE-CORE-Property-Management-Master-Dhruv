@@ -6,6 +6,8 @@ codeunit 50112 "Attach Credit Memo Report"
     var
         SalesHeader1: Record "Sales Header";
         ConfigRecord: Record AzureConfiguration;
+        tenancyContract: Record "Tenancy Contract";
+        customer: Record Customer;
         azureBlobUploader: Codeunit "Azure AD Blob Storage";
         TempBlob: Codeunit "Temp Blob";
         RecRef: RecordRef;
@@ -18,6 +20,7 @@ codeunit 50112 "Attach Credit Memo Report"
         ReportID: Integer;
         OutStream: OutStream;
         folderName: Text;
+        postingGroup: Code[20];
     begin
         if not ConfigRecord.FindFirst() then
             Error('Azure configuration is missing. Please set up the SAS URL in the Azure Configuration table.');
@@ -44,5 +47,19 @@ codeunit 50112 "Attach Credit Memo Report"
         UploadResult := azureBlobUploader.UploadDocumentToBlob(InStream, FileName, folderName);
         SalesCrMemoHeader."Credit Memo Document" := CopyStr(FileName, 1, StrLen(FileName));
         SalesCrMemoHeader."Credit Memo URL" := CopyStr(UploadResult, 1, StrLen(UploadResult));
+
+        if tenancyContract.Get(SalesHeader."Contract ID") then begin
+            postingGroup := CopyStr(UpperCase(tenancyContract."Property Classification"), 1, 20);
+            if customer.Get(tenancyContract."Tenant ID") then begin
+                customer."Gen. Bus. Posting Group" := postingGroup;
+                customer."VAT Bus. Posting Group" := postingGroup;
+                customer."Customer Posting Group" := postingGroup;
+                customer.Modify();
+            end;
+
+            SalesCrMemoHeader.Validate("Gen. Bus. Posting Group", postingGroup);
+            SalesCrMemoHeader.Validate("VAT Bus. Posting Group", postingGroup);
+            SalesCrMemoHeader.Validate("Customer Posting Group", postingGroup);
+        end;
     end;
 }
