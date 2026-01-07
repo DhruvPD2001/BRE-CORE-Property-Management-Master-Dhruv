@@ -159,6 +159,24 @@ page 50988 "Management Fee Calc Grid"
                     //   Editable = false;
                 }
             }
+
+        }
+
+    }
+    actions
+    {
+        area(Processing)
+        {
+            action(ShowCalculation)
+            {
+                Caption = 'Show Entries';
+                Image = Entries;
+                trigger OnAction()
+                begin
+
+                end;
+
+            }
         }
     }
 }

@@ -137,6 +137,10 @@ page 50987 "Management Fee Grid ListPart"
                     ApplicationArea = All;
                     Caption = 'Valid To';
                     ToolTip = 'Specifies the end date until which this management fee agreement is applicable.';
+                    trigger OnValidate()
+                    begin
+                        Rec."Validity Period" := Format(Rec."Valid From", 0, '<Day,2>/<Month,2>/<Year4>') + ' To ' + Format(Rec."Valid To", 0, '<Day,2>/<Month,2>/<Year4>');
+                    end;
                 }
 
                 field("Contract Status"; Rec."Contract Status")
@@ -192,6 +196,11 @@ page 50987 "Management Fee Grid ListPart"
                         OpenFileInBrowser(FileURL);
                     end;
 
+                }
+                field("Validity Period"; Rec."Validity Period")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
                 }
             }
 
