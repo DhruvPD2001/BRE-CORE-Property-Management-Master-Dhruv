@@ -148,7 +148,7 @@ page 50987 "Management Fee Grid ListPart"
                     ApplicationArea = All;
                     Caption = 'Contract Status';
                     ToolTip = 'Indicates whether the management fee contract is active or expired.';
-                    //   Editable = false;
+                    Editable = false;
                 }
                 field("Contract Document"; Rec."Contract Document")
                 {
