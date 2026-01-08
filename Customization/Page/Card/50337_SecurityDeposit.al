@@ -99,6 +99,7 @@ page 50337 "Security Deposit Card"
 
                         // Filter the contracts by the selected tenant
                         TenancyContractRec.SetRange("Customer Name", Rec."Tenant Full Name");
+                        TenancyContractRec.SetRange("Contract Status", TenancyContractRec."Contract Status"::Active);
                         if PAGE.RunModal(PAGE::"Tenancy Contract List", TenancyContractRec) = ACTION::LookupOK then
                             Rec."New_Contract ID" := TenancyContractRec."Contract ID";
 
