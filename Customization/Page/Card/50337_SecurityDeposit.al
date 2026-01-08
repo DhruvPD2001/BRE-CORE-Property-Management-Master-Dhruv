@@ -82,6 +82,8 @@ page 50337 "Security Deposit Card"
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
+                    Editable = false;
+                    StyleExpr = styleExpr;
                 }
 
 
@@ -199,25 +201,22 @@ page 50337 "Security Deposit Card"
             }
         }
     }
+    trigger OnAfterGetCurrRecord()
+    begin
+        styleExpr := GetStatusStyle();
+    end;
 
+    var
+        styleExpr: Text;
 
-    // actions
-    // {
-    //     area(processing)
-    //     {
-    //         action(Save)
-    //         {
-    //             ApplicationArea = All;
-    //             Caption = 'Save';
-    //             trigger OnAction()
-    //             begin
-    //                 // Save logic, if needed
-    //             end;
-    //         }
-    //     }
-    // }
+    procedure GetStatusStyle(): Text
+    begin
+        if Rec.Status = Rec.Status::Open then
+            exit('Strong');
+        if Rec.Status = Rec.Status::Posted then
+            exit('Favorable');
+    end;
 
-    // Trasfer from Table Start  
     local procedure FetchContractDetails(ContractID: Integer; IsNewContract: Boolean)
     var
         TenancyContractRec: Record "Tenancy Contract";
@@ -268,5 +267,6 @@ page 50337 "Security Deposit Card"
 
         end;
     end;
+
 }
 

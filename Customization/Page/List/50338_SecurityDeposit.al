@@ -45,6 +45,7 @@ page 50338 "Security Deposit List"
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
+                    StyleExpr = styleExpr;
                 }
 
                 field("New_Contract ID"; Rec."New_Contract ID")
@@ -81,19 +82,20 @@ page 50338 "Security Deposit List"
         }
     }
 
-    // actions
-    // {
-    //     area(processing)
-    //     {
-    //         action(New)
-    //         {
-    //             ApplicationArea = All;
-    //             Caption = 'New Security Deposit';
-    //             trigger OnAction()
-    //             begin
-    //                 Page.RunModal(Page::"Security Deposit Card");
-    //             end;
-    //         }
-    //     }
-    // }
+
+    trigger OnAfterGetRecord()
+    begin
+        styleExpr := GetStatusStyle();
+    end;
+
+    var
+        styleExpr: Text;
+
+    procedure GetStatusStyle(): Text
+    begin
+        if Rec.Status = Rec.Status::Open then
+            exit('Strong');
+        if Rec.Status = Rec.Status::Posted then
+            exit('Favorable');
+    end;
 }

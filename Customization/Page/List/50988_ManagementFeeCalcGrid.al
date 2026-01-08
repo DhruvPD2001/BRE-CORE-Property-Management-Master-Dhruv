@@ -173,13 +173,17 @@ page 50988 "Management Fee Calc Grid"
     {
         area(Processing)
         {
-            action(ShowCalculation)
+            action(GenerateReport)
             {
-                Caption = 'Show Entries';
-                Image = Entries;
+                Caption = 'Generate Report';
+                ToolTip = 'Generate a detailed report of management fee calculations.';
+                Image = Report;
                 trigger OnAction()
+                var
+                    MgtFeeCalc: Record "Management Fee Calc. Header";
                 begin
-
+                    MgtFeeCalc.Get();
+                    Report.Run(50119, false, false, MgtFeeCalc);
                 end;
 
             }
