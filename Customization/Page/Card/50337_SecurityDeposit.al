@@ -11,7 +11,9 @@ page 50337 "Security Deposit Card"
         {
             group("Carry Forward From")
             {
-                field("Security Deposit ID"; rec."Security Deposit ID")
+                Editable = not (Rec.Status = Rec.Status::Posted);
+                field("Security Deposit ID";
+                rec."Security Deposit ID")
                 {
                     ApplicationArea = All;
                     Editable = false;
@@ -20,7 +22,6 @@ page 50337 "Security Deposit Card"
                 field("Tenant Full Name"; rec."Tenant Full Name")
                 {
                     ApplicationArea = All;
-                    Editable = true;
                 }
 
 
@@ -78,16 +79,20 @@ page 50337 "Security Deposit Card"
                     Editable = false;
                 }
 
+                field(Status; Rec.Status)
+                {
+                    ApplicationArea = All;
+                }
+
 
             }
 
             group("Carry Forward To")
             {
-
+                Editable = not (Rec.Status = Rec.Status::Posted);
                 field("New_Contract ID"; rec."New_Contract ID")
                 {
                     ApplicationArea = All;
-                    Editable = true;
 
                     // Trasfer from Table Start  
                     trigger OnLookup(var Text: Text): Boolean
@@ -134,7 +139,6 @@ page 50337 "Security Deposit Card"
                 field("New_Security Deposit Amount"; rec."Carry Forward Amount")
                 {
                     ApplicationArea = All;
-                    Editable = true;
 
 
                 }
@@ -175,6 +179,7 @@ page 50337 "Security Deposit Card"
                 ApplicationArea = All;
                 Caption = 'Post Security Deposit';
                 Image = Post;
+                Enabled = not (Rec.Status = Rec.Status::Posted);
                 trigger OnAction()
                 var
                     SecurityDepositPostMgt: Codeunit "Security Deposit Posting Mgt.";
@@ -188,6 +193,8 @@ page 50337 "Security Deposit Card"
                         finalcalculationRec.Modify(true);
                         finalcalculationRec.CalculateFinalSummary(finalcalculationRec);
                     end;
+                    Rec.Status := Rec.Status::Posted;
+                    Rec.Modify(true);
                 end;
             }
         }
@@ -259,12 +266,7 @@ page 50337 "Security Deposit Card"
 
             end;
 
-            // Clear Adjusted Amount
-            // UpdateAdjustedAmount();
         end;
     end;
-    // Trasfer from Table End
-
-
 }
 
