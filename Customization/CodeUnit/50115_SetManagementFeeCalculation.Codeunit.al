@@ -26,29 +26,26 @@ codeunit 50115 "SetManagementFeeCalculation"
         MgtFeeGrid: Record "Management Fee Grid";
         MgtFeeLine: Record "Management Fee Calc. Line";
     begin
-        // 1️⃣ Delete existing lines for this document
         MgtFeeLine.Reset();
         MgtFeeLine.SetRange("Primary Key", MgtFeeHeader."Primary Key");
         if MgtFeeLine.FindSet() then
             MgtFeeLine.DeleteAll();
 
-        // 2️⃣ Filter source table
+
         MgtFeeGrid.Reset();
 
-        // Owner filter
         if not MgtFeeHeader."All Owners" then
             MgtFeeGrid.SetRange("Owner ID", MgtFeeHeader."Owner ID");
 
-        // Property filter
         if not MgtFeeHeader."All Properties" then
             MgtFeeGrid.SetFilter("Property Name", BuildPropertyFilter(MgtFeeHeader.Property));
 
-        // 3️⃣ Period overlap filter
+
         MgtFeeGrid.SetFilter("Valid From", '<=%1', MgtFeeHeader."Period To");
 
         MgtFeeGrid.SetFilter("Valid To", '>=%1', MgtFeeHeader."Period From");
 
-        // 4️⃣ Insert matching records
+
         if MgtFeeGrid.FindSet() then
             repeat
                 InsertMgtFeeLine(MgtFeeHeader, MgtFeeGrid);

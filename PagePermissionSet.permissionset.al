@@ -213,5 +213,8 @@ permissionset 50101 PagePermissionSet
         page "Management Fee Calc Grid" = X,
         page "Management Fee Calc." = X,
         page "Management Fee Grid ListPart" = X,
-        page "Mangement Fee Master Card" = X;
+        page "Mangement Fee Master Card" = X,
+        report "Management Fee Calculation" = X,
+        codeunit SetManagementFeeCalculation = X,
+        codeunit "Update Management Fee Status" = X;
 }
