@@ -138,20 +138,26 @@ page 50146 "Management Fee Calc."
         }
     }
 
-    // actions
-    // {
-    //     area(Processing)
-    //     {
-    //         action(ActionName)
-    //         {
+    actions
+    {
+        area(Processing)
+        {
+            action(ShowCalculation)
+            {
+                Caption = 'Show Entries';
+                Image = Entries;
+                trigger OnAction()
+                var
+                    ManagementFeeCalcCodeunit: Codeunit "SetManagementFeeCalculation";
+                begin
+                    ManagementFeeCalcCodeunit.PopulateManagementFeeLines(Rec);
+                end;
 
-    //             trigger OnAction()
-    //             begin
+            }
+        }
+    }
 
-    //             end;
-    //         }
-    //     }
-    // }
+
 
     trigger OnOpenPage()
     begin
