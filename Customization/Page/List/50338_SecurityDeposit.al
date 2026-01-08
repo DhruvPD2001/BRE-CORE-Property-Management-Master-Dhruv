@@ -42,6 +42,10 @@ page 50338 "Security Deposit List"
                 {
                     ApplicationArea = All;
                 }
+                field(Status; Rec.Status)
+                {
+                    ApplicationArea = All;
+                }
 
                 field("New_Contract ID"; Rec."New_Contract ID")
                 {
@@ -72,6 +76,7 @@ page 50338 "Security Deposit List"
                 {
                     ApplicationArea = All;
                 }
+
             }
         }
     }
