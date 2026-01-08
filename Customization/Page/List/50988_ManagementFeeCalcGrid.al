@@ -38,7 +38,13 @@ page 50988 "Management Fee Calc Grid"
                     Visible = false;
                     Editable = false;
                 }
-
+                field("Property Management Company"; Rec."Property Management Company")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Property Management Company';
+                    ToolTip = 'Specifies the name of the property management company responsible for managing the property.';
+                    Editable = false;
+                }
                 field("Company/Owner Name"; Rec."Company/Owner Name")
                 {
                     ApplicationArea = All;
