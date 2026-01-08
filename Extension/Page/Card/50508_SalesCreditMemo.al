@@ -10,6 +10,7 @@ pageextension 50508 SalesCreditMemo extends "Sales Credit Memo"
                 {
                     ApplicationArea = All;
                     ToolTip = 'ID of the contract related to this credit memo.';
+                    TableRelation = "Tenancy Contract"."Contract ID";
                     trigger OnValidate()
                     var
                         tenancyContract: Record "Tenancy Contract";

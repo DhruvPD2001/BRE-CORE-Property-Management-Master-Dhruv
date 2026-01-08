@@ -12,6 +12,7 @@ pageextension 50504 SalesInvoice extends "Sales Invoice"
                     Caption = 'Contract ID';
                     ApplicationArea = All;
                     Editable = true;
+                    TableRelation = "Tenancy Contract"."Contract ID";
 
                     trigger OnValidate()
                     var
