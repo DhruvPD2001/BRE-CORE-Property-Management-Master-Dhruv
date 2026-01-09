@@ -170,6 +170,7 @@ codeunit 50115 "SetManagementFeeCalculation"
 
                         // Sum amounts from Payment Schedule lines for this series where Secondary Item Type = 'Rent'
                         PaymentShceduleLine.Reset();
+                        PaymentShceduleLine.SetRange("Contract ID", Tenancycontract."Contract ID");
                         PaymentShceduleLine.SetRange("Payment Series", paymentmode2."Payment Series");
                         PaymentShceduleLine.SetRange("Secondary Item Type", 'Rent');
                         if PaymentShceduleLine.FindSet() then
@@ -209,12 +210,13 @@ codeunit 50115 "SetManagementFeeCalculation"
         tempDate := pStartDate;
 
         while tempDate <= pEndDate do begin
-            if monthFilter <> '' then
+            if monthFilter = '' then
                 monthFilter := fetchMonth.GetMonthName(Date2DMY(tempDate, 2))
             else
                 monthFilter := monthFilter + '|' + fetchMonth.GetMonthName(Date2DMY(tempDate, 2));
             tempDate := CalcDate('<1M>', tempDate);
         end;
+        exit(monthFilter);
     end;
 
     procedure CalculateMgtFeeFromFixedAmount(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"): Decimal
