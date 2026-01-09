@@ -25,7 +25,10 @@ codeunit 50115 "SetManagementFeeCalculation"
     var
         MgtFeeGrid: Record "Management Fee Grid";
         MgtFeeLine: Record "Management Fee Calc. Line";
+        monthFilter: Text;
     begin
+        monthFilter := GetMonthFilter(MgtFeeHeader."Period From", MgtFeeHeader."Period To");
+
         MgtFeeLine.Reset();
         MgtFeeLine.SetRange("Primary Key", MgtFeeHeader."Primary Key");
         if MgtFeeLine.FindSet() then
@@ -48,11 +51,11 @@ codeunit 50115 "SetManagementFeeCalculation"
 
         if MgtFeeGrid.FindSet() then
             repeat
-                InsertMgtFeeLine(MgtFeeHeader, MgtFeeGrid);
+                InsertMgtFeeLine(MgtFeeHeader, MgtFeeGrid, monthFilter);
             until MgtFeeGrid.Next() = 0;
     end;
 
-    procedure InsertMgtFeeLine(MgtFeeHeader: Record "Management Fee Calc. Header"; MgtFeeGrid: Record "Management Fee Grid")
+    procedure InsertMgtFeeLine(MgtFeeHeader: Record "Management Fee Calc. Header"; MgtFeeGrid: Record "Management Fee Grid"; pMonthFilter: Text)
     var
         MgtFeeCalcLine: Record "Management Fee Calc. Line";
     begin
@@ -72,7 +75,8 @@ codeunit 50115 "SetManagementFeeCalculation"
         MgtFeeCalcLine."Percentage" := MgtFeeGrid."Percentage";
         MgtFeeCalcLine."Amount" := MgtFeeGrid."Amount";
         MgtFeeCalcLine."Base Amount Source" := MgtFeeGrid."Base Amount Source";
-
+        MgtFeeCalcLine."Base Amount" := FetchBaseAmount(MgtFeeCalcLine, MgtFeeHeader, pMonthFilter);
+        MgtFeeCalcLine."Management Fee" := CalculateManagementFee(MgtFeeCalcLine, MgtFeeHeader);
         MgtFeeCalcLine.Insert();
     end;
 
@@ -88,4 +92,143 @@ codeunit 50115 "SetManagementFeeCalculation"
         exit(10000);
     end;
 
+    procedure FetchBaseAmount(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"; pMonthFilter: Text): Decimal
+    var
+        baseAmount: Decimal;
+    begin
+        case
+            MgtFeeCalcLine."Base Amount Source" of
+            MgtFeeCalcLine."Base Amount Source"::Revenue:
+                baseAmount := FetchBaseAmountFromRevenue(MgtFeeCalcLine, MgtFeeHeader, pMonthFilter);
+            MgtFeeCalcLine."Base Amount Source"::"Annual Rent":
+                baseAmount := FetchBaseAmountFromAnnualRent(MgtFeeCalcLine, MgtFeeHeader, pMonthFilter);
+            MgtFeeCalcLine."Base Amount Source"::Collections:
+                baseAmount := FetchBaseAmountFromCollections(MgtFeeCalcLine, MgtFeeHeader, pMonthFilter);
+        end;
+        exit(baseAmount);
+    end;
+
+    procedure FetchBaseAmountFromRevenue(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"; pMonthFilter: Text): Decimal
+    var
+        revenueAllocationSubGrid: Record "Revenue Allocation SubGrid";
+        totalAmount: Decimal;
+    begin
+        totalAmount := 0;
+        revenueAllocationSubGrid.SetRange("Property Name", MgtFeeCalcLine."Property Name");
+        revenueAllocationSubGrid.SetRange("Owner Name", MgtFeeCalcLine."Company/Owner Name");
+        revenueAllocationSubGrid.SetRange(Description, 'Regular');
+        revenueAllocationSubGrid.SetRange("Posting Year", MgtFeeHeader."Financial Year");
+        revenueAllocationSubGrid.SetFilter("Contract Start Date", '<=%1', MgtFeeHeader."Period To");
+        revenueAllocationSubGrid.SetFilter("Contract End Date", '>=%1|%2', MgtFeeHeader."Period From", 0D);
+        revenueAllocationSubGrid.SetFilter("Posting Month", pMonthFilter);
+        if revenueAllocationSubGrid.FindSet() then
+            repeat
+                totalAmount += revenueAllocationSubGrid."Total Value";
+            until revenueAllocationSubGrid.Next() = 0;
+        exit(totalAmount);
+    end;
+
+    procedure FetchBaseAmountFromAnnualRent(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"; pMonthFilter: Text): Decimal
+    var
+        revenueAllocationSubGrid: Record "Revenue Allocation SubGrid";
+        annualRentPerMonth: Decimal;
+        totalAmount: Decimal;
+    begin
+        totalAmount := 0;
+        revenueAllocationSubGrid.SetRange("Property Name", MgtFeeCalcLine."Property Name");
+        revenueAllocationSubGrid.SetRange("Owner Name", MgtFeeCalcLine."Company/Owner Name");
+        revenueAllocationSubGrid.SetRange(Description, 'Regular');
+        revenueAllocationSubGrid.SetRange("Posting Year", MgtFeeHeader."Financial Year");
+        revenueAllocationSubGrid.SetFilter("Contract Start Date", '<=%1', MgtFeeHeader."Period To");
+        revenueAllocationSubGrid.SetFilter("Contract End Date", '>=%1|%2', MgtFeeHeader."Period From", 0D);
+        revenueAllocationSubGrid.SetFilter("Posting Month", pMonthFilter);
+        if revenueAllocationSubGrid.FindSet() then
+            repeat
+                annualRentPerMonth := revenueAllocationSubGrid."Annual Amount" / 12;
+                totalAmount += annualRentPerMonth;
+            until revenueAllocationSubGrid.Next() = 0;
+        exit(totalAmount);
+    end;
+
+    procedure FetchBaseAmountFromCollections(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"; pMonthFilter: Text): Decimal
+    begin
+
+    end;
+
+    procedure CalculateManagementFee(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"): Decimal
+    var
+        mgtFee: Decimal;
+        finalMgtFee: Decimal;
+    begin
+        case
+            MgtFeeCalcLine."Calculation Method" of
+            MgtFeeCalcLine."Calculation Method"::"Percentage of Annual Rent", MgtFeeCalcLine."Calculation Method"::"Percentage of Collections", MgtFeeCalcLine."Calculation Method"::"Percentage of Monthly Revenue":
+                finalMgtFee := (MgtFeeCalcLine."Base Amount" * MgtFeeCalcLine.Percentage) / 100;
+            MgtFeeCalcLine."Calculation Method"::"Per Unit Fee":
+                finalMgtFee := CalculateMgtFeeFromFixedAmount(MgtFeeCalcLine, MgtFeeHeader);
+            MgtFeeCalcLine."Calculation Method"::Hybrid:
+                finalMgtFee := ((MgtFeeCalcLine."Base Amount" * MgtFeeCalcLine.Percentage) / 100) + CalculateMgtFeeFromFixedAmount(MgtFeeCalcLine, MgtFeeHeader);
+        end;
+        exit(finalMgtFee);
+    end;
+
+    procedure GetMonthFilter(pStartDate: Date; pEndDate: Date): Text
+    var
+        fetchMonth: Codeunit "Fetch Month";
+        tempDate: Date;
+        monthFilter: Text;
+    begin
+        tempDate := pStartDate;
+
+        while tempDate <= pEndDate do begin
+            if monthFilter <> '' then
+                monthFilter := fetchMonth.GetMonthName(Date2DMY(tempDate, 2))
+            else
+                monthFilter := monthFilter + '|' + fetchMonth.GetMonthName(Date2DMY(tempDate, 2));
+            tempDate := CalcDate('<1M>', tempDate);
+        end;
+    end;
+
+    procedure CalculateMgtFeeFromFixedAmount(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"): Decimal
+    var
+        tenancyContract: Record "Tenancy Contract";
+        unitCount: Integer;
+        totalAmount: Decimal;
+    begin
+        unitCount := 0;
+        tenancyContract.SetFilter("Contract Start Date", '<=%1', MgtFeeHeader."Period To");
+        tenancyContract.SetFilter("Contract End Date", '>=%1|%2', MgtFeeHeader."Period From", 0D);
+        if tenancyContract.FindSet() then
+            repeat
+                if tenancyContract."Unit ID" <> '' then
+                    unitCount += 1
+                else
+                    unitCount += MergeUnitCount(tenancyContract."Unit Number");
+            until tenancyContract.Next() = 0;
+
+        //ToDo: Update formula to also multiply with number of months in period
+        totalAmount := unitCount * MgtFeeCalcLine.Amount;
+        exit(totalAmount);
+    end;
+
+    procedure MergeUnitCount(pUnitNumber: Text[50]): Integer
+    var
+        UnitArr: List of [Text];
+        Unit: Text;
+        unitCount: Integer;
+    begin
+        if pUnitNumber = '' then
+            exit(0);
+
+        UnitArr := pUnitNumber.Split(',');
+        unitCount := 0;
+
+        foreach Unit in UnitArr do begin
+            Unit := DelChr(Unit, '<>', ' ');
+            if Unit <> '' then
+                unitCount += 1;
+        end;
+
+        exit(unitCount);
+    end;
 }

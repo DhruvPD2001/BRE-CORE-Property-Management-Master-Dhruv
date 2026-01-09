@@ -94,7 +94,7 @@ page 50146 "Management Fee Calc."
                             if PropertyRegistrationRec.FindSet() then begin
                                 repeat
                                     if SelectedPropertyNames <> '' then
-                                        SelectedPropertyNames := SelectedPropertyNames + ',';
+                                        SelectedPropertyNames := SelectedPropertyNames + ', ';
                                     SelectedPropertyNames := SelectedPropertyNames + PropertyRegistrationRec."Property Name";
                                 until PropertyRegistrationRec.Next() = 0;
                                 Rec.Property := SelectedPropertyNames;
@@ -155,13 +155,15 @@ page 50146 "Management Fee Calc."
 
             }
         }
+
+        area(Promoted)
+        {
+            actionref(ShowCalculation_; ShowCalculation)
+            { }
+        }
     }
-
-
-
     trigger OnOpenPage()
     begin
-
         Rec.Reset();
         if not Rec.Get() then begin
             Rec.Init();
@@ -177,7 +179,6 @@ page 50146 "Management Fee Calc."
     begin
         allownereditable := not Rec."All Owners";
         allpropertyeditable := not Rec."All Properties";
-
     end;
 
     var

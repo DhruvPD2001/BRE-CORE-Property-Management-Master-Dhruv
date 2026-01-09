@@ -64,6 +64,7 @@ report 50119 "Management Fee Calculation"
 
             trigger OnAfterGetRecord()
             begin
+                CalcFields("Owner Name");
                 if "All Owners" then
                     OwnerName := 'All'
                 else
