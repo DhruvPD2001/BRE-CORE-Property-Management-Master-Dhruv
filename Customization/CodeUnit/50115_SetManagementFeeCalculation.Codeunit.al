@@ -151,13 +151,41 @@ codeunit 50115 "SetManagementFeeCalculation"
     end;
 
     procedure FetchBaseAmountFromCollections(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"; pMonthFilter: Text): Decimal
+    var
+        Tenancycontract: Record "Tenancy Contract";
+        PaymentShceduleLine: Record "Payment Schedule2";
+        paymentmode2: Record "Payment Mode2";
+        totalamount: Decimal;
+        paymentSeries: Text;
     begin
+        totalamount := 0;
+        Tenancycontract.Reset();
+        Tenancycontract.SetRange("Property Name", MgtFeeCalcLine."Property Name");
+        if Tenancycontract.FindSet() then
+            repeat
+                paymentmode2.SetRange("Contract ID", Tenancycontract."Contract ID");
+                paymentmode2.SetFilter("Receipt Date", '%1..%2', MgtFeeHeader."Period From", MgtFeeHeader."Period To");
+                if paymentmode2.FindSet() then
+                    repeat
 
+                        // Sum amounts from Payment Schedule lines for this series where Secondary Item Type = 'Rent'
+                        PaymentShceduleLine.Reset();
+                        PaymentShceduleLine.SetRange("Payment Series", paymentmode2."Payment Series");
+                        PaymentShceduleLine.SetRange("Secondary Item Type", 'Rent');
+                        if PaymentShceduleLine.FindSet() then
+                            repeat
+                                totalamount += PaymentShceduleLine.Amount;
+                            until PaymentShceduleLine.Next() = 0;
+
+                    // Mark series as processed
+                    until paymentmode2.Next() = 0;
+
+            until Tenancycontract.Next() = 0;
+        exit(totalamount);
     end;
 
     procedure CalculateManagementFee(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"): Decimal
     var
-        mgtFee: Decimal;
         finalMgtFee: Decimal;
     begin
         case
@@ -192,10 +220,12 @@ codeunit 50115 "SetManagementFeeCalculation"
     procedure CalculateMgtFeeFromFixedAmount(var MgtFeeCalcLine: Record "Management Fee Calc. Line"; MgtFeeHeader: Record "Management Fee Calc. Header"): Decimal
     var
         tenancyContract: Record "Tenancy Contract";
+        fetchMonth: Codeunit "Fetch Month";
         unitCount: Integer;
         totalAmount: Decimal;
     begin
         unitCount := 0;
+        tenancyContract.SetRange("Property Name", MgtFeeCalcLine."Property Name");
         tenancyContract.SetFilter("Contract Start Date", '<=%1', MgtFeeHeader."Period To");
         tenancyContract.SetFilter("Contract End Date", '>=%1|%2', MgtFeeHeader."Period From", 0D);
         if tenancyContract.FindSet() then
@@ -206,8 +236,7 @@ codeunit 50115 "SetManagementFeeCalculation"
                     unitCount += MergeUnitCount(tenancyContract."Unit Number");
             until tenancyContract.Next() = 0;
 
-        //ToDo: Update formula to also multiply with number of months in period
-        totalAmount := unitCount * MgtFeeCalcLine.Amount;
+        totalAmount := unitCount * MgtFeeCalcLine.Amount * fetchMonth.GetNoOfMonths(MgtFeeCalcLine."Valid From", MgtFeeCalcLine."Valid To", MgtFeeHeader."Period From", MgtFeeHeader."Period To");
         exit(totalAmount);
     end;
 
