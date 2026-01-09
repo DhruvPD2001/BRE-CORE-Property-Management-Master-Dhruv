@@ -144,8 +144,8 @@ page 50146 "Management Fee Calc."
         {
             action(ShowCalculation)
             {
-                Caption = 'Show Entries';
-                Image = Entries;
+                Caption = 'Calculate Management Fee';
+                Image = CalculateVAT;
                 trigger OnAction()
                 var
                     ManagementFeeCalcCodeunit: Codeunit "SetManagementFeeCalculation";
