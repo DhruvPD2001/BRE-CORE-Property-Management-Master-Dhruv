@@ -101,7 +101,7 @@ page 50903 "Final Calculation Card"
                         RevenueCalculateOneTime();
                         RevenueCalculate();
                         PaymentDetailsFromPaymentSchedule2();
-
+                        InvoiceCreditNoteSummaryData();
 
                         Rec.CalculateFinalSummary(Rec);
                         CurrPage.UPDATE(false);
@@ -481,6 +481,27 @@ page 50903 "Final Calculation Card"
                     ToolTip = 'Shows the total amount of refundable deposits.';
                 }
             }
+            part("Final Adjustment / Contract Reductions"; "FinalAdjuContractReduction")
+            {
+                SubPageLink = "Contract No." = FIELD("Contract ID");
+                ApplicationArea = All;
+                UpdatePropagation = Both;
+            }
+            field("Credit Not To Be Raised"; Rec."Credit Not To Be Raised")
+            {
+                ApplicationArea = All;
+                Caption = 'Credit Not To Be Raised';
+                Editable = false;
+                ToolTip = 'Displays the total amount of credit notes';
+            }
+            part("InvoiceCreditNoteSummary"; "InvoiceCreditNoteSummary")
+            {
+                SubPageLink = "Contract No." = FIELD("Contract ID");
+                ApplicationArea = All;
+                Caption = 'Invoice / Credit Note Summary';
+                UpdatePropagation = Both;
+            }
+
 
             group("Summary")
             {
@@ -1157,6 +1178,8 @@ page 50903 "Final Calculation Card"
         CurrPage."FinalSettelemtss".Page.SetTenantID(Rec."Tenant ID");
         CurrPage."FinalSettelemtss".Page.SetContractID(Rec."Contract ID");
         CurrPage."Carry Forward".Page.SetContractId(Rec."Contract ID");
+        CurrPage."Final Adjustment / Contract Reductions".Page.SetContractNo(Rec."Contract ID");
+        CurrPage.InvoiceCreditNoteSummary.Page.SetContractNo(Rec."Contract ID");
         // FetchSecurityDepositInfo();
         // UpdateTotalClaim(); // Add this line to calculate the total
         FinalSettlementVisible();
@@ -1186,6 +1209,8 @@ page 50903 "Final Calculation Card"
         CurrPage."FinalSettelemtss".Page.SetTenantID(Rec."Tenant ID");
         CurrPage."FinalSettelemtss".Page.SetContractID(Rec."Contract ID");
         CurrPage."Carry Forward".Page.SetContractId(Rec."Contract ID");
+        CurrPage."Final Adjustment / Contract Reductions".Page.SetContractNo(Rec."Contract ID");
+        CurrPage.InvoiceCreditNoteSummary.Page.SetContractNo(Rec."Contract ID");
         // UpdateTotalClaim(); // Add this line to calculate the total
         FinalSettlementVisible();
         if Rec."Amount Refundable" <> 0 then
@@ -1211,6 +1236,8 @@ page 50903 "Final Calculation Card"
         CurrPage."FinalSettelemtss".Page.SetTenantID(Rec."Tenant ID");
         CurrPage."FinalSettelemtss".Page.SetContractID(Rec."Contract ID");
         CurrPage."Carry Forward".Page.SetContractId(Rec."Contract ID");
+        CurrPage."Final Adjustment / Contract Reductions".Page.SetContractNo(Rec."Contract ID");
+        CurrPage.InvoiceCreditNoteSummary.Page.SetContractNo(Rec."Contract ID");
         FinalSettlementVisible();
         if Rec."Amount Refundable" <> 0 then
             IsRefundable := true
@@ -1648,6 +1675,33 @@ page 50903 "Final Calculation Card"
                 end;
             until pendingReceieableRecGrid.Next() = 0;
     end;
+
+    procedure InvoiceCreditNoteSummaryData()
+    var
+        DescriptionList: List of [Text];
+        Description: Text;
+        InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
+    begin
+        // Clear existing lines in Final Revenue Calculation Grid for this contract
+        InvoiceCreditNoteSummaryRec.SetRange("Contract No.", Rec."Contract ID");
+        if InvoiceCreditNoteSummaryRec.FindSet() then
+            InvoiceCreditNoteSummaryRec.DeleteAll();
+
+        DescriptionList.Add('Final Billing Calculation');
+        DescriptionList.Add('Termination Additional Charges');
+        DescriptionList.Add('Financial Adjustments / Contract Reductions');
+
+        foreach Description in DescriptionList do begin
+            InvoiceCreditNoteSummaryRec.Init();
+            InvoiceCreditNoteSummaryRec."Contract No." := Rec."Contract ID";
+            InvoiceCreditNoteSummaryRec.Description := Description;
+            InvoiceCreditNoteSummaryRec.Insert();
+            Clear(InvoiceCreditNoteSummaryRec);
+        end;
+
+
+    end;
+
 
     //////////////////////// END PENDING RECIVEABLE CALCULATION //////////////////////
 

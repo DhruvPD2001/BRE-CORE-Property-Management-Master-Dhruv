@@ -216,5 +216,7 @@ permissionset 50101 PagePermissionSet
         page "Mangement Fee Master Card" = X,
         report "Management Fee Calculation" = X,
         codeunit SetManagementFeeCalculation = X,
-        codeunit "Update Management Fee Status" = X;
+        codeunit "Update Management Fee Status" = X,
+        page FinalAdjuContractReduction = X,
+        page InvoiceCreditNoteSummary = X;
 }
