@@ -89,6 +89,7 @@ page 50903 "Final Calculation Card"
                         PopulateRevenueCalculationGrid();
                         GetDataTenancyContract();
                         PopulateRevisedCalculationGrid();
+                        InvoiceCreditNoteSummaryData();
                         BillingCalcGridRentCalc();
                         BillingCalcridTenancyContractSubpge();
                         PopulateBillingCalculationGrid();
@@ -101,7 +102,7 @@ page 50903 "Final Calculation Card"
                         RevenueCalculateOneTime();
                         RevenueCalculate();
                         PaymentDetailsFromPaymentSchedule2();
-                        InvoiceCreditNoteSummaryData();
+
 
                         Rec.CalculateFinalSummary(Rec);
                         CurrPage.UPDATE(false);
@@ -1399,9 +1400,10 @@ page 50903 "Final Calculation Card"
 
     procedure CreditNoteTotalAmount(var BillingCalcGrid: Record "Final Billing Calculation Grid")
     var
-        TotalPositiveAmount: Decimal;
         billingcalculationgird1: Record "Final Billing Calculation Grid";
         billingcalculationgird2: Record "Final Billing Calculation Grid";
+        InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
+        TotalPositiveAmount: Decimal;
     begin
         // Calculate total positive difference for the whole contract
         TotalPositiveAmount := 0;
@@ -1420,14 +1422,23 @@ page 50903 "Final Calculation Card"
                 billingcalculationgird2."Credit Note Amount" := Abs(TotalPositiveAmount);
                 billingcalculationgird2.Modify();
             until billingcalculationgird2.Next() = 0;
+
+        InvoiceCreditNoteSummaryRec.SetRange("Contract No.", BillingCalcGrid."Contract ID");
+        InvoiceCreditNoteSummaryRec.SetRange(Description, 'Final Billing Calculation');
+        if InvoiceCreditNoteSummaryRec.FindFirst() then begin
+            InvoiceCreditNoteSummaryRec."Credit Note" := Abs(TotalPositiveAmount);
+            InvoiceCreditNoteSummaryRec.Modify();
+        end;
+
     end;
 
 
     procedure InvoiceTotalAmount(var BillingCalcGrid: Record "Final Billing Calculation Grid")
     var
-        TotalNegativeDifference: Decimal;
         billingcalculationgird1: Record "Final Billing Calculation Grid";
         billingcalculationgird2: Record "Final Billing Calculation Grid";
+        InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
+        TotalNegativeDifference: Decimal;
     begin
         // Calculate total negative difference for the whole contract
         TotalNegativeDifference := 0;
@@ -1450,18 +1461,25 @@ page 50903 "Final Calculation Card"
                 billingcalculationgird2."Invoice Amount" := Abs(TotalNegativeDifference);
                 billingcalculationgird2.Modify();
             until billingcalculationgird2.Next() = 0;
+
+
+        InvoiceCreditNoteSummaryRec.SetRange("Contract No.", BillingCalcGrid."Contract ID");
+        InvoiceCreditNoteSummaryRec.SetRange(Description, 'Final Billing Calculation');
+        if InvoiceCreditNoteSummaryRec.FindFirst() then begin
+            InvoiceCreditNoteSummaryRec.Invoice := Abs(TotalNegativeDifference);
+            InvoiceCreditNoteSummaryRec.Modify();
+        end;
     end;
 
     procedure DifferenceAmountCalculationBilling(var BillingCalcGrid: Record "Final Billing Calculation Grid")
     var
-
+        InvoiceCrditNoteSummaryRec: Record InvoiceCreditNoteSummary;
     begin
 
         BillingCalcGrid."DifferenceAmount" := BillingCalcGrid.InvoicedAmount - BillingCalcGrid.RevisedAmount;
         BillingCalcGrid."DifferenceVAT" := BillingCalcGrid.InvoicedVAT - BillingCalcGrid.RevisedVAT;
         BillingCalcGrid.DifferenceAmountInclVAT := BillingCalcGrid.InvoicedAmountInclVAT - BillingCalcGrid.RevisedAmountInclVAT;
         BillingCalcGrid.Modify();
-
     end;
 
 

@@ -67,6 +67,8 @@ page 50989 "FinalAdjuContractReduction"
             }
         }
     }
+    var
+        finaladjustmentcontractreduction: Record FinancialAdjContractReduction;
 
 
     procedure SetContractNo(pContractNo: Integer)
