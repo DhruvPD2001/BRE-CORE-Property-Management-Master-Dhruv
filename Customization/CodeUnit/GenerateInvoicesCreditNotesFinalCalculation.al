@@ -38,6 +38,7 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
                         Saleslinecreate(newsalesheader, BillingCalcGrid);
                         BillingCalcGrid.Modify();
                     until BillingCalcGrid.Next() = 0;
+                BillingCalcGrid."Invoice ID" := newsalesheader."No.";
                 InvoiceCreditNoteSummaryRec."Invoice ID" := newsalesheader."No.";
                 InvoiceCreditNoteSummaryRec.Invoiced := true;
                 InvoiceCreditNoteSummaryRec.Modify();
@@ -145,6 +146,8 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
                         AdditionalchargesSaleslinecreate(newsalesheader, TerminationAdditionalCharges);
                         TerminationAdditionalCharges.Modify();
                     until TerminationAdditionalCharges.Next() = 0;
+                TerminationAdditionalCharges."Invoiced ID" := newsalesheader."No.";
+                TerminationAdditionalCharges."Posted Invoice ID" := newsalesheader."No.";
                 InvoiceCreditNoteSummaryRec1.Invoiced := true;
                 InvoiceCreditNoteSummaryRec1."Invoice ID" := newsalesheader."No.";
                 InvoiceCreditNoteSummaryRec1.Modify();
