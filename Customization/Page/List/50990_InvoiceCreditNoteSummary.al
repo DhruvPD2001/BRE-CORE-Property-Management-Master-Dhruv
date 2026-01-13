@@ -4,6 +4,9 @@ page 50990 "InvoiceCreditNoteSummary"
     SourceTable = InvoiceCreditNoteSummary;
     ApplicationArea = All;
     Caption = 'Invoice / Credit Note Summary';
+    UsageCategory = None;
+    InsertAllowed = false;
+    DeleteAllowed = false;
 
 
     layout
@@ -37,6 +40,12 @@ page 50990 "InvoiceCreditNoteSummary"
                     Caption = 'Invoiced';
                     ToolTip = 'Specifies the invoiced amount.';
                 }
+                field("Invoice ID"; Rec."Invoice ID")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Invoice ID';
+                    ToolTip = 'Specifies the invoice identification number.';
+                }
                 field("Credit Noted"; Rec."Credit Noted")
                 {
                     ApplicationArea = All;
@@ -44,15 +53,46 @@ page 50990 "InvoiceCreditNoteSummary"
                     ToolTip = 'Specifies the credited amount.';
                 }
             }
-            field("Total Amount"; Rec.Total)
+            field(TotalInvoice; Rec."Total Invoice")
             {
                 ApplicationArea = All;
-                Caption = 'Total Amount';
-                ToolTip = 'Specifies the total amount of all final adjustments and contract reductions.';
+                Caption = 'Total Invoice';
+                ToolTip = 'Specifies the total invoice amount.';
+                Editable = false;
+            }
+            field(TotalCreditNote; Rec."Total Credit Note")
+            {
+                ApplicationArea = All;
+                Caption = 'Total Credit Note';
+                ToolTip = 'Specifies the total credit note amount.';
                 Editable = false;
             }
         }
     }
+
+    actions
+    {
+        area(Processing)
+        {
+            action(GenerateInvoice)
+            {
+                ApplicationArea = All;
+                Caption = 'Generate Invoice';
+                ToolTip = 'Generate the invoice';
+                Image = Invoice;
+                trigger OnAction()
+                var
+                    GenerateInvoicesCreditNotesFinalCalculation: Codeunit "GenerateInvoiceCreditNoteFC";
+                begin
+                    GenerateInvoicesCreditNotesFinalCalculation.GenerateBillingInvoice(Rec);
+                    GenerateInvoicesCreditNotesFinalCalculation.GenerateAdditionalChargesInvoice(Rec);
+                end;
+            }
+        }
+    }
+
+
+
     procedure SetContractNo(pContractNo: Integer)
     begin
         ContractNo := pContractNo;
