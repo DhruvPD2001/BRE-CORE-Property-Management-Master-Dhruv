@@ -44,7 +44,26 @@ page 50990 "InvoiceCreditNoteSummary"
                 {
                     ApplicationArea = All;
                     Caption = 'Invoice ID';
+                    Editable = false;
                     ToolTip = 'Specifies the invoice identification number.';
+
+                    trigger OnDrillDown()
+                    var
+                        SalesHeader: Record "Sales Header";
+                        SalesLine: Record "Sales Line";
+                        SalesLine2: Record "Sales Line";
+                        postedsalesinvoice: Record "Sales Invoice Header";
+                    begin
+                        SalesHeader.SetRange("No.", Rec."Invoice ID");
+                        if SalesHeader.FindFirst() then begin
+                            PAGE.Run(PAGE::"Sales Invoice", SalesHeader);
+                        end else begin
+                            postedsalesinvoice.SetRange("No.", Rec."Invoice ID");
+                            if postedsalesinvoice.FindFirst() then begin
+                                PAGE.Run(PAGE::"Posted Sales Invoice", postedsalesinvoice);
+                            end;
+                        end;
+                    end;
                 }
                 field("Credit Noted"; Rec."Credit Noted")
                 {
@@ -86,6 +105,19 @@ page 50990 "InvoiceCreditNoteSummary"
                 begin
                     GenerateInvoicesCreditNotesFinalCalculation.GenerateBillingInvoice(Rec);
                     GenerateInvoicesCreditNotesFinalCalculation.GenerateAdditionalChargesInvoice(Rec);
+                end;
+            }
+            action(GenerateCreditNote)
+            {
+                ApplicationArea = All;
+                Caption = 'Generate Credit Note';
+                ToolTip = 'Generate the credit note';
+                Image = CreditMemo;
+                trigger OnAction()
+                var
+                    GenerateInvoicesCreditNotesFinalCalculation: Codeunit "GenerateInvoiceCreditNoteFC";
+                begin
+
                 end;
             }
         }
