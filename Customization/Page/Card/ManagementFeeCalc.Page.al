@@ -4,6 +4,7 @@ page 50146 "Management Fee Calc."
     ApplicationArea = All;
     UsageCategory = Administration;
     SourceTable = "Management Fee Calc. Header";
+    SourceTableTemporary = true;
     Caption = 'Management Fee Calculation';
 
     layout
@@ -164,8 +165,7 @@ page 50146 "Management Fee Calc."
     }
     trigger OnOpenPage()
     begin
-        Rec.Reset();
-        if not Rec.Get() then begin
+        if Rec.IsEmpty() then begin
             Rec.Init();
             Rec.Insert();
         end;
@@ -173,6 +173,7 @@ page 50146 "Management Fee Calc."
         allpropertyeditable := true;
         propertyeditable := true;
         ownereditable := true;
+
     end;
 
     trigger OnAfterGetCurrRecord()
