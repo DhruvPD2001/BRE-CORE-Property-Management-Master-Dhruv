@@ -4,6 +4,7 @@ page 50988 "Management Fee Calc Grid"
     SourceTable = "Management Fee Calc. Line";
     ApplicationArea = All;
     Caption = 'Management Fee Agreements';
+    SourceTableTemporary = true;
     UsageCategory = None;
     InsertAllowed = false;
     DeleteAllowed = false;
@@ -189,4 +190,11 @@ page 50988 "Management Fee Calc Grid"
             }
         }
     }
+    trigger OnOpenPage()
+    begin
+        if Rec.IsEmpty() then begin
+            Rec.Init();
+            Rec.Insert();
+        end;
+    end;
 }
