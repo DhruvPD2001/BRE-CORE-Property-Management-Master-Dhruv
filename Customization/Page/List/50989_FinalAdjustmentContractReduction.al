@@ -17,6 +17,7 @@ page 50989 "FinalAdjuContractReduction"
                     ApplicationArea = All;
                     Caption = 'Revenue Description';
                     ToolTip = 'Specifies the description of the revenue item.';
+
                 }
                 field("Amount"; Rec."Amount")
                 {
@@ -35,12 +36,36 @@ page 50989 "FinalAdjuContractReduction"
                     ApplicationArea = All;
                     Caption = 'Amount Incl. VAT';
                     ToolTip = 'Specifies the total amount including VAT for the final adjustment or contract reduction.';
+                    Editable = false;
                 }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
                     Caption = 'Description';
                     ToolTip = 'Specifies additional details or notes regarding the final adjustment or contract reduction.';
+                }
+                field("Credit Note ID"; Rec."Credit Note ID")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Credit Note ID';
+                    ToolTip = 'Specifies the Credit Note identification number associated with this final adjustment or contract reduction.';
+                    Editable = false;
+
+                    trigger OnDrillDown()
+                    var
+                        SalesHeader: Record "Sales Header";
+                        postedsalesinvoice: Record "Sales Cr.Memo Header";
+                    begin
+                        SalesHeader.SetRange("No.", Rec."Credit Note ID");
+                        if SalesHeader.FindFirst() then begin
+                            PAGE.Run(PAGE::"Sales Credit Memo", SalesHeader);
+                        end else begin
+                            postedsalesinvoice.SetRange("No.", Rec."Credit Note ID");
+                            if postedsalesinvoice.FindFirst() then begin
+                                PAGE.Run(PAGE::"Posted Sales Credit Memo", postedsalesinvoice);
+                            end;
+                        end;
+                    end;
                 }
 
             }

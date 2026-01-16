@@ -39,6 +39,7 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
                         BillingCalcGrid.Modify();
                     until BillingCalcGrid.Next() = 0;
                 BillingCalcGrid."Invoice ID" := newsalesheader."No.";
+                BillingCalcGrid.Modify();
                 InvoiceCreditNoteSummaryRec."Invoice ID" := newsalesheader."No.";
                 InvoiceCreditNoteSummaryRec.Invoiced := true;
                 InvoiceCreditNoteSummaryRec.Modify();
@@ -53,6 +54,7 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
         InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
         creditNote: Record "Credit Note";
         finalcalculation: Record "Final Calculation";
+        Billingcalculation: Record "Final Billing Calculation Grid";
     begin
         InvoiceCreditNoteSummaryRec.SetRange("Contract No.", pInvoiceCreditNoteSummaryRec."Contract No.");
         InvoiceCreditNoteSummaryRec.SetRange(Description, 'Final Billing Calculation');
@@ -76,6 +78,14 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
                     BillingCalculationSub(creditNote);
                 end;
                 InvoiceCreditNoteSummaryRec."Credit Noted" := true;
+                InvoiceCreditNoteSummaryRec."Credit Note ID" := creditNote."Credit Note No.";
+                Billingcalculation.SetRange("Contract ID", pInvoiceCreditNoteSummaryRec."Contract No.");
+                if Billingcalculation.FindFirst() then begin
+                    Billingcalculation."Credit Note ID" := Format(creditNote."Credit Note No.");
+                    Billingcalculation.Modify();
+                end;
+
+
                 InvoiceCreditNoteSummaryRec.Modify();
             end;
     end;
@@ -209,6 +219,7 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
                     until TerminationAdditionalCharges.Next() = 0;
                 TerminationAdditionalCharges."Invoiced ID" := newsalesheader."No.";
                 TerminationAdditionalCharges."Posted Invoice ID" := newsalesheader."No.";
+                TerminationAdditionalCharges.Modify();
                 InvoiceCreditNoteSummaryRec1.Invoiced := true;
                 InvoiceCreditNoteSummaryRec1."Invoice ID" := newsalesheader."No.";
                 InvoiceCreditNoteSummaryRec1.Modify();
@@ -309,21 +320,37 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
                         item.SetRange(Description, finalAdjContractRed."Revenue Description");
                         item.SetRange("Item type template", item."Item type template"::"Secondary Item");
                         item.SetFilter("Category Types", '%1|%2|%3|%4', 'Refundable Deposit', 'Government fees', 'Govt. Fees', 'Government Fees');
-                        if item.FindSet() then
-                            ProcessCreditMemo(pInvoiceCreditNoteSummaryRec, item, finalAdjContractRed, salesHeader, salesHeader1, itemCreditMemoCreated, glCreditMemoCreated, false)
+                        if item.FindSet() then begin
+                            ProcessCreditMemo(pInvoiceCreditNoteSummaryRec, item, finalAdjContractRed, salesHeader, salesHeader1, itemCreditMemoCreated, glCreditMemoCreated, false);
+                            finalAdjContractRed."Credit Note ID" := salesHeader."No.";
+                            finalAdjContractRed.Modify();
+                        end
                         else begin
                             item.SetRange(Description, finalAdjContractRed."Revenue Description");
                             item.SetRange("Item type template", item."Item type template"::"Secondary Item");
                             item.SetFilter("Category Types", '%1|%2', 'Revenue', 'Charges');
-                            if item.FindSet() then
+                            if item.FindSet() then begin
                                 ProcessCreditMemo(pInvoiceCreditNoteSummaryRec, item, finalAdjContractRed, salesHeader, salesHeader1, itemCreditMemoCreated, glCreditMemoCreated, true);
+                                finalAdjContractRed."Credit Note ID" := salesHeader1."No.";
+                                finalAdjContractRed.Modify();
+                            end;
 
                         end;
                     until finalAdjContractRed.Next() = 0;
 
                 // Implementation for creating credit memo for security deposit
-                // SalesPost.Run(SalesHeader1);
-                Message('✅ Sales Credit Memo created for the Security Deposit Amount');
+                SalesLine.Reset();
+                SalesLine.SetRange("Document Type", SalesLine."Document Type"::"Credit Memo");
+                SalesLine.SetRange("Document No.", salesHeader."No.");
+                if SalesLine.FindFirst() then
+                    SalesPost.Run(salesHeader);
+
+                SalesLine.Reset();
+                SalesLine.SetRange("Document Type", SalesLine."Document Type"::"Credit Memo");
+                SalesLine.SetRange("Document No.", salesHeader1."No.");
+                if SalesLine.FindFirst() then
+                    SalesPost.Run(SalesHeader1);
+                Message('Sales Credit Memo created for the Security Deposit Amount');
                 InvoiceCreditNoteSummaryRec."Credit Noted" := true;
                 InvoiceCreditNoteSummaryRec.Modify();
             end;
