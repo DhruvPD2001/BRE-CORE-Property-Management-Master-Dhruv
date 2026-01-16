@@ -27,18 +27,21 @@ page 50990 "InvoiceCreditNoteSummary"
                     ApplicationArea = All;
                     Caption = 'Invoice';
                     ToolTip = 'Specifies the invoice amount.';
+                    Editable = false;
                 }
                 field(CreditNote; Rec."Credit Note")
                 {
                     ApplicationArea = All;
                     Caption = 'Credit Note';
                     ToolTip = 'Specifies the credit note amount.';
+                    Editable = false;
                 }
                 field(Invoiced; Rec.Invoiced)
                 {
                     ApplicationArea = All;
                     Caption = 'Invoiced';
                     ToolTip = 'Specifies the invoiced amount.';
+                    Editable = false;
                 }
                 field("Invoice ID"; Rec."Invoice ID")
                 {
@@ -65,11 +68,29 @@ page 50990 "InvoiceCreditNoteSummary"
                         end;
                     end;
                 }
+                field("Credit Note ID"; Rec."Credit Note ID")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Credit Note ID';
+                    Editable = false;
+                    ToolTip = 'Specifies the credit note identification number.';
+
+                    trigger OnDrillDown()
+                    var
+                        CreditNote: Record "Credit Note";
+                    begin
+                        CreditNote.SetRange("Credit Note No.", Rec."Credit Note ID");
+                        if CreditNote.FindFirst() then begin
+                            PAGE.Run(PAGE::"Credit Note Card", CreditNote);
+                        end;
+                    end;
+                }
                 field("Credit Noted"; Rec."Credit Noted")
                 {
                     ApplicationArea = All;
                     Caption = 'Credit Noted';
                     ToolTip = 'Specifies the credited amount.';
+                    Editable = false;
                 }
             }
             field(TotalInvoice; Rec."Total Invoice")
