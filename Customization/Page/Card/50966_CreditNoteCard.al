@@ -389,21 +389,21 @@ page 50966 "Credit Note Card"
     //     end;
     // end;
 
-    trigger OnNewRecord(BelowxRec: Boolean)
-    var
-        CreditNoteRec: Record "Credit Note";
-        NextID: Integer;
-    begin
-        if Rec.ID = 0 then begin
-            if CreditNoteRec.FindLast() then
-                NextID := CreditNoteRec.ID + 1
-            else
-                NextID := 1;
+    // trigger OnNewRecord(BelowxRec: Boolean)
+    // var
+    //     CreditNoteRec: Record "Credit Note";
+    //     NextID: Integer;
+    // begin
+    //     if Rec.ID = 0 then begin
+    //         if CreditNoteRec.FindLast() then
+    //             NextID := CreditNoteRec.ID + 1
+    //         else
+    //             NextID := 1;
 
-            Rec.ID := NextID;
-            Rec."Credit Note No." := 'CN_' + CopyStr('00000' + Format(NextID), StrLen('00000' + Format(NextID)) - 4, 5);
-        end;
-    end;
+    //         Rec.ID := NextID;
+
+    //     end;
+    // end;
 
 
     procedure BillingCalculationSub()
