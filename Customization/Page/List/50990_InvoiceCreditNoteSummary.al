@@ -117,6 +117,8 @@ page 50990 "InvoiceCreditNoteSummary"
                 var
                     GenerateInvoicesCreditNotesFinalCalculation: Codeunit "GenerateInvoiceCreditNoteFC";
                 begin
+                    GenerateInvoicesCreditNotesFinalCalculation.GenerateBillingCreditNote(Rec);
+                    GenerateInvoicesCreditNotesFinalCalculation.GenerateFinalAdjtContractReductionCreditNote(Rec);
 
                 end;
             }

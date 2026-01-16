@@ -48,6 +48,65 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
 
     end;
 
+    procedure GenerateBillingCreditNote(var pInvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary)
+    var
+        InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
+        creditNote: Record "Credit Note";
+        finalcalculation: Record "Final Calculation";
+    begin
+        InvoiceCreditNoteSummaryRec.SetRange("Contract No.", pInvoiceCreditNoteSummaryRec."Contract No.");
+        InvoiceCreditNoteSummaryRec.SetRange(Description, 'Final Billing Calculation');
+        InvoiceCreditNoteSummaryRec.SetRange("Credit Noted", false);
+        if InvoiceCreditNoteSummaryRec.FindFirst() then
+            if InvoiceCreditNoteSummaryRec."Credit Note" > 0 then begin
+                creditNote.Init();
+                creditNote."Contract ID" := InvoiceCreditNoteSummaryRec."Contract No.";
+                finalcalculation.SetRange("Contract ID", InvoiceCreditNoteSummaryRec."Contract No.");
+                if finalcalculation.FindFirst() then begin
+                    creditNote."Credit Note Type" := creditNote."Credit Note Type"::"Termination Credit Note";
+                    creditNote."Contract Start Date" := finalcalculation."Contract Start Date";
+                    creditNote."Contract End Date" := finalcalculation."Contract End Date"; // Convert Integer to Text
+                    creditNote."Unit Type" := finalcalculation."Unit Type";
+                    creditNote."Contract Amount" := finalcalculation."Contract Amount";
+                    creditNote."Tenant ID" := finalcalculation."Tenant ID";
+                    creditNote."Tenant Name" := finalcalculation."Tenant Name";
+                    creditNote."Tenant Email" := finalcalculation."Tenant Email"; // Convert Integer to Text
+                    creditNote."FC ID" := finalcalculation."FC ID";
+                    creditNote.Insert(true);
+                    BillingCalculationSub(creditNote);
+                end;
+                InvoiceCreditNoteSummaryRec."Credit Noted" := true;
+                InvoiceCreditNoteSummaryRec.Modify();
+            end;
+    end;
+
+    procedure BillingCalculationSub(pCreditNote: Record "Credit Note")
+    var
+        BillingCalculationSubCN: Record "Billing Calculation CN";
+        BillingCalculationSubFC: Record "Final Billing Calculation Grid";
+    begin
+        BillingCalculationSubCN.SetRange("Contract ID", pCreditNote."Contract ID");
+        if BillingCalculationSubCN.FindSet() then
+            BillingCalculationSubCN.DeleteAll();
+
+        BillingCalculationSubFC.SetRange("Contract ID", pCreditNote."Contract ID");
+        if BillingCalculationSubFC.FindSet() then
+            repeat
+                if BillingCalculationSubFC."DifferenceAmount" > 0 then begin
+                    BillingCalculationSubCN.Init();
+                    BillingCalculationSubCN."Credit Note ID" := pCreditNote."ID";
+                    BillingCalculationSubCN."Contract ID" := pCreditNote."Contract ID";
+                    BillingCalculationSubCN."Tenant ID" := pCreditNote."Tenant ID";
+                    BillingCalculationSubCN."Item" := BillingCalculationSubFC."RevenueDescription";
+                    BillingCalculationSubCN."Amount" := BillingCalculationSubFC."DifferenceAmount";
+                    BillingCalculationSubCN."VAT Amount" := BillingCalculationSubFC."DifferenceVAT";
+                    BillingCalculationSubCN."Amount Including VAT" := BillingCalculationSubFC."DifferenceAmountInclVAT";
+                    BillingCalculationSubCN.Insert();
+                    Clear(BillingCalculationSubCN);
+                end;
+            until BillingCalculationSubFC.Next() = 0;
+    end;
+
     procedure CreateSalesHeader(pContractID: Integer; pTenantID: Code[50]; PropertyClassification: Text[50]): Record "Sales Header"
     var
         salesHeader: Record "Sales Header";
@@ -119,19 +178,21 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
         InvoiceCreditNoteSummaryRec1.SetRange("Contract No.", pInvoiceCreditNoteSummaryRec1."Contract No.");
         InvoiceCreditNoteSummaryRec1.SetRange(Description, 'Termination Additional Charges');
         InvoiceCreditNoteSummaryRec1.SetRange(Invoiced, false);
-        if InvoiceCreditNoteSummaryRec1.FindFirst() then begin
+        if InvoiceCreditNoteSummaryRec1.FindFirst() then
+            // begin
             if InvoiceCreditNoteSummaryRec1.Invoice > 0 then begin
                 TerminationAdditionalCharges.SetRange("Contract ID", InvoiceCreditNoteSummaryRec1."Contract No.");
                 if TerminationAdditionalCharges.FindFirst() then begin
                     newsalesheader := AdditionalchargesSalesHeader(TerminationAdditionalCharges."Contract ID", TerminationAdditionalCharges."Tenant ID", TerminationAdditionalCharges."Unit Type");
                     customercard.SetRange("No.", newsalesheader."Sell-to Customer No.");
-                    if customercard.FindSet() then begin
+                    if customercard.FindSet() then
+                        // begin
                         if newsalesheader."Property Classification" <> '' then begin
                             customercard.Validate("Gen. Bus. Posting Group", newsalesheader."Property Classification");
                             customercard.Validate("Customer Posting Group", newsalesheader."Property Classification");
                             customercard.Modify();
-                        end
-                    end;
+                        end;
+                    // end;
                     if newsalesheader."Property Classification" <> '' then begin
                         newsalesheader."Gen. Bus. Posting Group" := newsalesheader."Property Classification";
                         newsalesheader."Customer Posting Group" := newsalesheader."Property Classification";
@@ -153,7 +214,7 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
                 InvoiceCreditNoteSummaryRec1.Modify();
                 Message('Invoice has been generated of Additional Charges, please click on the Invoice ID to proceed further');
             end
-        end;
+        // end;
 
     end;
 
@@ -218,4 +279,120 @@ codeunit 50116 GenerateInvoiceCreditNoteFC
 
     end;
 
+    procedure GenerateFinalAdjtContractReductionCreditNote(var pInvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary)
+    var
+        PaymentScheduleRec: Record "Payment Schedule2";
+        InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
+        salesHeader: Record "Sales Header";
+        salesHeader1: Record "Sales Header";
+        SalesLine: Record "Sales Line";
+        customercard: Record Customer;
+        pendingReceivableRec: Record "Pending Receviable Grid";
+        finalAdjContractRed: Record FinancialAdjContractReduction;
+        SalesPost: Codeunit "Sales-Post";
+        pendingReceviablePage: Page "Pending Recevieable Grid";
+        item: Record Item;
+        LineNo: Integer;
+        CreditMemoNo: Code[20];
+        InvoiceNo: Code[20];
+        itemCreditMemoCreated: Boolean;
+        glCreditMemoCreated: Boolean;
+    begin
+        InvoiceCreditNoteSummaryRec.SetRange("Contract No.", pInvoiceCreditNoteSummaryRec."Contract No.");
+        InvoiceCreditNoteSummaryRec.SetRange(Description, 'Financial Adjustments / Contract Reductions');
+        InvoiceCreditNoteSummaryRec.SetRange("Credit Noted", false);
+        if InvoiceCreditNoteSummaryRec.FindFirst() then
+            if InvoiceCreditNoteSummaryRec."Credit Note" > 0 then begin
+                finalAdjContractRed.SetRange("Contract No.", InvoiceCreditNoteSummaryRec."Contract No.");
+                if finalAdjContractRed.FindSet() then
+                    repeat
+                        item.SetRange(Description, finalAdjContractRed."Revenue Description");
+                        item.SetRange("Item type template", item."Item type template"::"Secondary Item");
+                        item.SetFilter("Category Types", '%1|%2|%3|%4', 'Refundable Deposit', 'Government fees', 'Govt. Fees', 'Government Fees');
+                        if item.FindSet() then
+                            ProcessCreditMemo(pInvoiceCreditNoteSummaryRec, item, finalAdjContractRed, salesHeader, salesHeader1, itemCreditMemoCreated, glCreditMemoCreated, false)
+                        else begin
+                            item.SetRange(Description, finalAdjContractRed."Revenue Description");
+                            item.SetRange("Item type template", item."Item type template"::"Secondary Item");
+                            item.SetFilter("Category Types", '%1|%2', 'Revenue', 'Charges');
+                            if item.FindSet() then
+                                ProcessCreditMemo(pInvoiceCreditNoteSummaryRec, item, finalAdjContractRed, salesHeader, salesHeader1, itemCreditMemoCreated, glCreditMemoCreated, true);
+
+                        end;
+                    until finalAdjContractRed.Next() = 0;
+
+                // Implementation for creating credit memo for security deposit
+                // SalesPost.Run(SalesHeader1);
+                Message('✅ Sales Credit Memo created for the Security Deposit Amount');
+                InvoiceCreditNoteSummaryRec."Credit Noted" := true;
+                InvoiceCreditNoteSummaryRec.Modify();
+            end;
+    end;
+
+    procedure ProcessCreditMemo(pInvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary; item: Record Item; finalAdjContractRed: Record FinancialAdjContractReduction; var salesHeader: Record "Sales Header"; var salesHeader1: Record "Sales Header"; var itemCreditMemoCreated: Boolean; var GLcreditMemoCreated: Boolean; pIsGLAccountLine: Boolean)
+    var
+        PaymentScheduleRec: Record "Payment Schedule2";
+        finalCalculation: Record "Final Calculation";
+        customercard: Record Customer;
+        pendingReceviablePage: Page "Pending Recevieable Grid";
+        InvoiceNo: Code[20];
+    begin
+        if not pIsGLAccountLine then begin
+            PaymentScheduleRec.Reset();
+            PaymentScheduleRec.SetRange("Contract ID", pInvoiceCreditNoteSummaryRec."Contract No.");
+            PaymentScheduleRec.SetRange("Secondary Item Type", finalAdjContractRed."Revenue Description");
+            PaymentScheduleRec.SetFilter("Payment Status", '<>%1', 'Received'); // Empty = Not Received
+            if PaymentScheduleRec.IsEmpty then begin
+                Message('No pending Security Deposit payments found for Credit Memo generation.');
+                exit;
+            end;
+            if PaymentScheduleRec.FindFirst() then
+                if not itemCreditMemoCreated then begin
+                    InvoiceNo := PaymentScheduleRec."Invoice ID";
+                    salesHeader := pendingReceviablePage.CreateSalesHeader(pInvoiceCreditNoteSummaryRec."Contract No.", PaymentScheduleRec."Tenant ID", PaymentScheduleRec."Property Classification", InvoiceNo);
+                    InvoiceNo := '';
+                    customercard.SetRange("No.", salesHeader."Sell-to Customer No.");
+                    if customercard.FindFirst() then
+                        if salesHeader."Property Classification" <> '' then begin
+                            customercard.Validate("Gen. Bus. Posting Group", salesHeader."Property Classification");
+                            customercard.Validate("Customer Posting Group", salesHeader."Property Classification");
+                            customercard.Modify();
+                        end;
+
+                    if salesHeader."Property Classification" <> '' then begin
+                        salesHeader.Validate("Gen. Bus. Posting Group", salesHeader."Property Classification");
+                        salesHeader.Validate("Customer Posting Group", salesHeader."Property Classification");
+                        salesHeader.Modify();
+                    end;
+                    pendingReceviablePage.createSalesLine(salesHeader, item, PaymentScheduleRec.Amount, PaymentScheduleRec."VAT Amount", PaymentScheduleRec, pIsGLAccountLine);
+                    itemCreditMemoCreated := true;
+                end
+                else
+                    pendingReceviablePage.createSalesLine(salesHeader, item, PaymentScheduleRec.Amount, PaymentScheduleRec."VAT Amount", PaymentScheduleRec, pIsGLAccountLine);
+        end
+        else
+            if not GLcreditMemoCreated then begin
+                finalCalculation.SetRange("Contract ID", pInvoiceCreditNoteSummaryRec."Contract No.");
+                if finalCalculation.FindFirst() then
+                    SalesHeader1 := pendingReceviablePage.CreateSalesHeader(pInvoiceCreditNoteSummaryRec."Contract No.", finalCalculation."Tenant ID", PaymentScheduleRec."Property Classification", InvoiceNo);
+
+                customercard.SetRange("No.", SalesHeader1."Sell-to Customer No.");
+                if customercard.FindFirst() then
+                    if SalesHeader1."Property Classification" <> '' then begin
+                        customercard.Validate("Gen. Bus. Posting Group", SalesHeader1."Property Classification");
+                        customercard.Validate("Customer Posting Group", SalesHeader1."Property Classification");
+                        customercard.Modify();
+                    end;
+
+                if SalesHeader1."Property Classification" <> '' then begin
+                    SalesHeader1.Validate("Gen. Bus. Posting Group", SalesHeader1."Property Classification");
+                    SalesHeader1.Validate("Customer Posting Group", SalesHeader1."Property Classification");
+                    SalesHeader1.Modify();
+                end;
+                pendingReceviablePage.createSalesLine(SalesHeader1, item, finalAdjContractRed.Amount, finalAdjContractRed."VAT Amount", PaymentScheduleRec, pIsGLAccountLine);
+                GLcreditMemoCreated := true;
+            end
+            else
+                pendingReceviablePage.createSalesLine(SalesHeader1, item, finalAdjContractRed.Amount, finalAdjContractRed."VAT Amount", PaymentScheduleRec, pIsGLAccountLine);
+    end;
 }

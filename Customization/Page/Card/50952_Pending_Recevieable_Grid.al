@@ -207,7 +207,7 @@ page 50952 "Pending Recevieable Grid"
                     SalesHeader1.Validate("Customer Posting Group", SalesHeader1."Property Classification");
                     SalesHeader1.Modify();
                 end;
-                createSalesLine(SalesHeader1, PaymentScheduleRec.Amount, PaymentScheduleRec."VAT Amount", PaymentScheduleRec);
+                // createSalesLine(SalesHeader1, PaymentScheduleRec.Amount, PaymentScheduleRec."VAT Amount", PaymentScheduleRec, false);
 
                 pendingReceivableRec.Reset();
                 pendingReceivableRec.SetRange("Contract ID", Rec."Contract ID");
@@ -242,11 +242,11 @@ page 50952 "Pending Recevieable Grid"
             salesHeader."No." := noseries.GetNextNo(salesReciveable."Credit Memo Nos.", Today, true);
 
         salesHeader."Document Type" := SalesHeader."Document Type"::"Credit Memo";
+        salesHeader."Posting Date" := Today;
+        salesHeader."Document Date" := Today;
+        salesHeader."Due Date" := Today;
         salesHeader.Validate("Sell-to Customer No.", pTenantID);
         salesHeader.Validate("Contract ID", pContractID);
-        salesHeader."Document Date" := Today;
-        salesHeader."Posting Date" := Today;
-        salesHeader."Due Date" := Today;
         salesHeader."Property Classification" := pUnitType;
         salesHeader."Posting No. Series" := salesReciveable."Posted Credit Memo Nos.";
         salesHeader."Approval Status for CreditNote" := SalesHeader."Approval Status for CreditNote"::Approved;
@@ -266,11 +266,11 @@ page 50952 "Pending Recevieable Grid"
     end;
 
 
-    procedure createSalesLine(var SalesHeader2: Record "Sales Header"; pAmount: Decimal; pVATAmount: Decimal; var paymentScheduleRec1: Record "Payment Schedule2")
+    procedure createSalesLine(var SalesHeader2: Record "Sales Header"; item: Record Item; pAmount: Decimal; pVATAmount: Decimal; var paymentScheduleRec1: Record "Payment Schedule2"; pIsGLAccountLine: Boolean)
     var
         saleline: Record "Sales Line";
-        item: Record Item;
         newSaleslines: Record "Sales Line";
+        GenPostingSetup: Record "General Posting Setup";
     begin
         saleline.Init();
         saleline."Document Type" := saleline."Document Type"::"Credit Memo";
@@ -287,20 +287,24 @@ page 50952 "Pending Recevieable Grid"
             saleline."Line No." := 1000;
 
         saleline.Validate("Contract ID", SalesHeader2."Contract ID");
-        saleline.Type := saleline.Type::Item;
-        saleline.Validate("Sell-to Customer No.", SalesHeader2."Sell-to Customer No.");
+        if pIsGLAccountLine then begin
+            saleline.Validate(Type, saleline.Type::"G/L Account");
+            GenPostingSetup.SetRange("Gen. Prod. Posting Group", item."Gen. Prod. Posting Group");
+            GenPostingSetup.SetRange("Gen. Bus. Posting Group", SalesHeader2."Gen. Bus. Posting Group");
+            if GenPostingSetup.FindFirst() then
+                saleline.Validate("No.", GenPostingSetup."Sales Account");
+        end
+        else begin
+            saleline.Validate(Type, saleline.Type::Item);
+            saleline.Validate("No.", item."No.");
+        end;
 
-        // Map item by description
-        item.SetRange(Description, paymentScheduleRec1."Secondary Item Type");
-        if item.FindFirst() then
-            saleline.Validate("No.", item."No.")
-        else
-            Error('No item found with description "%1"', paymentScheduleRec1."Secondary Item Type");
+        saleline.Validate("Sell-to Customer No.", SalesHeader2."Sell-to Customer No.");
 
         saleline.Validate("Quantity (Base)", 1);
         saleline.Validate(Quantity, 1);
-        saleline.Validate("Unit Price", Abs(paymentScheduleRec1.Amount));
-        saleline."Contract ID" := paymentScheduleRec1."Contract ID";
+        saleline.Validate("Unit Price", Abs(pAmount));
+        saleline."Contract ID" := SalesHeader2."Contract ID";
         saleline.Insert();
 
     end;

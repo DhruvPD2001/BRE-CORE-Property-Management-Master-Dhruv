@@ -102,6 +102,7 @@ page 50903 "Final Calculation Card"
                         RevenueCalculateOneTime();
                         RevenueCalculate();
                         PaymentDetailsFromPaymentSchedule2();
+                        PopulateFinalAdjtCaontractRedGrid();
 
 
                         Rec.CalculateFinalSummary(Rec);
@@ -1696,14 +1697,14 @@ page 50903 "Final Calculation Card"
 
     procedure InvoiceCreditNoteSummaryData()
     var
+        InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
         DescriptionList: List of [Text];
         Description: Text;
-        InvoiceCreditNoteSummaryRec: Record InvoiceCreditNoteSummary;
     begin
         // Clear existing lines in Final Revenue Calculation Grid for this contract
         InvoiceCreditNoteSummaryRec.SetRange("Contract No.", Rec."Contract ID");
-        if InvoiceCreditNoteSummaryRec.FindSet() then
-            InvoiceCreditNoteSummaryRec.DeleteAll();
+        if not InvoiceCreditNoteSummaryRec.IsEmpty() then
+            exit;
 
         DescriptionList.Add('Final Billing Calculation');
         DescriptionList.Add('Termination Additional Charges');
@@ -1720,6 +1721,40 @@ page 50903 "Final Calculation Card"
 
     end;
 
+    procedure PopulateFinalAdjtCaontractRedGrid()
+    var
+        tenancyContractSub: Record "Tenancy Contract Subpage";
+        item: Record Item;
+        finalAdj: Record FinancialAdjContractReduction;
+        pendingReceiveable: Record "Pending Receviable Grid";
+    begin
+        finalAdj.SetRange("Contract No.", Rec."Contract ID");
+        if not finalAdj.IsEmpty() then
+            exit;
+        tenancyContractSub.SetRange("ContractID", Rec."Contract ID");
+        if tenancyContractSub.FindSet() then
+            repeat
+                item.SetRange(Description, tenancyContractSub."Secondary Item Type");
+                item.SetRange("Item type template", item."Item type template"::"Secondary Item");
+                item.SetFilter("Category Types", '%1|%2|%3|%4', 'Refundable Deposit', 'Government fees', 'Govt. Fees', 'Government Fees');
+                if item.FindFirst() then begin
+                    pendingReceiveable.SetRange("Contract ID", Rec."Contract ID");
+                    pendingReceiveable.SetRange(RevenueDescription, item.Description);
+                    if pendingReceiveable.FindFirst() then begin
+                        finalAdj.Init();
+                        finalAdj."Contract No." := Rec."Contract ID";
+                        finalAdj."Revenue Description" := item.Description;
+                        finalAdj.Insert(true);
+                        finalAdj.Validate(Amount, pendingReceiveable.DifferenceAmount);
+                        finalAdj.Validate("VAT %", item."VAT %");
+                        // finalAdj."VAT Amount" := pendingReceiveable.DifferenceVAT;
+                        // finalAdj."Amount Incl. VAT" := pendingReceiveable.DifferenceAmountInclVAT;
+                        Clear(finalAdj);
+                    end;
+                end;
+
+            until tenancyContractSub.Next() = 0;
+    end;
 
     //////////////////////// END PENDING RECIVEABLE CALCULATION //////////////////////
 
