@@ -9,6 +9,17 @@ page 50337 "Security Deposit Card"
     {
         area(content)
         {
+            field("Posting Date"; Rec."Posting Date")
+            {
+                ApplicationArea = All;
+                Caption = 'Posting Date';
+
+                trigger OnValidate()
+                begin
+                    if Rec."Posting Date" > Today() then
+                        Error('Posting Date cannot be in the future.');
+                end;
+            }
             group("Carry Forward From")
             {
                 Editable = not (Rec.Status = Rec.Status::Posted);
@@ -23,7 +34,6 @@ page 50337 "Security Deposit Card"
                 {
                     ApplicationArea = All;
                 }
-
 
                 field("Contract ID"; rec."Contract ID")
                 {
@@ -41,6 +51,7 @@ page 50337 "Security Deposit Card"
                         TenancyContractRec.SetRange("Customer Name", Rec."Tenant Full Name");
                         if PAGE.RunModal(PAGE::"Tenancy Contract List", TenancyContractRec) = ACTION::LookupOK then
                             Rec."Contract ID" := TenancyContractRec."Contract ID";
+                        Rec."Tenant ID" := TenancyContractRec."Tenant ID";
                         Rec."Property Classification" := TenancyContractRec."Property Classification";
                         FetchContractDetails(Rec."Contract ID", false);
                     end;
@@ -187,16 +198,20 @@ page 50337 "Security Deposit Card"
                     SecurityDepositPostMgt: Codeunit "Security Deposit Posting Mgt.";
                     finalcalculationRec: Record "Final Calculation";
                 begin
-                    SecurityDepositPostMgt.PostSecurityDepositAmount(Rec);
-                    Rec.UpdateAdjustedAmount();
-                    finalcalculationRec.SetRange("Contract ID", Rec."Contract ID");
-                    if finalcalculationRec.FindFirst() then begin
-                        finalcalculationRec."Total Refundable Deposit" := finalcalculationRec."Security Deposit" + finalcalculationRec."Chiller Deposit" + finalcalculationRec."Other Deposit";
-                        finalcalculationRec.Modify(true);
-                        finalcalculationRec.CalculateFinalSummary(finalcalculationRec);
-                    end;
-                    Rec.Status := Rec.Status::Posted;
-                    Rec.Modify(true);
+                    if Rec."Posting Date" <> 0D then begin
+
+                        SecurityDepositPostMgt.PostSecurityDepositAmount(Rec);
+                        Rec.UpdateAdjustedAmount();
+                        finalcalculationRec.SetRange("Contract ID", Rec."Contract ID");
+                        if finalcalculationRec.FindFirst() then begin
+                            finalcalculationRec."Total Refundable Deposit" := finalcalculationRec."Security Deposit" + finalcalculationRec."Chiller Deposit" + finalcalculationRec."Other Deposit";
+                            finalcalculationRec.Modify(true);
+                            finalcalculationRec.CalculateFinalSummary(finalcalculationRec);
+                        end;
+                        Rec.Status := Rec.Status::Posted;
+                        Rec.Modify(true);
+                    end else
+                        Error('Please enter a valid Posting Date before posting the security deposit.');
                 end;
             }
         }
