@@ -81,10 +81,6 @@ page 50906 "Additional Charges Sub Card"
                     Visible = false;
                     Editable = false;
                 }
-                // field(Invoiced; Rec.Invoiced)
-                // {
-                //     ApplicationArea = All;
-                // }
                 field("Invoiced ID"; Rec."Invoiced ID")
                 {
                     ApplicationArea = All;
