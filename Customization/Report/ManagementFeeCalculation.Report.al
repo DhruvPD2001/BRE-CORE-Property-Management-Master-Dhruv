@@ -25,7 +25,7 @@ report 50119 "Management Fee Calculation"
 
             dataitem("Management Fee Calc. Line"; "Management Fee Calc. Line")
             {
-                DataItemLink = "Primary Key" = field("Primary Key");
+                DataItemLink = "Header No." = field("Entry No.");
 
                 column(Property_Management_Company; "Property Management Company")
                 { }
@@ -58,9 +58,14 @@ report 50119 "Management Fee Calculation"
 
                 trigger OnAfterGetRecord()
                 begin
-                    TotalMgtFee += "Management Fee";
+                    TotalMgtFee += "Management Fee Calc. Line"."Management Fee";
                 end;
             }
+
+            trigger OnPreDataItem()
+            begin
+                TotalMgtFee := 0;
+            end;
 
             trigger OnAfterGetRecord()
             begin
@@ -74,42 +79,10 @@ report 50119 "Management Fee Calculation"
                     PropertyName := 'All'
                 else
                     PropertyName := Property;
-
-                TotalMgtFee := 0;
             end;
         }
 
     }
-
-    // requestpage
-    // {
-    //     AboutTitle = 'Teaching tip title';
-    //     AboutText = 'Teaching tip content';
-    //     layout
-    //     {
-    //         area(Content)
-    //         {
-    //             group(GroupName)
-    //             {
-    //                 field(Name; SourceExpression)
-    //                 {
-
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     actions
-    //     {
-    //         area(processing)
-    //         {
-    //             action(LayoutName)
-    //             {
-
-    //             }
-    //         }
-    //     }
-    // }
 
     rendering
     {

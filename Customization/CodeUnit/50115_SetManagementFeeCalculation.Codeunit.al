@@ -30,7 +30,7 @@ codeunit 50115 "SetManagementFeeCalculation"
         monthFilter := GetMonthFilter(MgtFeeHeader."Period From", MgtFeeHeader."Period To");
 
         MgtFeeLine.Reset();
-        MgtFeeLine.SetRange("Primary Key", MgtFeeHeader."Primary Key");
+        MgtFeeLine.SetRange("Header No.", MgtFeeHeader."Entry No.");
         if MgtFeeLine.FindSet() then
             MgtFeeLine.DeleteAll();
 
@@ -60,8 +60,8 @@ codeunit 50115 "SetManagementFeeCalculation"
         MgtFeeCalcLine: Record "Management Fee Calc. Line";
     begin
         MgtFeeCalcLine.Init();
-        MgtFeeCalcLine."Primary Key" := MgtFeeHeader."Primary Key";
-        MgtFeeCalcLine."Entry No." := GetNextLineNo(MgtFeeHeader."Primary Key");
+        MgtFeeCalcLine."Header No." := MgtFeeHeader."Entry No.";
+        MgtFeeCalcLine."Entry No." := GetNextLineNo(MgtFeeHeader."Entry No.");
         // Copy fields
         MgtFeeCalcLine."Property Management Company" := MgtFeeGrid."Property Management Company";
         MgtFeeCalcLine."Owner ID" := MgtFeeGrid."Owner ID";
@@ -80,12 +80,12 @@ codeunit 50115 "SetManagementFeeCalculation"
         MgtFeeCalcLine.Insert();
     end;
 
-    procedure GetNextLineNo(PrimaryKeyNo: Code[20]): Integer
+    procedure GetNextLineNo(PrimaryKeyNo: Integer): Integer
     var
         MgtFeeLine: Record "Management Fee Calc. Line";
     begin
         MgtFeeLine.Reset();
-        MgtFeeLine.SetRange("Primary Key", PrimaryKeyNo);
+        MgtFeeLine.SetRange("Header No.", PrimaryKeyNo);
         if MgtFeeLine.FindLast() then
             exit(MgtFeeLine."Entry No." + 10000);
 
