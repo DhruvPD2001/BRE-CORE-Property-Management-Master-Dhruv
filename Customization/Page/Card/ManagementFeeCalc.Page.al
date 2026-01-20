@@ -2,9 +2,8 @@ page 50146 "Management Fee Calc."
 {
     PageType = Card;
     ApplicationArea = All;
-    UsageCategory = Administration;
+    UsageCategory = None;
     SourceTable = "Management Fee Calc. Header";
-    SourceTableTemporary = true;
     Caption = 'Management Fee Calculation';
 
     layout
@@ -13,6 +12,13 @@ page 50146 "Management Fee Calc."
         {
             group(General)
             {
+                field("Entry No."; Rec."Entry No.")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Entry No.';
+                    Visible = false;
+                }
+
                 field("Report Date"; Rec."Report Date")
                 {
                     ApplicationArea = All;
@@ -131,7 +137,7 @@ page 50146 "Management Fee Calc."
             }
             part(ManagementFeeGrid; "Management Fee Calc Grid")
             {
-                SubPageLink = "Primary Key" = FIELD("Primary Key"); // Link to filter attachments for this owner only
+                SubPageLink = "Header No." = field("Entry No.");
                 ApplicationArea = All;
                 Caption = 'Management Fee Details';
                 UpdatePropagation = Both;
@@ -165,15 +171,10 @@ page 50146 "Management Fee Calc."
     }
     trigger OnOpenPage()
     begin
-        if Rec.IsEmpty() then begin
-            Rec.Init();
-            Rec.Insert();
-        end;
         allownereditable := true;
         allpropertyeditable := true;
         propertyeditable := true;
         ownereditable := true;
-
     end;
 
     trigger OnAfterGetCurrRecord()

@@ -4,7 +4,6 @@ page 50988 "Management Fee Calc Grid"
     SourceTable = "Management Fee Calc. Line";
     ApplicationArea = All;
     Caption = 'Management Fee Agreements';
-    SourceTableTemporary = true;
     UsageCategory = None;
     InsertAllowed = false;
     DeleteAllowed = false;
@@ -163,7 +162,6 @@ page 50988 "Management Fee Calc Grid"
                     ToolTip = 'Indicates whether the management fee contract is active or expired.';
                     Editable = false;
                     Visible = false;
-                    //   Editable = false;
                 }
             }
 
@@ -183,8 +181,8 @@ page 50988 "Management Fee Calc Grid"
                 var
                     MgtFeeCalc: Record "Management Fee Calc. Header";
                 begin
-                    MgtFeeCalc.Get();
-                    Report.Run(50119, false, false, MgtFeeCalc);
+                    if MgtFeeCalc.Get(Rec."Header No.") then
+                        Report.Run(50119, false, false, MgtFeeCalc);
                 end;
 
             }
